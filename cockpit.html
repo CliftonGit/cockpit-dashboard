@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPoW Cockpit</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0e1a20">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.30.0/lib/msal-browser.min.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -459,54 +456,74 @@
         async function loadData() {
             const token = await getAccessToken();
             if (!token) return;
-            
-            try {
-                // Load changes
-                await loadChanges(token);
-                
-                // Load tasks
-                await loadTasks(token);
-                
-                // Load stakeholders
-                await loadStakeholders(token);
-                
-                // Load impact data
-                await loadImpactData(token);
-                
-                // Load CIs
-                await loadCIs(token);
-            } catch (error) {
-                showError("Error loading data: " + error.message);
+
+            // Each section loads independently: one failing section (e.g. a table
+            // that doesn't exist yet) no longer blocks the other sections from
+            // showing their real data.
+            const sections = [
+                { name: "changes", run: () => loadChanges(token) },
+                { name: "tasks", run: () => loadTasks(token) },
+                { name: "stakeholders", run: () => loadStakeholders(token) },
+                { name: "impact data", run: () => loadImpactData(token) },
+                { name: "CIs", run: () => loadCIs(token) }
+            ];
+
+            const errors = [];
+            for (const section of sections) {
+                try {
+                    await section.run();
+                } catch (error) {
+                    console.error(`Error loading ${section.name}:`, error);
+                    errors.push(`${section.name}: ${error.message}`);
+                }
+            }
+
+            if (errors.length > 0) {
+                showError("Error loading data: " + errors.join("; "));
             }
         }
         
         async function loadChanges(token) {
-            // Fetch changes from Dataverse
+            // Fetch changes (change windows) from Dataverse.
+            // Note: this entity is called "spow_venster" ("Venster"/"Vensters") in this
+            // environment, not "spow_change" - there is no spow_changes table. Fields
+            // also differ: spow_venstername (name), spow_start / spow_eind (start/end,
+            // no separate duration field), spow_terugkerend (free-text recurrence note
+            // for windows without a fixed start/end).
             const response = await fetch(
-                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_changes?$select=spow_changeid,spow_name,spow_startmoment,spow_duur",
+                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_vensters?$select=spow_vensterid,spow_venstername,spow_start,spow_eind,spow_terugkerend",
                 {
                     headers: { "Authorization": "Bearer " + token }
                 }
             );
-            
+
             if (!response.ok) {
                 throw new Error("Failed to load changes");
             }
-            
+
             const data = await response.json();
             document.getElementById("changeCount").textContent = data.value.length;
-            
+
             // Populate table
             const tbody = document.getElementById("changesList");
-            tbody.innerHTML = data.value.map(change => `
+            tbody.innerHTML = data.value.map(change => {
+                const start = change.spow_start
+                    ? new Date(change.spow_start).toLocaleString('nl-NL')
+                    : (change.spow_terugkerend || '-');
+                let duur = '?';
+                if (change.spow_start && change.spow_eind) {
+                    duur = Math.round((new Date(change.spow_eind) - new Date(change.spow_start)) / 60000);
+                }
+                return `
                 <tr>
-                    <td>${change.spow_name || 'N/A'}</td>
-                    <td>${new Date(change.spow_startmoment).toLocaleString('nl-NL')}</td>
-                    <td>${change.spow_duur || '?'} min</td>
+                    <td>${change.spow_venstername || 'N/A'}</td>
+                    <td>${start}</td>
+                    <td>${duur} min</td>
                     <td><span class="status ok">Gepland</span></td>
                     <td>-</td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
         
         async function loadTasks(token) {
