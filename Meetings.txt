@@ -1,0 +1,326 @@
+visibility is complete when these are filled in.
+
+owner:
+
+rationale:
+
+action:
+
+due date:
+
+trigger:
+
+Hari:
+inpire 1 activity snapshot harish 
+harish sunday test vpn
+runbook is available
+
+vmware upgrade 
+ivanti imaging issues progress as discussed
+
+harish:
+wildcard renew certificate cramo
+its has to be done by other team en is dispatched
+test will expire 4th of june
+wildcard 8th en 9th 
+abdul is on leave so he will take it up with jayaprakash
+
+inspire status dinesh poc 
+: it has not started yet, they can clone server (2 are needed for poc)
+
+Prashant:
+chatbot package update = done
+duo working on it
+
+b2b issue on cramo side looking for contact and awaiting Roel meeting
+there is no knowledge about how to access or who has access.
+cross tenant access is needed.
+
+Jayaprakash:
+working with Prashant but his MS account has no access on this tenant error.
+policies could be blocking some access and they will need to check (Prashant)
+Request diederik to connect with Prashant
+prashant is
+
+subscription level access complaint raise a ticket with microsoft. 
+
+Sumo: packages work wih high prio
+
+topdesk contact for manjula
+
+Pavan: closing oldest tickets on name
+
+Dinesh: Citrix issue Clifton will be add in on mail.
+only citrix now
+
+Manjula:
+Backup failed due to space. 
+retention: 8 days 
+now only primary copy. 
+Discuss it with Roel what to do in case of structural low space.
+it has 
+
+I guess we need to know what is being backupped on this server? before we can decide if we can exclude some files/folders.
+Also Roel believes these servers might just be in-between stations 
+
+---
+
+databalance
+
+multipath zit standaard in de nvem 
+
+BOEMAA-tst server komt adm_wijsm wel al bij, maar bij de nieuwe servers nog niet. dat zullen we nog even moeten regelen. 
+
+boemaa-sqlqas01 en 02 hoe zijn die schijven ingericht? welke volumes zouden weg mogen / kunnen
+de ene helft van de volumes is gekoppeld op de 01 wel en op de 02 niet en vice versa
+
+Roel & Clif controleren dit. 
+
+---
+
+06.00 - 08.00 
+18.00 - 20.00 
+any business day, but not weekend. because of testplan. 
+
+Will Erik be joining or not. 
+
+
+do we have console access during implementation
+
+Roel, 
+
+---
+
+change webex aanmaken. savonds implementeren sochtends paraat staan.
+poort 80 + 443 uit de webex rule.
+
+---
+
+Weekly Tuesday 02-06
+
+Clifton: 	SOC tickets on daily basis - clifton connect with Prashant
+			Cramo tenant integration will also result in many of these incidents.
+
+Clifton: 	Cross tenant access B2C prashant connect with roel en diederik (Perhaps Twan can help)
+
+Clifton: 	HP Severs involve Harish, siddu and pr
+
+Clifton: 	Veeam03 has a disk failure
+
+Clifton: 	Connect with Abdul to check palo alto access
+
+onenote openen en chgnr geven 
+
+topdesk nr in de subject en het mailadres in de CC
+dit ivm ziek zijn kun je toch alle communicatie nog teruglezen
+
+---
+
+steinar: spain onboarding july
+denmark 1 oktober
+
+joke: rental print problems
+temp connection issues but workaround for the internet connections
+
+kevin: image issues - > fix van diederik werkt 
+teams issue as well -> still under investigation diederik
+
+Jan: FSLogix chec republic new users caching issues 
+
+Juozas: speed issue throughput from 300 mbps to 1,5mbps after his return from holiday
+issues with payments, network provider lithuania.
+
+marcus: pxe bootlist + issues thin clients 
+
+Paul: issues warehouse. Kpn and zebra are looking into the issues atm
+
+Frank: helping suma testing vpn
+
+---
+
+Shibuya 
+
+Citrix server running out of disk
+they added diskspace  3 time
+sebosctxprf01
+
+Rene sjostedt 
+
+Upgrdae xen host 
+
+
+last sunday every month 17:00 - 20:00 maintenance window
+
+
+VMs 
+5 nieuwe server en die wil ik kant en klaar hebben Harish 
+
+
+Boels@2026
+
+---
+
+Share backup server hardware expiry list and details of disc failure with Clifton, including recommendations for backup housekeeping and restoration improvements (Manjula)
+	Forward the backup server hardware expiry list to Clifton and ensure they are informed about the warranty status (Manjula)
+	Replace the failed physical disc in backup server VM 03 (Manjula)
+	Share backup access credentials and add Clifton to the backup group (Manjula)
+	Compile and share last month's backup space analysis, requirements, and recommendations with Ru, Clifton, Hari, and Sidhu (Manjula)
+
+Contact Prashanth and assist with logging Microsoft support tickets for display name updates and infrastructure degradation (Clifton)
+
+Send the certificate status list to Soumya, copying Rao and Clifton, and include details of highlighted items requiring action (Harish)
+
+Create local super user account for Clifton to access the firewall, pending LDAP authentication setup (AbdulRahaman)
+	Submit CAB approval request and finalise runbook for firewall upgrade (AbdulRahaman, Clifton)
+
+Soumya (roy) SOC lead
+
+abdul and mohan needs access, clifton will provide it.
+
+vmware project Roel 
+Network setup new internet connection DC 
+
+http://schemas.microsoft.com/windows/2004/02/mit/task
+
+---
+
+Aleson ITC - Ask them are there SQL updates available/involved
+
+roger dekkers integraton team voegt nieuwe landen toe
+
+
+dinesh 
+
+migratie O365
+
+AD Cramo
+
+---
+
+JP: no big updates yet but will be done today on the big p1 issue
+
+
+ScriptAuthApp 
+
+
+
+
+
+
+
+roel ip adressen
+iso hebben we al en instal
+
+port channels aanmaken
+vmware 7 -> vmware9
+vcenter 9 
+oude server upgrade naar vmware 8 
+dan 2 clusters toevoegen aan de nieuwe omgeving
+dan cluster upgraden naar vcenter9
+
+storage (2 VLANs komen daarop) 3 en 4 (powerstores)
+faultdomains pootje naar storage in zetten
+
+uitzoeken en zeker weten welke kabel in welke poort zit op de servers. desnoods ter plekke omprikken en noteren. 
+
+
+
+
+NLSTD140ESX01
+Memory slot - warning
+BM2604 17352
+
+#########################################################################
+📋 Team Meeting Agenda
+---
+🔥 1. Open Actions
+		-Review all open actions
+		-Confirm status:
+			→ Completed
+			→ Still active
+			→ Needs adjustment
+
+	  Questions to guide:
+		- Is this still relevant?
+		- Is anything blocked?
+		- Do we need to change owner, timeline, or scope?
+---
+👤 2. Team Updates (per person)
+	  Each team member shares:
+		- Current work (high level)
+		- Blockers
+		- Progress since last meeting
+	
+	  Focus:
+		- Keep it relevant for decisions and visibility
+		- Avoid technical deep dives (use tickets)
+---
+⚡ 3. Decisions & New Actions
+	  Based on updates:
+		- Define new actions
+		- Assign owner
+		- Set next action date
+		- Set deadline
+		
+	  Ensure:
+		→ Every action is clear and owned
+---
+📊 4. Workload & Team Pulse
+	  Discuss:
+		- Workload per person
+		- Balance across:
+			→ Projects
+			→ Changes
+			→ Run
+		
+	  Optional:
+		- Team energy / collaboration
+		- Any concerns or pressure points
+---
+💬 5. Announcements
+		- Holidays / time off / sick leave
+		- Birthdays / events
+		- Organizational updates
+---
+❓ 6. Open Floor
+		- Anything not yet discussed?
+		- Any concerns or topics to raise?
+---
+✅ 7. Closing
+		- Confirm key actions
+		- Highlight risks or deadlines
+		- Final check:
+			→ Are we missing any actions or risks?
+###############################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

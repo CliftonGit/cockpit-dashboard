@@ -1,0 +1,55 @@
+BW2606 4650 - Migratie DC netwerk (45.14.0.0/25) > Mikrotik + ompatching & routing overdracht
+
+Hi Clifton,
+
+Nu het internet werkend getest is in het datacenter, kun je zorgen dat dit verder wordt afgehandeld?
+
+Ons huidige actief netwerk op de switches van Provide: 45.14.0.0/25 , dit moet dus op de nieuwe switches komen.
+
+Poort config nieuwe Mikrotik switches hier :
+
+Port		Speed	CPE10676 SW1			CPE10678 SW2			MLAG
+1			Auto	Sophos FW001 - 1 - 1	Sophos FW001 - 1 - 2	10
+2			Auto	Sophos FW001 - 2 - 1 	Sophos FW001 - 2 - 2	11
+3			Auto	Fortigate 1800F - 1 - 1	Fortigate 1800F - 1 - 2	12
+4			Auto	Fortigate 1800F - 2 - 1	Fortigate 1800F - 2 - 2	13
+5	1 Gb 	Full	Fortigate 500E - 1 - 1	Fortigate 500E - 1 - 2	14
+6	1 Gb 	Full	Fortigate 500E - 2 - 1	Fortigate 500E - 2 - 2	15
+7	 	 	 	 
+8	 	 	 	 
+9	 	 	 	 
+10	 	 	 	 
+11	 	 	 	 
+12	 	 	 	 
+13	 	 	 	 
+14	 	 	 	 
+15	 	 	 	 
+16	 	 	 	 
+17	 	 	 	 
+18	 	 	 	 
+19	1 Gb 	Full	Sophos FW002 - 1 -1	 	 
+20	 	 	 	 
+
+Wat moet er gebeuren :
+•	Infra change aanmaken, inclusief runbook.
+•	Provide informeren/afstemmen wanneer zijn hun netwerk niet meer adverteren, Infopact informeren wanneer zij dit netwerk wel moeten adverteren. Dit moet dus samen/tegelijkertjd.
+•	Axians informeren/afstemmen dat er downtime is op beide Fortinet clusters (er hoeft niks aangepast te worden), controle plannen na omzetting.
+•	Aragorn informeren/afstemmen dat er downtime is op Sophos cluster (er hoeft niks aangepast te worden), controle plannen na omzetting.
+•	Downtime internet in het datacententer van Boels, max 15 minuten ivm omzetting, suggestie zaterdagavond tussen 22:00 en 23:00
+•	Toegang tot datacenter regelen conform planning.
+•	Omsteken fysieke bekabeling (Cisco en Huawei naar Mikrotik)
+
+
+Ik (Roel) stuur een mail naar infopact omdat in ieder geval de poorten juist te laten configureren (kan nu al).
+
+Gegevens Infopact : p.zeldenthuis@infopact.nl
+Gegevens Provide : joop.marijne@provide.nl
+Gegevens Axians : axians@service-now.com
+Gegevens Aragorn : support@aragorn.nl
+
+Bij vragen weet je me te vinden, make me proud :-)
+Afbouwen kunnen we later doen.
+
+
+
+

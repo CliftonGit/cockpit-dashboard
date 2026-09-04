@@ -1,0 +1,35 @@
+
+setspn -d "MSSQLSvc/BOEMAA-SQL02.boels.local:57479"
+"BOELS/sa_sql02_01$"
+setspn -d "MSSQLSvc/BOEMAA-SQL02.boels.local:APPINTS01”
+"BOELS/sa_sql02_01$"
+setspn -A "MSSQLSvc/BOEMAA-SQL02.boels.local:57479"
+"BOELS/sa_sql02_01$"
+setspn -A "MSSQLSvc/BOEMAA-SQL02.boels.local:APPINTS01"
+"BOELS/sa_sql02_01$"
+
+TSK01
+
+LTC1414CGQ
+
+
+172.30.47.3 forti analyzer
+
+Manjula - clif has contacted Roel about this
+prashanth - clif is on the scripts
+
+they need access to their ticket system so that they can create tickets and look into existing ones
+hari & prashanth & Harish
+
+
+chetan: certificate renewal is completed succesfully
+tenant 
+
+suma: support is over for the 24.0.9 licence is expired since 4-6
+
+Harish: 
+
+JP: 
+
+Archief - outlook settings  ontbreken agendapunten vorige jaar juni en ouder 
+Kala Ubachs secretaresse Pierre Boels

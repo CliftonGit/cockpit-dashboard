@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPoW Cockpit</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-msal-browser/4.4.0/msal-browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0E1A20;
+            color: #D8E3E4;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #14232A 0%, #1B2F38 100%);
+            border-bottom: 1px solid #26404A;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: #EEF5F5;
+        }
+        
+        .auth-button {
+            background: #F2751B;
+            color: #0E1A20;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .auth-button:hover {
+            background: #E5671A;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: #14232A;
+            border: 1px solid #26404A;
+            border-left: 3px solid #6FC3D6;
+            padding: 20px;
+            border-radius: 4px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(111, 195, 214, 0.2);
+        }
+        
+        .card h2 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #6FC3D6;
+        }
+        
+        .card-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #EEF5F5;
+            margin-bottom: 10px;
+        }
+        
+        .card-label {
+            font-size: 13px;
+            color: #92A9B1;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #EEF5F5;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #26404A;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            background: #14232A;
+            border: 1px solid #26404A;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #1B2F38;
+            color: #6FC3D6;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid #26404A;
+        }
+        
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1E333B;
+        }
+        
+        tr:hover {
+            background: #1B2F38;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status.ok {
+            background: rgba(87, 192, 138, 0.2);
+            color: #57C08A;
+        }
+        
+        .status.warn {
+            background: rgba(229, 178, 60, 0.2);
+            color: #E5B23C;
+        }
+        
+        .status.crit {
+            background: rgba(222, 95, 74, 0.2);
+            color: #DE5F4A;
+        }
+        
+        .status.unknown {
+            background: rgba(242, 117, 27, 0.2);
+            color: #F2751B;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #92A9B1;
+        }
+        
+        .error {
+            background: rgba(222, 95, 74, 0.1);
+            border: 1px solid #DE5F4A;
+            color: #DE5F4A;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 15px; }
+        }
+        
+        .refresh-btn {
+            background: #26404A;
+            color: #6FC3D6;
+            border: 1px solid #6FC3D6;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #6FC3D6;
+            color: #0E1A20;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 SPoW Cockpit</h1>
+        <div>
+            <button class="auth-button" id="authButton" onclick="handleAuth()">Sign In</button>
+            <button class="refresh-btn" id="refreshBtn" onclick="loadData()" style="display:none;">Refresh</button>
+            <span id="userInfo" style="margin-left: 15px; color: #92A9B1;"></span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="error" class="error" style="display:none;"></div>
+        
+        <div id="content" style="display:none;">
+            <!-- Operational Metrics -->
+            <div class="dashboard">
+                <div class="card">
+                    <h2>Actieve Changes</h2>
+                    <div class="card-value" id="changeCount">-</div>
+                    <div class="card-label">geplande wijzigingen</div>
+                </div>
+                <div class="card">
+                    <h2>Taken Vandaag</h2>
+                    <div class="card-value" id="tasksToday">-</div>
+                    <div class="card-label">uit runbooks</div>
+                </div>
+                <div class="card">
+                    <h2>Betrokkenen</h2>
+                    <div class="card-value" id="stakeholderCount">-</div>
+                    <div class="card-label">in escalatieladder</div>
+                </div>
+                <div class="card">
+                    <h2>Impact Onbekend</h2>
+                    <div class="card-value" id="unknownImpact">-</div>
+                    <div class="card-label">applicaties nog beoordelen</div>
+                </div>
+            </div>
+            
+            <!-- Changes - Next 14 Days -->
+            <div class="section">
+                <h3 class="section-title">📅 Komende 14 Dagen</h3>
+                <div class="table-wrapper">
+                    <table id="changesTable">
+                        <thead>
+                            <tr>
+                                <th>Wijziging</th>
+                                <th>Startmoment</th>
+                                <th>Duur</th>
+                                <th>Status</th>
+                                <th>Betrokkenen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="changesList">
+                            <tr><td colspan="5" class="loading">Laden...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Runbook Timeline -->
+            <div class="section">
+                <h3 class="section-title">⏱️ Runbook Op Tijd</h3>
+                <div class="table-wrapper">
+                    <table id="runbookTable">
+                        <thead>
+                            <tr>
+                                <th>Activiteit</th>
+                                <th>Start</th>
+                                <th>Duur</th>
+                                <th>Verantwoordelijke</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="runbookList">
+                            <tr><td colspan="5" class="loading">Laden...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Impact Assessment -->
+            <div class="section">
+                <h3 class="section-title">⚠️ Impact Beoordeling</h3>
+                <div class="grid-2">
+                    <div>
+                        <h4 style="color: #6FC3D6; margin-bottom: 15px;">Onbekend (Nog in te schatten)</h4>
+                        <div class="table-wrapper">
+                            <table>
+                                <tbody id="unknownList">
+                                    <tr><td class="loading">Laden...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: #6FC3D6; margin-bottom: 15px;">Bevestigd</h4>
+                        <div class="table-wrapper">
+                            <table>
+                                <tbody id="confirmedList">
+                                    <tr><td class="loading">Laden...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Infrastructure CIs -->
+            <div class="section">
+                <h3 class="section-title">🔧 Configuratie Items (CIs)</h3>
+                <div class="table-wrapper">
+                    <table id="cisTable">
+                        <thead>
+                            <tr>
+                                <th>CI</th>
+                                <th>Type</th>
+                                <th>Omgeving</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cisList">
+                            <tr><td colspan="4" class="loading">Laden...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Coverage/Dekkingsgraad -->
+            <div class="section">
+                <h3 class="section-title">📡 Dekkingsgraad Per Dienst</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dienst</th>
+                                <th>Signalen Van</th>
+                                <th>Laatst Gezien</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coverageList">
+                            <tr><td colspan="4" class="loading">Laden...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="auth-prompt" style="text-align: center; padding: 60px 20px;">
+            <h2 style="color: #6FC3D6; margin-bottom: 20px;">Welkom bij SPoW Cockpit</h2>
+            <p style="color: #92A9B1; margin-bottom: 30px;">Log in met je Boels-account om de operationele dashboards te zien</p>
+            <button class="auth-button" onclick="handleAuth()" style="padding: 15px 40px; font-size: 16px;">
+                Inloggen
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // MSAL Configuration
+        const msalConfig = {
+            auth: {
+                clientId: "6b6a3359-9c81-451e-84bf-ef23bb7bc14e",
+                authority: "https://login.microsoftonline.com/8b5e74a6-d91e-4dca-ad0a-147b4ce3cf3d",
+                redirectUri: window.location.origin + window.location.pathname
+            },
+            cache: {
+                cacheLocation: "localStorage",
+                storeAuthStateInCookie: false
+            }
+        };
+        
+        const loginRequest = {
+            scopes: ["https://boels-spow.crm.dynamics.com/.default"]
+        };
+        
+        let msalInstance;
+        let accessToken;
+        
+        // Initialize MSAL
+        async function initMsal() {
+            try {
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+                
+                // Check if already logged in
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    msalInstance.setActiveAccount(accounts[0]);
+                    showContent();
+                    loadData();
+                }
+            } catch (error) {
+                console.error("MSAL initialization error:", error);
+                showError("Failed to initialize authentication: " + error.message);
+            }
+        }
+        
+        async function handleAuth() {
+            try {
+                const response = await msalInstance.loginPopup(loginRequest);
+                msalInstance.setActiveAccount(response.account);
+                accessToken = response.accessToken;
+                showContent();
+                loadData();
+            } catch (error) {
+                console.error("Login error:", error);
+                showError("Login failed: " + error.message);
+            }
+        }
+        
+        function showContent() {
+            document.getElementById("auth-prompt").style.display = "none";
+            document.getElementById("content").style.display = "block";
+            document.getElementById("authButton").textContent = "Sign Out";
+            document.getElementById("authButton").onclick = handleSignOut;
+            document.getElementById("refreshBtn").style.display = "inline-block";
+            
+            const account = msalInstance.getActiveAccount();
+            if (account) {
+                document.getElementById("userInfo").textContent = account.name;
+            }
+        }
+        
+        function handleSignOut() {
+            msalInstance.logout();
+        }
+        
+        async function getAccessToken() {
+            try {
+                const response = await msalInstance.acquireTokenSilent(loginRequest);
+                return response.accessToken;
+            } catch (error) {
+                console.error("Token acquisition error:", error);
+                return null;
+            }
+        }
+        
+        async function loadData() {
+            const token = await getAccessToken();
+            if (!token) return;
+            
+            try {
+                // Load changes
+                await loadChanges(token);
+                
+                // Load tasks
+                await loadTasks(token);
+                
+                // Load stakeholders
+                await loadStakeholders(token);
+                
+                // Load impact data
+                await loadImpactData(token);
+                
+                // Load CIs
+                await loadCIs(token);
+            } catch (error) {
+                showError("Error loading data: " + error.message);
+            }
+        }
+        
+        async function loadChanges(token) {
+            // Fetch changes from Dataverse
+            const response = await fetch(
+                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_changes?$select=spow_changeid,spow_name,spow_startmoment,spow_duur",
+                {
+                    headers: { "Authorization": "Bearer " + token }
+                }
+            );
+            
+            if (!response.ok) {
+                throw new Error("Failed to load changes");
+            }
+            
+            const data = await response.json();
+            document.getElementById("changeCount").textContent = data.value.length;
+            
+            // Populate table
+            const tbody = document.getElementById("changesList");
+            tbody.innerHTML = data.value.map(change => `
+                <tr>
+                    <td>${change.spow_name || 'N/A'}</td>
+                    <td>${new Date(change.spow_startmoment).toLocaleString('nl-NL')}</td>
+                    <td>${change.spow_duur || '?'} min</td>
+                    <td><span class="status ok">Gepland</span></td>
+                    <td>-</td>
+                </tr>
+            `).join('');
+        }
+        
+        async function loadTasks(token) {
+            const response = await fetch(
+                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_taaks?$count=true",
+                {
+                    headers: { "Authorization": "Bearer " + token }
+                }
+            );
+            
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById("tasksToday").textContent = data["@odata.count"] || 0;
+            }
+        }
+        
+        async function loadStakeholders(token) {
+            const response = await fetch(
+                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_betrokkenes?$count=true",
+                {
+                    headers: { "Authorization": "Bearer " + token }
+                }
+            );
+            
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById("stakeholderCount").textContent = data["@odata.count"] || 0;
+            }
+        }
+        
+        async function loadImpactData(token) {
+            const response = await fetch(
+                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_impacts?$filter=spow_status eq 'Onbekend'",
+                {
+                    headers: { "Authorization": "Bearer " + token }
+                }
+            );
+            
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById("unknownImpact").textContent = data.value.length;
+                
+                const tbody = document.getElementById("unknownList");
+                tbody.innerHTML = data.value.slice(0, 10).map(impact => `
+                    <tr><td>${impact.spow_name || 'N/A'}</td></tr>
+                `).join('');
+            }
+        }
+        
+        async function loadCIs(token) {
+            const response = await fetch(
+                "https://boels-spow.crm4.dynamics.com/api/data/v9.2/spow_cis",
+                {
+                    headers: { "Authorization": "Bearer " + token }
+                }
+            );
+            
+            if (response.ok) {
+                const data = await response.json();
+                const tbody = document.getElementById("cisList");
+                tbody.innerHTML = data.value.map(ci => `
+                    <tr>
+                        <td>${ci.spow_name || 'N/A'}</td>
+                        <td>${ci.spow_type || 'Server'}</td>
+                        <td>${ci.spow_environment || 'Production'}</td>
+                        <td><span class="status ok">Online</span></td>
+                    </tr>
+                `).join('');
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById("error");
+            errorDiv.textContent = message;
+            errorDiv.style.display = "block";
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initMsal);
+    </script>
+</body>
+</html>
