@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPoW Cockpit</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0e1a20">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.30.0/lib/msal-browser.min.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -388,7 +391,7 @@
         };
         
         const loginRequest = {
-            scopes: ["https://boels-spow.crm.dynamics.com/.default"]
+            scopes: ["https://boels-spow.crm4.dynamics.com/.default"]
         };
         
         let msalInstance;
