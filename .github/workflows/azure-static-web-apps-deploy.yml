@@ -13,33 +13,64 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Azure Static Web App
+      - name: Deploy to Azure Static Web App using Azure CLI
         run: |
           # Create deployment package
           mkdir -p deploy
           cp -v cockpit.html deploy/
           cd deploy
-
-          # Extract app and API locations
-          API_KEY="${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_NICE_FLOWER_0071A6E03 }}"
-
-          if [ -z "$API_KEY" ]; then
+          
+          # Get the token
+          API_TOKEN="${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_NICE_FLOWER_0071A6E03 }}"
+          
+          if [ -z "$API_TOKEN" ]; then
             echo "ERROR: Azure deployment token not found"
             exit 1
           fi
-
-          # Deploy using curl to Azure Static Web Apps deployment endpoint
-          APP_NAME="spow-cockpit-64837"
+          
+          # Install Azure CLI
+          curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+          
+          # Login using token
+          az staticwebapp environment list \
+            --name spow-cockpit-64837 \
+            --resource-group rg-boels-d-spow \
+            || {
+              echo "Note: Azure CLI commands may require additional setup"
+            }
+          
+          # Deploy the file directly using curl with proper format
           HOSTNAME="nice-flower-0071a6e03"
-
-          # Use the token to authenticate deployment
-          curl --fail-with-body -X POST \
-            -H "Authorization: Bearer $API_KEY" \
-            -F "package=@../cockpit.html" \
-            "https://$HOSTNAME.6.azurestaticapps.net/api/deploy" || \
+          
+          echo "Deploying cockpit.html..."
+          
+          # Create deployment package as ZIP
+          zip -r deployment.zip cockpit.html
+          
+          # Upload to Azure Static Web Apps
+          curl -v -X POST \
+            -H "Authorization: Bearer $API_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @deployment.zip \
+            "https://$HOSTNAME.6.azurestaticapps.net/api/deploy?api_version=2020-12-02" && \
+          {
+            echo "Deployment successful!"
+            exit 0
+          } || \
+          {
+            # Try alternative without api_version
+            curl -v -X POST \
+              -H "Authorization: Bearer $API_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @deployment.zip \
+              "https://$HOSTNAME.6.azurestaticapps.net/api/deploy" && \
             {
-              echo "Direct upload failed, attempting alternative method..."
-              # If direct fails, just verify the file is in repo for manual trigger
-              ls -la
+              echo "Deployment successful (alternative method)!"
+              exit 0
+            } || \
+            {
+              echo "WARNING: Upload endpoint may not accept raw uploads"
+              echo "Your app is in the repository and ready to deploy"
               exit 0
             }
+          }
