@@ -11,87 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-      - name: Display files
-        run: |
-          echo "Repository contents:"
-          ls -la /
-          echo ""
-          echo "Current directory:"
-          pwd
-          ls -la
-
-      - name: Check cockpit.html
-        run: |
-          echo "Checking for cockpit.html..."
-          if [ -f cockpit.html ]; then
-            echo "✓ cockpit.html found"
-            wc -c cockpit.html
-          else
-            echo "✗ cockpit.html NOT found"
-            find . -name "cockpit.html" -type f
-            exit 1
-          fi
-
-      - name: Deploy using Azure Token
-        run: |
-          echo "Starting deployment..."
-          
-          API_TOKEN="${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_NICE_FLOWER_0071A6E03 }}"
-          
-          if [ -z "$API_TOKEN" ]; then
-            echo "ERROR: Azure token is empty!"
-            exit 1
-          fi
-          
-          echo "Token length: ${#API_TOKEN}"
-          echo "Token format check: $(echo "$API_TOKEN" | cut -c1-30)..."
-          
-          # Create a deployment directory
-          mkdir -p /tmp/deploy
-          cp cockpit.html /tmp/deploy/
-          
-          cd /tmp/deploy
-          echo "Deployment directory contents:"
-          ls -lah
-          
-          # Method 1: Try Azure Static Web Apps built-in deployment API
-          echo ""
-          echo "Attempting deployment to Azure Static Web Apps..."
-          
-          HOSTNAME="nice-flower-0071a6e03"
-          ENDPOINT="https://${HOSTNAME}.6.azurestaticapps.net"
-          
-          # Create a simple ZIP with just the HTML file
-          echo "Creating deployment package..."
-          zip -r app.zip cockpit.html
-          
-          echo "Package created:"
-          ls -lh app.zip
-          
-          echo ""
-          echo "Uploading to: ${ENDPOINT}/api/deploy"
-          
-          HTTP_CODE=$(curl -s -w "%{http_code}" -X POST \
-            -H "Authorization: Bearer $API_TOKEN" \
-            -H "Content-Type: application/zip" \
-            --data-binary @app.zip \
-            "${ENDPOINT}/api/deploy" \
-            -o /tmp/deploy_response.txt)
-          
-          echo "HTTP Response Code: $HTTP_CODE"
-          echo "Response:"
-          cat /tmp/deploy_response.txt
-          echo ""
-          
-          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "202" ]; then
-            echo "✓ Deployment upload successful (HTTP $HTTP_CODE)"
-            exit 0
-          else
-            echo "Warning: HTTP $HTTP_CODE received"
-            echo "Deployment may still be processing..."
-            echo "Check https://${HOSTNAME}.6.azurestaticapps.net/cockpit.html in a few moments"
-            exit 0
-          fi
+      - name: Deploy to Static Web App
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_NICE_FLOWER_0071A6E03 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "."
+          api_location: ""
+          output_location: ""
