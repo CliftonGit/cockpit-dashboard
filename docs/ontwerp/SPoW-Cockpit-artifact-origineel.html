@@ -1,0 +1,1118 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>SPoW Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+
+<style>
+/* ============ THEMA'S ============ */
+:root,:root[data-skin="nachtwacht"]{
+  --ground:#0A0F16; --rail:#070B11;
+  --panel:rgba(20,28,38,.82); --panel2:#1B2632; --line:#243240; --edge:rgba(255,255,255,.045);
+  --ink:#E9F0F7; --dim:#94A6B7; --faint:#5E7285;
+  --accent:#FF7A29; --accent-soft:#6E3612; --glow:255,122,41; --btn-ink:#fff;
+  --good:#4FBF87; --warn:#E8B44A; --alert:#E85C4F; --people:#7C8CF0;
+  --mtg-bg:#1C2632; --mtg-fill:#495A6C; --abs-a:#2A1A18; --abs-b:#3A2320;
+  --bnr-bg:#1A1208; --bnr-line:#3A2A12; --bnr-ink:#C89A55;
+  --blur:0px; --shadow:0 1px 0 var(--edge), 0 10px 30px rgba(0,0,0,.28);
+  --disp:"Barlow Semi Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+:root[data-skin="glas"]{
+  --ground:#070A18; --rail:rgba(10,14,34,.55);
+  --panel:rgba(28,36,72,.42); --panel2:rgba(44,54,96,.5); --line:rgba(130,150,235,.2); --edge:rgba(180,200,255,.11);
+  --ink:#EDF2FF; --dim:#A2B0DE; --faint:#6E7BB0;
+  --accent:#5FD8F0; --accent-soft:#14495C; --glow:95,216,240; --btn-ink:#04141A;
+  --good:#5FE3B0; --warn:#F0C86A; --alert:#FF7A8A; --people:#9AA6FF;
+  --mtg-bg:rgba(60,72,120,.35); --mtg-fill:#7E8CC8; --abs-a:rgba(80,40,60,.5); --abs-b:rgba(110,55,80,.5);
+  --bnr-bg:rgba(20,60,80,.4); --bnr-line:rgba(95,216,240,.28); --bnr-ink:#8FE4F5;
+  --blur:14px; --shadow:0 1px 0 var(--edge), 0 16px 44px rgba(0,0,0,.42);
+}
+:root[data-skin="fosfor"]{
+  --ground:#080601; --rail:#0C0902;
+  --panel:rgba(24,17,3,.78); --panel2:#241A06; --line:#3E2C0B; --edge:rgba(255,190,80,.09);
+  --ink:#FFC96F; --dim:#BE8C3F; --faint:#7E5C25;
+  --accent:#FFB020; --accent-soft:#523507; --glow:255,176,32; --btn-ink:#140D00;
+  --good:#B6D24A; --warn:#FFB020; --alert:#FF6B3D; --people:#E0A84A;
+  --mtg-bg:#241A06; --mtg-fill:#7E5C25; --abs-a:#2A1405; --abs-b:#3A1D08;
+  --bnr-bg:#1A1004; --bnr-line:#3E2C0B; --bnr-ink:#D9A44A;
+  --blur:0px; --shadow:0 0 22px rgba(255,176,32,.06);
+  --disp:"IBM Plex Mono",ui-monospace,monospace;
+  --body:"IBM Plex Mono",ui-monospace,monospace;
+}
+:root[data-skin="fosfor"] .card,:root[data-skin="fosfor"] .svc-c{text-shadow:0 0 10px rgba(255,176,32,.14);}
+:root[data-skin="radar"]{
+  --ground:#030E0A; --rail:#020A07;
+  --panel:rgba(7,26,20,.78); --panel2:#0C2B21; --line:#164034; --edge:rgba(120,255,200,.07);
+  --ink:#DCF7EA; --dim:#75AF93; --faint:#4A7A65;
+  --accent:#3FE39B; --accent-soft:#0F4A35; --glow:63,227,155; --btn-ink:#02150E;
+  --good:#3FE39B; --warn:#E8D14A; --alert:#FF6E6E; --people:#63C8D8;
+  --mtg-bg:#0C2B21; --mtg-fill:#3E7663; --abs-a:#2A1010; --abs-b:#3A1818;
+  --bnr-bg:#08211A; --bnr-line:#164034; --bnr-ink:#68C79E;
+  --blur:0px; --shadow:0 1px 0 var(--edge), 0 12px 32px rgba(0,0,0,.4);
+}
+:root[data-skin="papier"]{
+  --ground:#EFEAE1; --rail:#E6E0D4;
+  --panel:rgba(253,251,247,.94); --panel2:#EDE7DB; --line:#D8D0C0; --edge:rgba(255,255,255,.9);
+  --ink:#1E1B16; --dim:#5A5348; --faint:#8B8276;
+  --accent:#C2410C; --accent-soft:#F3DCCC; --glow:194,65,12; --btn-ink:#fff;
+  --good:#2F7D52; --warn:#9A6A07; --alert:#B3261E; --people:#4348B5;
+  --mtg-bg:#E4DDCF; --mtg-fill:#A79C88; --abs-a:#EBD9D3; --abs-b:#E0C7BE;
+  --bnr-bg:#F5E7D8; --bnr-line:#DFC9AE; --bnr-ink:#8A6636;
+  --blur:0px; --shadow:0 1px 0 var(--edge), 0 8px 22px rgba(90,75,50,.13);
+  --disp:"Instrument Serif",Georgia,serif;
+}
+:root[data-skin="papier"] .brand,:root[data-skin="papier"] .phead h2,:root[data-skin="papier"] .sheet h3{letter-spacing:0;}
+
+/* ============ SFEERLAAG ============ */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.ambient i{position:absolute;display:block;border-radius:50%;filter:blur(70px);opacity:.5;}
+.ambient .a1{width:60vw;height:60vw;left:-14vw;top:-22vw;background:radial-gradient(circle,rgba(var(--glow),.16),transparent 68%);animation:drift1 64s ease-in-out infinite;}
+.ambient .a2{width:52vw;height:52vw;right:-16vw;bottom:-20vw;background:radial-gradient(circle,rgba(var(--glow),.11),transparent 68%);animation:drift2 86s ease-in-out infinite;}
+.ambient .a3{width:40vw;height:40vw;left:34vw;top:30vh;background:radial-gradient(circle,rgba(120,150,255,.09),transparent 70%);animation:drift1 74s ease-in-out infinite reverse;}
+.ambient .grid{position:absolute;inset:0;border-radius:0;filter:none;opacity:1;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:52px 52px;}
+.ambient .scan,.ambient .sweep,.ambient .rings,.ambient .grain{display:none;}
+@keyframes drift1{0%,100%{transform:translate3d(0,0,0) scale(1);}50%{transform:translate3d(6vw,5vh,0) scale(1.12);}}
+@keyframes drift2{0%,100%{transform:translate3d(0,0,0) scale(1.08);}50%{transform:translate3d(-7vw,-4vh,0) scale(1);}}
+
+:root[data-skin="glas"] .ambient i{filter:blur(90px);opacity:.85;}
+:root[data-skin="glas"] .ambient .grid{opacity:.5;}
+
+:root[data-skin="fosfor"] .ambient i{opacity:.34;}
+:root[data-skin="fosfor"] .ambient .grid{display:none;}
+:root[data-skin="fosfor"] .ambient .scan{display:block;position:absolute;inset:0;border-radius:0;filter:none;opacity:1;background:repeating-linear-gradient(to bottom,rgba(255,176,32,.045) 0 1px,transparent 1px 3px);}
+:root[data-skin="fosfor"] .ambient .grain{display:block;position:absolute;inset:0;border-radius:0;filter:none;background:radial-gradient(ellipse at 50% 50%,transparent 40%,rgba(0,0,0,.5) 100%);opacity:1;}
+
+:root[data-skin="radar"] .ambient .grid{display:none;}
+:root[data-skin="radar"] .ambient .rings{display:block;position:absolute;left:50%;top:52%;width:min(120vh,120vw);height:min(120vh,120vw);transform:translate(-50%,-50%);border-radius:50%;filter:none;opacity:1;
+  background:repeating-radial-gradient(circle,transparent 0 58px,rgba(63,227,155,.055) 58px 59px);}
+:root[data-skin="radar"] .ambient .sweep{display:block;position:absolute;left:50%;top:52%;width:min(120vh,120vw);height:min(120vh,120vw);transform:translate(-50%,-50%);border-radius:50%;filter:none;opacity:.55;
+  background:conic-gradient(from 0deg,rgba(63,227,155,.16),transparent 26%,transparent 100%);animation:sweep 14s linear infinite;}
+@keyframes sweep{to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+:root[data-skin="papier"] .ambient i{opacity:.3;filter:blur(90px);}
+:root[data-skin="papier"] .ambient .grid{background-image:linear-gradient(rgba(120,100,70,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(120,100,70,.035) 1px,transparent 1px);}
+
+@media (prefers-reduced-motion:reduce){
+  .ambient i,.ambient .sweep{animation:none !important;}
+}
+
+/* ============ BASIS ============ */
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .5s ease,color .5s ease;}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.shell{display:grid;grid-template-columns:206px minmax(0,1fr) 300px;min-height:100vh;position:relative;z-index:1;}
+@media(max-width:1180px){.shell{grid-template-columns:66px minmax(0,1fr);} .rail-right{display:none;}}
+@media(max-width:720px){.shell{grid-template-columns:1fr;} .rail-left{display:none;}}
+body.present .shell{grid-template-columns:1fr;}
+body.present .rail-left,body.present .rail-right,body.present .topbar,body.present .banner{display:none;}
+
+.rail-left{background:var(--rail);border-right:1px solid var(--line);padding:18px 0;display:flex;flex-direction:column;gap:2px;backdrop-filter:blur(var(--blur));}
+.brand{padding:0 18px 20px;font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:.02em;}
+.brand span{color:var(--accent);text-shadow:0 0 18px rgba(var(--glow),.5);}
+.mode{display:flex;align-items:center;gap:11px;padding:9px 18px;color:var(--faint);font-family:var(--disp);font-weight:600;font-size:15.5px;letter-spacing:.03em;text-align:left;width:100%;border-left:2px solid transparent;transition:color .18s,background .18s;}
+.mode:hover{color:var(--dim);background:var(--panel2);}
+.mode[aria-current="true"]{color:var(--ink);border-left-color:var(--accent);background:var(--panel2);}
+.mode[aria-current="true"] .dot{background:var(--accent);opacity:1;box-shadow:0 0 10px rgba(var(--glow),.8);}
+.dot{width:7px;height:7px;flex:none;border-radius:50%;background:currentColor;opacity:.5;}
+.rail-sep{height:1px;background:var(--line);margin:14px 18px;}
+.rail-lbl{padding:0 18px 6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);opacity:.7;}
+.present-btn{margin:0 14px;border:1px solid var(--accent-soft);color:var(--accent);font-family:var(--disp);font-weight:700;font-size:13.5px;letter-spacing:.06em;text-transform:uppercase;padding:9px 12px;text-align:center;transition:.18s;}
+.present-btn:hover{background:var(--accent);color:var(--btn-ink);box-shadow:0 0 24px rgba(var(--glow),.35);}
+.rail-foot{margin-top:auto;padding:16px 18px 0;font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--faint);opacity:.65;line-height:1.7;}
+
+main{min-width:0;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 26px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.spo{font-family:var(--disp);font-weight:600;font-size:28px;letter-spacing:.01em;color:var(--faint);}
+.spo b{color:var(--ink);font-weight:700;}
+.clock{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);display:flex;gap:16px;}
+
+/* thema-kiezer */
+.skins{display:flex;align-items:center;gap:7px;}
+.skins .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-right:2px;}
+.sw{width:19px;height:19px;border-radius:50%;border:1px solid var(--line);position:relative;transition:.18s;}
+.sw:hover{transform:scale(1.16);}
+.sw[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px rgba(var(--glow),.28);}
+.sw.s-nachtwacht{background:linear-gradient(140deg,#101822,#FF7A29);}
+.sw.s-glas{background:linear-gradient(140deg,#131A38,#5FD8F0);}
+.sw.s-fosfor{background:linear-gradient(140deg,#140E02,#FFB020);}
+.sw.s-radar{background:linear-gradient(140deg,#05130E,#3FE39B);}
+.sw.s-papier{background:linear-gradient(140deg,#F3EFE7,#C2410C);}
+.sw.s-eigen{background:repeating-linear-gradient(45deg,var(--panel2) 0 4px,var(--line) 4px 8px);}
+.autobtn{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);padding:4px 8px;color:var(--faint);}
+.autobtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);}
+
+.view{padding:22px 26px 46px;display:none;}
+.view.on{display:block;animation:fade .32s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 17px;min-width:0;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));}
+.card.wide{grid-column:1 / -1;}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;}
+.card-h h2{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.07em;text-transform:uppercase;margin:0;color:var(--dim);}
+.count{font-family:var(--mono);font-size:11px;color:var(--faint);}
+
+.res{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.res-row{background:var(--panel2);padding:11px 13px;display:grid;grid-template-columns:3px minmax(0,1fr) auto;gap:12px;align-items:start;text-align:left;width:100%;transition:background .16s;}
+.res-row:hover{background:var(--panel);}
+.pip{width:3px;align-self:stretch;background:var(--faint);}
+.pip.hot{background:var(--alert);box-shadow:0 0 12px var(--alert);}
+.pip.mid{background:var(--warn);} .pip.ok{background:var(--good);}
+.res-t{font-weight:600;font-size:14px;margin-bottom:2px;}
+.res-s{font-size:12.5px;color:var(--dim);}
+.res-s em{font-style:normal;color:var(--accent);}
+.ago{font-family:var(--mono);font-size:10.5px;color:var(--faint);white-space:nowrap;padding-top:2px;}
+
+.feed{display:flex;flex-direction:column;gap:9px;}
+.fitem{display:grid;grid-template-columns:58px minmax(0,1fr);gap:11px;font-size:13px;align-items:baseline;}
+.fitem b{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:400;}
+.fitem span{color:var(--dim);}
+.fitem span strong{color:var(--ink);font-weight:600;}
+
+.exp{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.exp-row{background:var(--panel2);padding:9px 12px;display:grid;grid-template-columns:minmax(0,1fr) 92px 54px;gap:10px;align-items:center;font-size:13px;}
+.exp-row .who{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-align:right;}
+.days{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;}
+.days.red{color:var(--alert);} .days.amber{color:var(--warn);} .days.grey{color:var(--faint);}
+
+.meet{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.meet-row{background:var(--panel2);padding:11px 12px;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;}
+.meet-row .t{font-family:var(--mono);font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.meet-row .n{font-size:13.5px;font-weight:500;}
+.meet-row .sub{font-size:12px;color:var(--faint);}
+.btn{font-family:var(--disp);font-weight:600;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid var(--accent-soft);color:var(--accent);white-space:nowrap;transition:.16s;}
+.btn:hover{background:var(--accent);color:var(--btn-ink);box-shadow:0 0 18px rgba(var(--glow),.3);}
+.btn.ghost{border-color:var(--line);color:var(--dim);}
+.btn.ghost:hover{background:var(--panel2);color:var(--ink);box-shadow:none;}
+
+.ppl{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.p-row{background:var(--panel2);padding:11px 13px;display:grid;grid-template-columns:26px minmax(0,1fr) 132px 46px;gap:12px;align-items:center;text-align:left;width:100%;transition:background .16s;}
+.p-row:hover{background:var(--panel);}
+@media(max-width:640px){.p-row{grid-template-columns:26px minmax(0,1fr) 46px;} .p-row .split{display:none;}}
+.av{width:26px;height:26px;border-radius:50%;background:var(--panel);border:1px solid var(--line);font-family:var(--mono);font-size:10px;display:grid;place-items:center;color:var(--people);}
+.p-n{font-size:13.5px;font-weight:600;} .p-t{font-size:11.5px;color:var(--faint);}
+.split{display:flex;height:6px;gap:1px;}
+.split i{display:block;}
+.split .pr{background:var(--people);} .split .ch{background:var(--accent);} .split .ov{background:var(--mtg-fill);}
+.load{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;}
+.load.hi{color:var(--alert);} .load.ok{color:var(--good);}
+
+.prom{display:flex;flex-direction:column;gap:8px;}
+.prom div{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;font-size:13px;align-items:baseline;}
+.prom i{width:6px;height:6px;background:var(--accent);display:block;margin-top:6px;}
+.prom span{color:var(--dim);}
+.prom em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);white-space:nowrap;}
+
+.hand{display:flex;flex-wrap:wrap;gap:8px;}
+.hand button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);padding:8px 12px;font-size:13px;color:var(--dim);transition:.16s;}
+.hand button:hover{border-color:var(--accent);color:var(--ink);background:var(--panel2);box-shadow:0 0 16px rgba(var(--glow),.16);}
+.hand .k{font-family:var(--mono);font-size:9.5px;color:var(--faint);border:1px solid var(--line);padding:1px 4px;}
+
+.svc{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:11px;}
+.svc-c{background:var(--panel);border:1px solid var(--line);padding:14px;text-align:left;display:grid;gap:7px;align-content:start;min-height:120px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));transition:.18s;}
+.svc-c:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 1px 0 var(--edge),0 14px 34px rgba(0,0,0,.32),0 0 22px rgba(var(--glow),.14);}
+.svc-n{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.01em;}
+.svc-m{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);}
+.svc-f{display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap;}
+.chip{font-family:var(--mono);font-size:10px;padding:2px 6px;border:1px solid var(--line);color:var(--dim);}
+.chip.risk{border-color:var(--alert);color:var(--alert);}
+.chip.ok{border-color:var(--good);color:var(--good);}
+
+.searchbar{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));}
+.searchbar span{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;}
+.searchbar p{margin:0;color:var(--dim);font-size:15px;}
+.kn{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.kn-row{background:var(--panel2);padding:13px;display:grid;grid-template-columns:74px minmax(0,1fr);gap:14px;text-align:left;width:100%;align-items:start;transition:background .16s;}
+.kn-row:hover{background:var(--panel);}
+.kn-k{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);padding-top:3px;}
+.kn-t{font-weight:600;font-size:14px;margin-bottom:3px;}
+.kn-s{font-size:12.5px;color:var(--dim);}
+.kn-m{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:5px;}
+
+.detail{position:fixed;inset:0;background:rgba(4,7,11,.7);display:none;place-items:end;z-index:40;backdrop-filter:blur(3px);}
+.detail.on{display:grid;}
+.sheet{background:var(--panel2);border-left:1px solid var(--line);width:min(440px,100%);height:100%;overflow-y:auto;padding:24px;display:grid;gap:16px;align-content:start;box-shadow:-20px 0 60px rgba(0,0,0,.4);}
+.sheet h3{font-family:var(--disp);font-weight:700;font-size:24px;margin:0;letter-spacing:.01em;}
+.sheet .lead{color:var(--dim);font-size:13.5px;margin:0;}
+.kv{display:grid;grid-template-columns:112px minmax(0,1fr);gap:8px 12px;font-size:13px;}
+.kv dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);padding-top:2px;}
+.kv dd{margin:0;color:var(--ink);}
+.sheet-sec{border-top:1px solid var(--line);padding-top:14px;}
+.sheet-sec h4{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin:0 0 9px;}
+
+.rail-right{background:var(--rail);border-left:1px solid var(--line);padding:20px 18px;display:flex;flex-direction:column;gap:18px;backdrop-filter:blur(var(--blur));}
+.rr-h{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0;}
+.inbox{background:var(--panel);border:1px solid var(--line);padding:13px;font-size:13px;box-shadow:var(--shadow);}
+.inbox .from{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+.inbox p{margin:0;color:var(--dim);}
+.gate{display:grid;gap:7px;}
+.gate div{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;font-size:12.5px;color:var(--dim);align-items:start;}
+.gate .y{color:var(--good);font-family:var(--mono);font-size:10.5px;}
+.gate .n{color:var(--warn);font-family:var(--mono);font-size:10.5px;}
+.steps{display:grid;gap:7px;}
+.steps div{display:grid;grid-template-columns:17px minmax(0,1fr);gap:9px;font-size:12.5px;color:var(--dim);}
+.steps b{font-family:var(--mono);font-size:10.5px;color:var(--accent);font-weight:400;}
+.note{font-size:11.5px;color:var(--faint);border-top:1px solid var(--line);padding-top:12px;margin-top:auto;}
+
+/* beoordelen */
+.gate div,.steps div{position:relative;}
+.rate{display:inline-flex;gap:3px;margin-left:6px;vertical-align:-2px;opacity:0;transition:opacity .15s;}
+.gate div:hover .rate,.steps div:hover .rate,.rate:focus-within{opacity:1;}
+.rate button{width:19px;height:19px;border:1px solid var(--line);font-family:var(--mono);font-size:10px;line-height:1;color:var(--faint);display:grid;place-items:center;transition:.14s;}
+.rate button:hover{border-color:var(--accent);color:var(--accent);}
+.rate button.up:hover{border-color:var(--good);color:var(--good);}
+.rate button.dn:hover{border-color:var(--alert);color:var(--alert);}
+.verdict{display:inline-flex;align-items:center;gap:5px;margin-left:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;}
+.verdict.hit{color:var(--good);} .verdict.miss{color:var(--warn);}
+.why{margin:7px 0 0;display:flex;flex-wrap:wrap;gap:4px;}
+.why button{font-family:var(--mono);font-size:9.5px;padding:3px 6px;border:1px solid var(--line);color:var(--faint);}
+.why button:hover{border-color:var(--alert);color:var(--alert);}
+.learned{border-top:1px solid var(--line);padding-top:12px;font-size:11.5px;color:var(--dim);}
+.learned b{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-weight:400;}
+.learned em{font-style:normal;color:var(--faint);}
+
+.banner{background:var(--bnr-bg);border-bottom:1px solid var(--bnr-line);color:var(--bnr-ink);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 26px;position:relative;z-index:1;}
+
+/* presenteren */
+#v-presenteren{padding:0;}
+.pbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 30px;background:var(--bnr-bg);border-bottom:1px solid var(--bnr-line);flex-wrap:wrap;}
+.pbar .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
+.pbar .mid{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--dim);letter-spacing:.02em;}
+.pstage{padding:36px 40px 44px;max-width:1180px;margin:0 auto;}
+@media(max-width:700px){.pstage{padding:22px 18px 32px;}}
+.pstep{display:none;}
+.pstep.on{display:block;animation:fade .35s ease;}
+.phead{display:flex;align-items:center;gap:18px;margin-bottom:26px;flex-wrap:wrap;}
+.pav{width:64px;height:64px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:18px;color:var(--people);flex:none;box-shadow:0 0 30px rgba(var(--glow),.12);}
+.phead h2{font-family:var(--disp);font-weight:700;font-size:44px;margin:0;letter-spacing:.01em;line-height:1.05;}
+.phead .sub{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-top:3px;}
+.pcols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px;}
+@media(max-width:820px){.pcols{grid-template-columns:1fr;}}
+.pcol{background:var(--panel);border:1px solid var(--line);padding:17px 18px;min-height:152px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));}
+.pcol h3{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:0 0 12px;}
+.pcol.block h3{color:var(--alert);}
+.pcol ul{margin:0;padding-left:17px;display:grid;gap:9px;}
+.pcol li{font-size:16px;color:var(--ink);}
+.pcol .none{font-size:15px;color:var(--faint);}
+.pacts{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.big{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:11px 20px;border:1px solid var(--accent-soft);color:var(--accent);transition:.18s;}
+.big:hover{background:var(--accent);color:var(--btn-ink);box-shadow:0 0 26px rgba(var(--glow),.35);}
+.big.kudo{border-color:var(--good);color:var(--good);}
+.big.kudo:hover{background:var(--good);color:var(--btn-ink);box-shadow:0 0 26px rgba(79,191,135,.3);}
+.big.ghost{border-color:var(--line);color:var(--dim);}
+.big.ghost:hover{background:var(--panel2);color:var(--ink);box-shadow:none;}
+.order{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:28px;padding-top:18px;border-top:1px solid var(--line);}
+.ochip{font-family:var(--mono);font-size:11px;padding:5px 10px;border:1px solid var(--line);color:var(--faint);}
+.ochip.done{color:var(--good);border-color:var(--good);}
+.ochip.now{color:var(--ink);border-color:var(--accent);background:var(--panel2);box-shadow:0 0 16px rgba(var(--glow),.2);}
+.ohint{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-left:auto;}
+.pback h2{font-family:var(--disp);font-weight:700;font-size:36px;margin:0 0 6px;}
+.pback .lead{color:var(--dim);font-size:15px;margin:0 0 22px;}
+.opl{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:24px;}
+.opl-row{background:var(--panel2);padding:14px 16px;display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:14px;align-items:center;}
+.opl-row .rank{font-family:var(--mono);font-size:13px;color:var(--accent);}
+.opl-row .txt{font-size:16px;}
+.opl-row .txt small{display:block;color:var(--faint);font-size:12.5px;margin-top:2px;}
+.opl-row .st{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap;}
+.pscore{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px;}
+@media(max-width:820px){.pscore{grid-template-columns:1fr;}}
+.sbox{background:var(--panel);border:1px solid var(--line);padding:19px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));}
+.sbox .n{font-family:var(--disp);font-weight:700;font-size:48px;line-height:1;font-variant-numeric:tabular-nums;}
+.sbox .n.good{color:var(--good);text-shadow:0 0 24px rgba(79,191,135,.25);} .sbox .n.warn{color:var(--warn);}
+.sbox .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-top:9px;}
+.sbox .d{font-size:13px;color:var(--dim);margin-top:7px;}
+.kudos{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.kudos div{background:var(--panel2);padding:13px 16px;display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start;font-size:15px;}
+.kudos i{color:var(--good);font-style:normal;font-family:var(--mono);font-size:13px;}
+.kudos strong{font-weight:600;} .kudos span{color:var(--dim);}
+.rmap{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
+.rmap-row{background:var(--panel2);padding:15px 16px;display:grid;grid-template-columns:96px minmax(0,1fr) 150px;gap:16px;align-items:center;}
+@media(max-width:760px){.rmap-row{grid-template-columns:80px minmax(0,1fr);} .rmap-row .bar{grid-column:1 / -1;}}
+.q{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+.rmap-row .t{font-size:16px;font-weight:500;}
+.rmap-row .t small{display:block;color:var(--faint);font-size:12.5px;font-weight:400;margin-top:2px;}
+.bar{height:8px;background:var(--mtg-bg);position:relative;}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--accent);display:block;}
+.bar i.done{background:var(--good);} .bar i.risk{background:var(--alert);}
+
+/* planning */
+.freeze{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.fz{font-family:var(--mono);font-size:10.5px;padding:4px 9px;border:1px solid var(--bnr-line);background:var(--bnr-bg);color:var(--bnr-ink);}
+.board{border:1px solid var(--line);background:var(--line);display:flex;flex-direction:column;gap:1px;overflow-x:auto;box-shadow:var(--shadow);}
+.brow{background:var(--panel2);display:grid;grid-template-columns:190px repeat(5,minmax(96px,1fr)) 96px;gap:1px;align-items:stretch;min-width:830px;}
+.brow.head{background:var(--panel);}
+.bcell{padding:9px 10px;}
+.bcell.day{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);}
+.bcell.day b{display:block;color:var(--dim);font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;margin-top:2px;}
+.bname{padding:10px;display:flex;align-items:center;gap:9px;}
+.bname .p-n{font-size:13px;} .bname .p-t{font-size:10.5px;}
+.stack{display:flex;flex-direction:column;gap:2px;padding:9px 8px;justify-content:flex-end;min-height:72px;}
+.lay{height:9px;position:relative;}
+.lay em{position:absolute;inset:0 auto 0 0;display:block;font-style:normal;}
+.lay.mtg{background:var(--mtg-bg);} .lay.mtg em{background:var(--mtg-fill);}
+.lay.wrk{background:var(--mtg-bg);} .lay.wrk em{background:var(--accent);}
+.lay.abs{background:repeating-linear-gradient(135deg,var(--abs-a),var(--abs-a) 4px,var(--abs-b) 4px,var(--abs-b) 8px);}
+.stack small{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.03em;}
+.stack small.warn{color:var(--warn);} .stack small.bad{color:var(--alert);}
+.left{padding:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:3px;}
+.left b{font-family:var(--mono);font-size:17px;font-variant-numeric:tabular-nums;font-weight:400;}
+.left b.neg{color:var(--alert);} .left b.pos{color:var(--good);}
+.left span{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em;text-transform:uppercase;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--faint);}
+.legend i{display:inline-block;width:14px;height:8px;margin-right:6px;vertical-align:middle;}
+.clash{margin-top:16px;}
+
+/* mail */
+.mail{background:var(--panel2);border:1px solid var(--line);padding:15px 16px;font-size:13px;}
+.mail .hdr{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:11px;}
+.mail h4{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin:14px 0 7px;}
+.mail h4:first-of-type{margin-top:0;}
+.mail ul{margin:0;padding-left:17px;display:grid;gap:5px;color:var(--dim);}
+.mail .who-in{color:var(--good);} .mail .who-out{color:var(--warn);}
+.mail p{margin:11px 0 0;color:var(--faint);font-size:12.5px;}
+
+/* nabespreking */
+.sig{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:24px;}
+.sig div{background:var(--panel2);padding:13px 16px;display:grid;grid-template-columns:82px minmax(0,1fr);gap:14px;font-size:15px;align-items:baseline;}
+.sig b{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);font-weight:400;}
+.sig span{color:var(--dim);} .sig span strong{color:var(--ink);font-weight:600;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+@media(max-width:820px){.two{grid-template-columns:1fr;}}
+.col2{background:var(--panel);border:1px solid var(--line);padding:18px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));}
+.col2 h3{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 4px;}
+.col2.dir h3{color:var(--accent);} .col2.ind h3{color:var(--people);}
+.col2 .cap{font-size:12.5px;color:var(--faint);margin:0 0 14px;}
+.col2 ul{margin:0;padding-left:17px;display:grid;gap:10px;}
+.col2 li{font-size:15px;color:var(--ink);}
+.col2 li small{display:block;color:var(--faint);font-size:12.5px;margin-top:2px;}
+.hats{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px;}
+.hat{background:var(--panel);border:1px solid var(--line);padding:14px;display:grid;gap:6px;align-content:start;box-shadow:var(--shadow);}
+.hat.quiet{opacity:.34;}
+.hat b{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);}
+.hat span{font-size:13.5px;color:var(--ink);}
+.hat .none{font-size:12.5px;color:var(--faint);}
+</style>
+
+<div class="ambient" aria-hidden="true">
+  <i class="a1"></i><i class="a2"></i><i class="a3"></i>
+  <span class="grid"></span><span class="rings"></span><span class="sweep"></span><span class="scan"></span><span class="grain"></span>
+</div>
+
+<div class="banner">Voorbeeld — verzonnen gegevens, echte namen en services uit je eigen omgeving</div>
+
+<div class="shell">
+
+  <nav class="rail-left">
+    <div class="brand">SPo<span>W</span></div>
+    <div class="rail-lbl">Focus</div>
+    <button class="mode" aria-current="true" data-go="vandaag"><i class="dot"></i>Vandaag</button>
+    <button class="mode" data-go="team"><i class="dot"></i>Team</button>
+    <button class="mode" data-go="planning"><i class="dot"></i>Planning</button>
+    <button class="mode" data-go="soon"><i class="dot"></i>Werk</button>
+    <button class="mode" data-go="kennis"><i class="dot"></i>Kennis</button>
+    <button class="mode" data-go="services"><i class="dot"></i>Services</button>
+    <button class="mode" data-go="soon"><i class="dot"></i>Roadmap</button>
+    <div class="rail-sep"></div>
+    <div class="rail-lbl">Publiek</div>
+    <button class="present-btn" id="goPresent">Presenteren</button>
+    <div class="rail-foot">Werkplaats<br>SPoW bouwen</div>
+  </nav>
+
+  <main>
+    <div class="topbar">
+      <div class="spo">Single Point of <b id="spoWord">Work</b></div>
+      <div class="skins">
+        <span class="lbl">Thema</span>
+        <button class="sw s-nachtwacht" data-skin="nachtwacht" aria-pressed="true" title="Nachtwacht"></button>
+        <button class="sw s-glas" data-skin="glas" aria-pressed="false" title="Glas"></button>
+        <button class="sw s-fosfor" data-skin="fosfor" aria-pressed="false" title="Fosfor"></button>
+        <button class="sw s-radar" data-skin="radar" aria-pressed="false" title="Radar"></button>
+        <button class="sw s-papier" data-skin="papier" aria-pressed="false" title="Papier — voor lichte zalen"></button>
+        <button class="sw s-eigen" id="ownBg" title="Eigen achtergrond uit een map"></button>
+        <button class="autobtn" id="autoBtn" aria-pressed="false" title="Volgt het uur van de dag">Auto</button>
+      </div>
+      <div class="clock"><span id="clockDay">Dinsdag 1 sept</span><span id="clockTime">21:47</span><span>Week 36</span></div>
+    </div>
+
+    <!-- VANDAAG -->
+    <section class="view on" id="v-vandaag">
+      <div class="grid">
+        <div class="card">
+          <div class="card-h"><h2>Waar je gebleven was</h2><span class="count">4 actief</span></div>
+          <div class="res">
+            <button class="res-row" data-svc="1"><i class="pip hot"></i><span><span class="res-t">Cramo LT/LV — firewalls naar Boels-standaard</span><span class="res-s">Wachtte op akkoord Maarten. <em>Dat kwam gisteren binnen.</em></span></span><span class="ago">6 dagen</span></button>
+            <button class="res-row" data-svc="2"><i class="pip mid"></i><span><span class="res-t">Core switches DC Sittard — vervanging</span><span class="res-s">Offerte binnen, wacht op jouw akkoord voor CAB</span></span><span class="ago">2 dagen</span></button>
+            <button class="res-row" data-svc="3"><i class="pip ok"></i><span><span class="res-t">Entra ID — conditional access baseline</span><span class="res-s">Pilot loopt op IT-Infra, uitrol gepland week 38</span></span><span class="ago">4 dagen</span></button>
+            <button class="res-row" data-svc="4"><i class="pip mid"></i><span><span class="res-t">Back-up retentie Cramo FI</span><span class="res-s">Geparkeerd tot integratieplanning duidelijk is</span></span><span class="ago">3 weken</span></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Wat er veranderd is</h2><span class="count">sinds gisteren</span></div>
+          <div class="feed">
+            <div class="fitem"><b>Teams</b><span><strong>Maarten Merkens</strong> gaf akkoord op de firewall-baseline LT/LV</span></div>
+            <div class="fitem"><b>TOPdesk</b><span>C-2026-0891 verplaatst naar <strong>CAB 3 september</strong></span></div>
+            <div class="fitem"><b>CVE</b><span>Nieuwe kritieke melding raakt <strong>VPN &amp; remote access</strong></span></div>
+            <div class="fitem"><b>Mail</b><span><strong>Roel</strong> vraagt jouw kwartaalcijfers voor vrijdag</span></div>
+            <div class="fitem"><b>Verlof</b><span><strong>Siddlingappa</strong> afwezig week 38 — botst met uitrol CA-baseline</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Vandaag in je agenda</h2><span class="count">3 afspraken</span></div>
+          <div class="meet">
+            <div class="meet-row"><span class="t">09:00</span><span><span class="n">Daily IT-Infra</span><br><span class="sub">5 deelnemers · briefing klaar</span></span><button class="btn" data-present="1">Presenteer</button></div>
+            <div class="meet-row"><span class="t">14:00</span><span><span class="n">Weekly met Roel</span><br><span class="sub">3 punten voorbereid · 1 besluit nodig</span></span><button class="btn ghost">Bekijk</button></div>
+            <div class="meet-row"><span class="t">15:30</span><span><span class="n">CAB</span><br><span class="sub">Jouw change C-2026-0891 staat op de agenda</span></span><button class="btn ghost">Voorbereiden</button></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Verloopt binnenkort</h2><span class="count">6 punten</span></div>
+          <div class="exp">
+            <div class="exp-row"><span>Wildcard-certificaat *.boels.com</span><span class="who">Server &amp; Conn.</span><span class="days red">23 d</span></div>
+            <div class="exp-row"><span>Support Fortinet cluster Sittard</span><span class="who">Server &amp; Conn.</span><span class="days red">31 d</span></div>
+            <div class="exp-row"><span>Licentie monitoringplatform</span><span class="who">Cloud Services</span><span class="days amber">58 d</span></div>
+            <div class="exp-row"><span>Contract WAN-leverancier</span><span class="who">Server &amp; Conn.</span><span class="days amber">74 d</span></div>
+            <div class="exp-row"><span>Certificaat VPN-gateway</span><span class="who">Server &amp; Conn.</span><span class="days grey">112 d</span></div>
+            <div class="exp-row"><span>Endpoint-beheer licenties</span><span class="who">Endpoint Mgmt</span><span class="days grey">140 d</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Wat je beloofd hebt</h2><span class="count">5 open</span></div>
+          <div class="prom">
+            <div><i></i><span>Hari terugkoppelen over de routering in Vilnius</span><em>ma 09:12</em></div>
+            <div><i></i><span>Eric de Jong: ontwerpschets DC-koppeling nakijken</span><em>vr 16:40</em></div>
+            <div><i></i><span>Roel: kwartaalcijfers capaciteit aanleveren</span><em>vandaag</em></div>
+            <div><i></i><span>Manjula helpen met certificaataanvraag</span><em>do 11:05</em></div>
+            <div><i></i><span>Sebastiaan antwoord geven over escalatiepad</span><em>2 wk geleden</em></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Doorlussen</h2><span class="count">context gaat mee</span></div>
+          <div class="hand">
+            <button>TOPdesk <span class="k">C-0891</span></button>
+            <button>Outlook <span class="k">Roel</span></button>
+            <button>Teams <span class="k">Hari</span></button>
+            <button>Entra <span class="k">CA-beleid</span></button>
+            <button>Azure <span class="k">DC-Sittard</span></button>
+            <button>Jira <span class="k">INFRA-214</span></button>
+          </div>
+        </div>
+
+        <div class="card wide">
+          <div class="card-h"><h2>Daily-mail</h2><span class="count">verstuurd 07:30 · 3 van 5 geleverd · herinnering om 08:55</span></div>
+          <div class="mail">
+            <div class="hdr">Aan: IT-Infra Server &amp; Connectivity · Onderwerp: Daily 2 september — agenda en wat er nog mist</div>
+            <h4>Staat al op de agenda</h4>
+            <ul>
+              <li>Vensters leverancier Vilnius — blokkade Harish, derde dag</li>
+              <li>Routering Kaunas — Harish en Pavan</li>
+              <li>Wildcard-certificaat verloopt over 23 dagen — nog niemand toegewezen</li>
+            </ul>
+            <h4>Aangeleverd</h4>
+            <ul><li class="who-in">Harish · Siddlingappa · Manjula</li></ul>
+            <h4>Nog niet aangeleverd</h4>
+            <ul><li class="who-out">Pavan Kumar · Pavan Kumar TA</li></ul>
+            <p>Graag uiterlijk 08:55 aanleveren — drie regels is genoeg: gisteren, vandaag, blokkade. Kun je er niet bij zijn, meld je dan zelf af met reden. Laat aanschuiven wegens escalatie kan altijd, laat het even weten. Afmelden via een collega mag, maar dan staat er wel bij dat het via een ander ging.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="view" id="v-team">
+      <div class="grid">
+        <div class="card wide">
+          <div class="card-h"><h2>Wie is waarmee bezig</h2><span class="count">project / change / overig — lopend kwartaal</span></div>
+          <div class="ppl">
+            <button class="p-row" data-p="1"><i class="av">HA</i><span><span class="p-n">Harish AC</span><br><span class="p-t">Server &amp; Connectivity · CGI</span></span><span class="split"><i class="pr" style="width:38%"></i><i class="ch" style="width:28%"></i><i class="ov" style="width:34%"></i></span><span class="load ok">96%</span></button>
+            <button class="p-row" data-p="2"><i class="av">PK</i><span><span class="p-n">Pavan Kumar</span><br><span class="p-t">Server &amp; Connectivity + Cloud Services · CGI</span></span><span class="split"><i class="pr" style="width:14%"></i><i class="ch" style="width:22%"></i><i class="ov" style="width:64%"></i></span><span class="load hi">128%</span></button>
+            <button class="p-row" data-p="3"><i class="av">SM</i><span><span class="p-n">Siddlingappa Masali</span><br><span class="p-t">Server &amp; Connectivity · CGI</span></span><span class="split"><i class="pr" style="width:44%"></i><i class="ch" style="width:31%"></i><i class="ov" style="width:25%"></i></span><span class="load ok">88%</span></button>
+            <button class="p-row" data-p="4"><i class="av">MS</i><span><span class="p-n">Manjula Salem</span><br><span class="p-t">Server &amp; Connectivity + Cloud Services · CGI</span></span><span class="split"><i class="pr" style="width:30%"></i><i class="ch" style="width:35%"></i><i class="ov" style="width:35%"></i></span><span class="load ok">102%</span></button>
+            <button class="p-row" data-p="5"><i class="av">PT</i><span><span class="p-n">Pavan Kumar TA</span><br><span class="p-t">Server &amp; Connectivity + Cloud Services · CGI</span></span><span class="split"><i class="pr" style="width:41%"></i><i class="ch" style="width:29%"></i><i class="ov" style="width:30%"></i></span><span class="load ok">94%</span></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Veerkracht per service</h2><span class="count">inzetbaar afgelopen kwartaal</span></div>
+          <div class="exp">
+            <div class="exp-row"><span>Firewall &amp; perimeter</span><span class="who">1 persoon</span><span class="days red">broos</span></div>
+            <div class="exp-row"><span>WAN &amp; connectiviteit</span><span class="who">2 personen</span><span class="days amber">krap</span></div>
+            <div class="exp-row"><span>Back-up &amp; restore</span><span class="who">3 personen</span><span class="days grey">ok</span></div>
+            <div class="exp-row"><span>Entra ID &amp; AD</span><span class="who">2 personen</span><span class="days amber">krap</span></div>
+            <div class="exp-row"><span>Virtualisatie</span><span class="who">4 personen</span><span class="days grey">ok</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Waarom iemand niet inzetbaar was</h2><span class="count">dit kwartaal</span></div>
+          <div class="feed">
+            <div class="fitem"><b>14×</b><span>Firewall — <strong>alleen Hari</strong> heeft de autorisatie</span></div>
+            <div class="fitem"><b>9×</b><span>Routering — vaardigheid ontbreekt bij 3 van 5</span></div>
+            <div class="fitem"><b>6×</b><span>Azure-platform — licentie niet toegekend</span></div>
+            <div class="fitem"><b>4×</b><span>Back-upconsole — ervaring, niet kennis</span></div>
+          </div>
+          <p style="margin:13px 0 0;font-size:12.5px;color:var(--faint);">Twee van deze vier zijn geen opleiding maar een rechtenaanvraag.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANNING -->
+    <section class="view" id="v-planning">
+      <div class="freeze">
+        <span class="fz">Wk 36 · geen NL-feestdag</span>
+        <span class="fz">Do 4 sep · Ganesh Chaturthi — India, CGI beperkt bezet</span>
+        <span class="fz">Vr 5–za 6 sep · onderhoud datacenter — changevenster</span>
+      </div>
+
+      <div class="board">
+        <div class="brow head">
+          <div class="bcell"></div>
+          <div class="bcell day">Ma<b>1 sep</b></div>
+          <div class="bcell day">Di<b>2 sep</b></div>
+          <div class="bcell day">Wo<b>3 sep</b></div>
+          <div class="bcell day">Do<b>4 sep</b></div>
+          <div class="bcell day">Vr<b>5 sep</b></div>
+          <div class="bcell day" style="text-align:right;">Werkbaar<b>over</b></div>
+        </div>
+
+        <div class="brow">
+          <div class="bname"><i class="av">CD</i><span><span class="p-n">Clifton</span><br><span class="p-t">Lead · 3 towers</span></span></div>
+          <div class="stack"><small>3u overleg</small><div class="lay mtg"><em style="width:38%"></em></div><div class="lay wrk"><em style="width:70%"></em></div></div>
+          <div class="stack"><small class="warn">5u overleg</small><div class="lay mtg"><em style="width:62%"></em></div><div class="lay wrk"><em style="width:80%"></em></div></div>
+          <div class="stack"><small class="warn">4u overleg</small><div class="lay mtg"><em style="width:50%"></em></div><div class="lay wrk"><em style="width:75%"></em></div></div>
+          <div class="stack"><small>2u overleg</small><div class="lay mtg"><em style="width:25%"></em></div><div class="lay wrk"><em style="width:60%"></em></div></div>
+          <div class="stack"><small class="bad">CAB + DC</small><div class="lay mtg"><em style="width:70%"></em></div><div class="lay wrk"><em style="width:90%"></em></div></div>
+          <div class="left"><b class="neg">−9u</b><span>tekort</span></div>
+        </div>
+
+        <div class="brow">
+          <div class="bname"><i class="av">HA</i><span><span class="p-n">Harish AC</span><br><span class="p-t">Server &amp; Conn.</span></span></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:74%"></em></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:80%"></em></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:78%"></em></div></div>
+          <div class="stack"><small class="warn">feestdag</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:85%"></em></div></div>
+          <div class="left"><b>+2u</b><span>ruimte</span></div>
+        </div>
+
+        <div class="brow">
+          <div class="bname"><i class="av">PK</i><span><span class="p-n">Pavan Kumar</span><br><span class="p-t">Server &amp; Conn. + Cloud</span></span></div>
+          <div class="stack"><small class="bad">incidenten</small><div class="lay mtg"><em style="width:20%"></em></div><div class="lay wrk"><em style="width:100%"></em></div></div>
+          <div class="stack"><small class="bad">incidenten</small><div class="lay mtg"><em style="width:20%"></em></div><div class="lay wrk"><em style="width:100%"></em></div></div>
+          <div class="stack"><small class="bad">incidenten</small><div class="lay mtg"><em style="width:18%"></em></div><div class="lay wrk"><em style="width:100%"></em></div></div>
+          <div class="stack"><small class="warn">feestdag</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small class="bad">incidenten</small><div class="lay mtg"><em style="width:20%"></em></div><div class="lay wrk"><em style="width:100%"></em></div></div>
+          <div class="left"><b class="neg">−14u</b><span>tekort</span></div>
+        </div>
+
+        <div class="brow">
+          <div class="bname"><i class="av">SM</i><span><span class="p-n">Siddlingappa</span><br><span class="p-t">Server &amp; Conn.</span></span></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:66%"></em></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:70%"></em></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:72%"></em></div></div>
+          <div class="stack"><small class="warn">feestdag</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:68%"></em></div></div>
+          <div class="left"><b class="pos">+6u</b><span>ruimte</span></div>
+        </div>
+
+        <div class="brow">
+          <div class="bname"><i class="av">MS</i><span><span class="p-n">Manjula Salem</span><br><span class="p-t">Server &amp; Conn. + Cloud</span></span></div>
+          <div class="stack"><small>2u overleg</small><div class="lay mtg"><em style="width:25%"></em></div><div class="lay wrk"><em style="width:82%"></em></div></div>
+          <div class="stack"><small>2u overleg</small><div class="lay mtg"><em style="width:25%"></em></div><div class="lay wrk"><em style="width:88%"></em></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:80%"></em></div></div>
+          <div class="stack"><small class="warn">feestdag</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:84%"></em></div></div>
+          <div class="left"><b class="neg">−3u</b><span>tekort</span></div>
+        </div>
+
+        <div class="brow">
+          <div class="bname"><i class="av">PT</i><span><span class="p-n">Pavan Kumar TA</span><br><span class="p-t">Server &amp; Conn. + Cloud</span></span></div>
+          <div class="stack"><small class="warn">verlof</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small class="warn">verlof</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:70%"></em></div></div>
+          <div class="stack"><small class="warn">feestdag</small><div class="lay abs"></div><div class="lay abs"></div></div>
+          <div class="stack"><small>1u overleg</small><div class="lay mtg"><em style="width:12%"></em></div><div class="lay wrk"><em style="width:74%"></em></div></div>
+          <div class="left"><b class="pos">+1u</b><span>ruimte</span></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i style="background:#4A5A6B"></i>Outlook — al vergeven</span>
+        <span><i style="background:#FF7A29"></i>Wat jij ingepland hebt</span>
+        <span><i style="background:repeating-linear-gradient(135deg,#2A1A18,#2A1A18 4px,#3A2320 4px,#3A2320 8px)"></i>Verlof, ziekte of feestdag</span>
+        <span>Werkbaar over = beschikbaar − overleg − jouw planning</span>
+      </div>
+
+      <div class="grid clash">
+        <div class="card">
+          <div class="card-h"><h2>Botsingen deze week</h2><span class="count">3 gevonden</span></div>
+          <div class="feed">
+            <div class="fitem"><b>Do</b><span>Vier van vijf zijn vrij om <strong>Ganesh Chaturthi</strong> — er staat wel werk gepland</span></div>
+            <div class="fitem"><b>Vr</b><span>Jij zit in de CAB tijdens het <strong>datacenteronderhoud</strong></span></div>
+            <div class="fitem"><b>Wk 38</b><span>Uitrol CA-baseline valt samen met verlof <strong>Siddlingappa</strong></span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h2>Wat dit betekent</h2><span class="count">voorstel</span></div>
+          <div class="feed">
+            <div class="fitem"><b>1</b><span>Pavan zit <strong>14 uur over</strong> zijn week — schuif twee incidenten naar Siddlingappa, die heeft ruimte</span></div>
+            <div class="fitem"><b>2</b><span>Donderdag leegmaken en het werk over ma–wo verdelen</span></div>
+            <div class="fitem"><b>3</b><span>Jouw eigen tekort van 9 uur is <strong>overleg</strong>, geen werk. Twee afspraken kunnen weg.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KENNIS -->
+    <section class="view" id="v-kennis">
+      <div class="searchbar">
+        <span>Vraag</span>
+        <p>"Hoe hebben we de firewalls in Vilnius aangesloten en wie was daar de contactpersoon?"</p>
+      </div>
+      <div class="kn">
+        <button class="kn-row" data-svc="1"><span class="kn-k">Besluit</span><span><span class="kn-t">Geen lokale firewall-uitzonderingen zonder einddatum</span><span class="kn-s">Genomen na Vilnius. Reden: de tijdelijke opstelling daar stond er negen maanden. Alternatief — per land een eigen baseline — is afgewezen om beheerlast.</span><span class="kn-m">maart 2026 · jij · Firewall &amp; perimeter · 2 bewijsstukken</span></span></button>
+        <button class="kn-row" data-svc="1"><span class="kn-k">Antwoord</span><span><span class="kn-t">Aansluitvolgorde Vilnius, zoals toen uitgevoerd</span><span class="kn-s">WAN eerst, dan firewallpaar in HA, dan pas de routering omzetten. Contactpersoon bij de leverancier reageert op mail, niet op telefoon.</span><span class="kn-m">april 2026 · gevraagd door Hari · 3× later opnieuw gebruikt</span></span></button>
+        <button class="kn-row" data-svc="1"><span class="kn-k">Les</span><span><span class="kn-t">Certificaten waren bij Vilnius niet in beeld</span><span class="kn-s">Kostte vier dagen zoeken naar wie eigenaar was. Sindsdien staat elk certificaat in het vervalregister met een tower als eigenaar.</span><span class="kn-m">Cramo-integratie · 4 dagen verlies</span></span></button>
+        <button class="kn-row" data-svc="1"><span class="kn-k">Runbook</span><span><span class="kn-t">Firewallpaar vervangen — stap voor stap</span><span class="kn-s">Inclusief terugrolstap en het telefoonnummer van de dienstdoende engineer bij de leverancier.</span><span class="kn-m">laatst gebruikt juni 2026 · door Hari</span></span></button>
+      </div>
+      <p style="margin:16px 0 0;font-size:13px;color:var(--faint);max-width:70ch;">Vier schone records in plaats van tienduizend berichten. Daarom werkt zoeken hier wel en in je mailbox niet.</p>
+
+      <div class="grid" style="margin-top:22px;">
+        <div class="card">
+          <div class="card-h"><h2>Regels uit jouw correcties</h2><span class="count">geen advies meer, gewoon kennis</span></div>
+          <div class="feed">
+            <div class="fitem"><b>jij</b><span>Maarten alleen bij <strong>risico-acceptatie</strong>, niet bij technische keuzes</span></div>
+            <div class="fitem"><b>jij</b><span>Roel nooit een kale ja of nee — altijd met wat het verdringt</span></div>
+            <div class="fitem"><b>jij</b><span>Geen uitzondering zonder einddatum, sinds Vilnius negen maanden duurde</span></div>
+          </div>
+          <p style="margin:12px 0 0;font-size:12.5px;color:var(--faint);">Elke afkeuring die je onderbouwt wordt een regel. Dan is het geen bijsturing meer maar iets wat vastligt — en wat een vervanger van jou ook kan lezen.</p>
+        </div>
+        <div class="card">
+          <div class="card-h"><h2>Waar SPoW zelf staat</h2><span class="count">laatste 90 dagen</span></div>
+          <div class="exp">
+            <div class="exp-row"><span>Wie moet erbij</span><span class="who">37 adviezen</span><span class="days grey">9/10</span></div>
+            <div class="exp-row"><span>Welke apps, welke volgorde</span><span class="who">52 adviezen</span><span class="days grey">9/10</span></div>
+            <div class="exp-row"><span>Verdringing en gevolgen</span><span class="who">18 adviezen</span><span class="days amber">7/10</span></div>
+            <div class="exp-row"><span>Timing en planning</span><span class="who">24 adviezen</span><span class="days red">5/10</span></div>
+          </div>
+          <p style="margin:12px 0 0;font-size:12.5px;color:var(--faint);">Op timing zit ik er te vaak naast. Dat zeg ik er voortaan bij, in plaats van het even stellig te brengen als de rest.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="view" id="v-services">
+      <div class="svc">
+        <button class="svc-c" data-svc="1"><span class="svc-n">Firewall &amp; perimeter</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip risk">bus-factor 1</span><span class="chip">support 31 d</span></span></button>
+        <button class="svc-c" data-svc="2"><span class="svc-n">WAN &amp; vestigingen</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip">contract 74 d</span></span></button>
+        <button class="svc-c" data-svc="3"><span class="svc-n">LAN &amp; wifi</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="4"><span class="svc-n">VPN &amp; remote access</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip risk">CVE open</span></span></button>
+        <button class="svc-c" data-svc="5"><span class="svc-n">DNS · DHCP · IPAM</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="6"><span class="svc-n">Entra ID &amp; Active Directory</span><span class="svc-m">Cloud Services</span><span class="svc-f"><span class="chip">uitrol wk 38</span></span></button>
+        <button class="svc-c" data-svc="7"><span class="svc-n">Windows Server-platform</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="8"><span class="svc-n">Virtualisatie</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="9"><span class="svc-n">Storage</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="10"><span class="svc-n">Back-up &amp; restore</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip">Cramo FI open</span></span></button>
+        <button class="svc-c" data-svc="11"><span class="svc-n">Datacenter Sittard</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip">onderhoud 5-6 sep</span></span></button>
+        <button class="svc-c" data-svc="12"><span class="svc-n">Azure-platform</span><span class="svc-m">Cloud Services</span><span class="svc-f"><span class="chip">licentie 58 d</span></span></button>
+        <button class="svc-c" data-svc="13"><span class="svc-n">Endpoint-beheer</span><span class="svc-m">Endpoint Management</span><span class="svc-f"><span class="chip">licentie 140 d</span></span></button>
+        <button class="svc-c" data-svc="14"><span class="svc-n">Endpoint-patching</span><span class="svc-m">Endpoint Management</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="15"><span class="svc-n">Monitoring &amp; alerting</span><span class="svc-m">Cloud Services</span><span class="svc-f"><span class="chip">licentie 58 d</span></span></button>
+        <button class="svc-c" data-svc="16"><span class="svc-n">Certificaten &amp; PKI</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip risk">cert 23 d</span></span></button>
+        <button class="svc-c" data-svc="17"><span class="svc-n">Fileservices</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip ok">in orde</span></span></button>
+        <button class="svc-c" data-svc="18"><span class="svc-n">Patch- &amp; kwetsbaarheden</span><span class="svc-m">Server &amp; Connectivity</span><span class="svc-f"><span class="chip risk">CVE open</span></span></button>
+      </div>
+    </section>
+
+    <section class="view" id="v-soon">
+      <div class="card" style="max-width:520px;">
+        <div class="card-h"><h2>Nog niet gebouwd</h2></div>
+        <p style="margin:0;color:var(--dim);">Deze focus staat in het ontwerp maar nog niet in dit voorbeeld. Vandaag, Team, Kennis, Services en Presenteren zijn klikbaar.</p>
+      </div>
+    </section>
+
+    <!-- PRESENTEREN -->
+    <section class="view" id="v-presenteren">
+      <div class="pbar">
+        <span class="lbl">Presenteermodus — privévelden worden hier niet geladen</span>
+        <span class="mid">Daily IT-Infra · dinsdag 1 september · 09:00</span>
+        <button class="btn ghost" id="exitPresent">Terug naar SPoW</button>
+      </div>
+
+      <div class="pstage">
+
+        <!-- person 1 -->
+        <div class="pstep on" data-step="p0">
+          <div class="phead">
+            <span class="pav">HA</span>
+            <span><h2>Harish AC</h2><span class="sub">Server &amp; Connectivity · eerst, want draagt de P1</span></span>
+          </div>
+          <div class="pcols">
+            <div class="pcol"><h3>Gisteren</h3><ul><li>Firewallpaar Vilnius omgezet naar de nieuwe baseline</li><li>Akkoord opgehaald bij Maarten</li></ul></div>
+            <div class="pcol"><h3>Vandaag</h3><ul><li>CAB voorbereiden voor C-2026-0891</li><li>Routering Kaunas nakijken met Pavan</li></ul></div>
+            <div class="pcol block"><h3>Blokkade</h3><ul><li>Wacht op vensters van de leverancier — al 3 dagen</li></ul></div>
+          </div>
+          <div class="pacts">
+            <button class="big" data-next>Klaar, volgende</button>
+            <button class="big kudo" data-kudo>Kudos geven</button>
+            <button class="big ghost" data-detail>Medewerkerkaart</button>
+          </div>
+          <div class="order">
+            <span class="ochip now">1 · Harish</span><span class="ochip">2 · Pavan</span><span class="ochip">3 · Manjula</span><span class="ochip">4 · Siddlingappa</span><span class="ochip">5 · Pavan TA</span>
+            <span class="ohint">Volgorde op urgentie</span>
+          </div>
+        </div>
+
+        <!-- step back 1 -->
+        <div class="pstep" data-step="b0">
+          <div class="pback">
+            <h2>Nog open</h2>
+            <p class="lead">Gerangschikt op urgentie. Stopt de meeting hier, dan hebben we het belangrijkste gehad.</p>
+            <div class="opl">
+              <div class="opl-row"><span class="rank">1</span><span class="txt">Vensters leverancier voor Vilnius<small>Blokkeert Harish · derde dag</small></span><span class="st">Clifton pakt op</span></div>
+              <div class="opl-row"><span class="rank">2</span><span class="txt">Wildcard-certificaat verloopt<small>23 dagen · niemand toegewezen</small></span><span class="st">Open</span></div>
+              <div class="opl-row"><span class="rank">3</span><span class="txt">CVE op VPN &amp; remote access<small>Kritiek · patchvenster nodig</small></span><span class="st">Open</span></div>
+              <div class="opl-row"><span class="rank">4</span><span class="txt">Verlof Siddlingappa week 38<small>Botst met uitrol CA-baseline</small></span><span class="st">Te plannen</span></div>
+            </div>
+            <div class="pacts">
+              <button class="big" data-next>Verder met Pavan</button>
+              <button class="big ghost" data-jump="s0">Naar de afsluiting</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- person 2 -->
+        <div class="pstep" data-step="p1">
+          <div class="phead">
+            <span class="pav">PK</span>
+            <span><h2>Pavan Kumar</h2><span class="sub">Server &amp; Connectivity + Cloud Services · overbelast op 128%</span></span>
+          </div>
+          <div class="pcols">
+            <div class="pcol"><h3>Gisteren</h3><ul><li>Twee incidenten op storage afgehandeld</li><li>Ondersteuning bij Azure-migratie</li></ul></div>
+            <div class="pcol"><h3>Vandaag</h3><ul><li>Routering Kaunas met Harish</li><li>Wachtrij incidenten leegwerken</li></ul></div>
+            <div class="pcol block"><h3>Blokkade</h3><ul><li>Te veel tegelijk — projectwerk staat al drie weken stil</li></ul></div>
+          </div>
+          <div class="pacts">
+            <button class="big" data-next>Klaar, volgende</button>
+            <button class="big kudo" data-kudo>Kudos geven</button>
+            <button class="big ghost" data-detail>Medewerkerkaart</button>
+          </div>
+          <div class="order">
+            <span class="ochip done">1 · Harish</span><span class="ochip now">2 · Pavan</span><span class="ochip">3 · Manjula</span><span class="ochip">4 · Siddlingappa</span><span class="ochip">5 · Pavan TA</span>
+            <span class="ohint">Volgorde op urgentie</span>
+          </div>
+        </div>
+
+        <!-- afsluiting -->
+        <div class="pstep" data-step="s0">
+          <div class="pback">
+            <h2>Waar we staan</h2>
+            <p class="lead">Kwartaal 3 · week 36 van 13</p>
+            <div class="pscore">
+              <div class="sbox"><div class="n good">7</div><div class="l">afgerond dit kwartaal</div><div class="d">Waarvan vier eerder dan gepland.</div></div>
+              <div class="sbox"><div class="n warn">3</div><div class="l">lopen achter</div><div class="d">Twee door P0-onderbrekingen, één door verlof. Geen daarvan door ons.</div></div>
+              <div class="sbox"><div class="n">+2</div><div class="l">veerkracht gewonnen</div><div class="d">Back-up ging van één naar drie inzetbare mensen.</div></div>
+            </div>
+
+            <h2 style="font-size:26px;margin:26px 0 12px;">Kudos</h2>
+            <div class="kudos">
+              <div><i>★</i><span><strong>Harish</strong> — Vilnius omgezet zonder één minuut uitval, in een venster van vier uur.</span></div>
+              <div><i>★</i><span><strong>Manjula</strong> — nam de back-upconsole over toen niemand anders kon. Daar komt die +2 vandaan.</span></div>
+              <div><i>★</i><span><strong>Siddlingappa</strong> — runbook voor het firewallpaar geschreven waar we sindsdien twee keer op teruggevallen zijn.</span></div>
+            </div>
+
+            <h2 style="font-size:26px;margin:30px 0 12px;">Roadmap — wat komt eraan</h2>
+            <div class="rmap">
+              <div class="rmap-row"><span class="q">Q3 · nu</span><span class="t">Cramo LT/LV netwerkintegratie<small>Harish, Pavan</small></span><span class="bar"><i style="width:68%"></i></span></div>
+              <div class="rmap-row"><span class="q">Q3 · nu</span><span class="t">Conditional access baseline<small>Manjula, Pavan TA</small></span><span class="bar"><i style="width:45%"></i></span></div>
+              <div class="rmap-row"><span class="q">Q3 · loopt</span><span class="t">Vervanging core switches Sittard<small>Wacht op CAB</small></span><span class="bar"><i class="risk" style="width:22%"></i></span></div>
+              <div class="rmap-row"><span class="q">Q4</span><span class="t">Back-upstrategie Cramo FI/SE<small>Nog niet toegewezen</small></span><span class="bar"><i style="width:6%"></i></span></div>
+              <div class="rmap-row"><span class="q">Q4</span><span class="t">Certificaten onder beheer brengen<small>Volgt uit het vervalregister</small></span><span class="bar"><i style="width:12%"></i></span></div>
+              <div class="rmap-row"><span class="q">Q2 · af</span><span class="t">Firewall-baseline Boels-standaard<small>Afgerond in juni</small></span><span class="bar"><i class="done" style="width:100%"></i></span></div>
+            </div>
+
+            <div class="pacts" style="margin-top:26px;">
+              <button class="big" data-next>Meeting afsluiten</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- nabespreking -->
+        <div class="pstep" data-step="n0">
+          <div class="pback">
+            <h2>Nabespreking</h2>
+            <p class="lead">Alleen jij ziet dit. De meeting is verwerkt — nu de vraag waar jij iets kunt betekenen.</p>
+
+            <h2 style="font-size:24px;margin:22px 0 12px;">Wat niemand hardop zei</h2>
+            <div class="sig">
+              <div><b>3e week</b><span><strong>Pavan</strong> noemt dezelfde blokkade voor de derde week. Niemand heeft er iets mee gedaan, jij ook niet.</span></div>
+              <div><b>4 weken</b><span><strong>Manjula</strong> heeft in vier weken geen projectwerk gehad — alleen incidenten. Dat is je vroegste vertreksignaal.</span></div>
+              <div><b>eerste keer</b><span><strong>Siddlingappa</strong> gaf voor het eerst in twee maanden een blokkade aan. Dat kost iemand moeite. Erken het.</span></div>
+              <div><b>stilte</b><span>Het certificaat van 23 dagen kwam niet ter sprake. Derde keer op rij.</span></div>
+            </div>
+
+            <div class="two">
+              <div class="col2 dir">
+                <h3>Direct</h3>
+                <p class="cap">Alleen jij kunt dit</p>
+                <ul>
+                  <li>Bellen met de leverancier over de vensters<small>Drie dagen blokkade weegt zwaarder dan jouw agenda</small></li>
+                  <li>Certificaat toewijzen — nu, in dit scherm<small>Anders komt het over 23 dagen als incident terug</small></li>
+                  <li>Roel vragen om de tweede leadrol op de agenda te zetten<small>Jouw eigen tekort is 9 uur overleg, niet werk</small></li>
+                </ul>
+              </div>
+              <div class="col2 ind">
+                <h3>Indirect</h3>
+                <p class="cap">Hier geef je iets weg</p>
+                <ul>
+                  <li>Manjula het CA-baseline-stuk geven<small>Zichtbaar projectwerk, en Roel ziet het ook</small></li>
+                  <li>Firewall-autorisatie aanvragen voor Siddlingappa<small>Geen cursus — een rechtenaanvraag. Bus-factor van 1 naar 2.</small></li>
+                  <li>Twee incidenten van Pavan naar Siddlingappa<small>Die heeft 6 uur ruimte, Pavan staat 14 uur over</small></li>
+                  <li>Harish noemen bij Roel voor Vilnius<small>Erkenning kost je niets en houdt mensen binnen</small></li>
+                </ul>
+              </div>
+            </div>
+
+            <h2 style="font-size:24px;margin:26px 0 12px;">De pettenronde</h2>
+            <p class="lead" style="margin-bottom:16px;">Alleen de petten waar iets voor ligt lichten op. Rustige week? Dan ben je in twee minuten klaar.</p>
+            <div class="hats">
+              <div class="hat"><b>Lead</b><span>Drie mensen hebben deze week iets van je nodig — zie hierboven</span></div>
+              <div class="hat"><b>Change</b><span>C-2026-0891 mist nog een terugrolstap voor de CAB van morgen</span></div>
+              <div class="hat"><b>Incident</b><span>Vier storage-incidenten in twee weken — dit vraagt om een probleemanalyse, niet om nog een oplossing</span></div>
+              <div class="hat"><b>Ontwerp</b><span>Je besloot vanochtend iets over de Kaunas-routering. Dat staat nog nergens vast.</span></div>
+              <div class="hat"><b>Security</b><span>De CVE op VPN is besproken maar niet geaccepteerd of gepland — dat is een open eind</span></div>
+              <div class="hat quiet"><b>Innovatie</b><span class="none">Niets deze week</span></div>
+              <div class="hat"><b>Kennis</b><span>Je beantwoordde Hari's vraag over de aansluitvolgorde. Vastleggen kost je nu 30 seconden.</span></div>
+            </div>
+
+            <div class="pacts" style="margin-top:26px;">
+              <button class="big">Drie acties overnemen in mijn planning</button>
+              <button class="big ghost" id="exitPresent2">Terug naar SPoW</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <aside class="rail-right">
+    <h2 class="rr-h">Aanpak</h2>
+    <div class="inbox">
+      <div class="from">Mail · Roel Pluijmen · 21:02</div>
+      <p>"Cramo Litouwen wil hun eigen firewalls houden tot Q2. Kunnen wij daarmee leven of moeten we escaleren?"</p>
+    </div>
+    <div>
+      <h2 class="rr-h" style="margin-bottom:9px;">Weging</h2>
+      <div class="gate">
+        <div><span class="y">ja</span><span>Past bij de integratiekoers van Boels<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+        <div><span class="y">ja</span><span>Valt binnen Server &amp; Connectivity — van jou<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+        <div><span class="n">nee</span><span>Staat niet op de roadmap voor Q3<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+        <div><span class="n">let op</span><span>Verdringt de uitrol CA-baseline in week 38<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+      </div>
+    </div>
+    <div>
+      <h2 class="rr-h" style="margin-bottom:9px;">Voorstel</h2>
+      <div class="steps">
+        <div><b>1</b><span>Maarten erbij — het is een risico-acceptatie, geen technische keuze<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+        <div><b>2</b><span>Besluit vastleggen met einddatum Q2, anders wordt het permanent<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+        <div><b>3</b><span>Hari inplannen voor de overbrugging — hij deed Vilnius ook<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+        <div><b>4</b><span>Roel antwoorden met de verdringing erbij, niet alleen ja of nee<span class="rate"><button class="up" data-up>+</button><button class="dn" data-dn>−</button></span></span></div>
+      </div>
+    </div>
+    <div class="learned">
+      <b>Wat hier al van geleerd is</b>
+      Advies over <em>wie erbij moet</em> klopt in 9 van de 10 gevallen. Over <em>timing</em> zat ik er drie keer naast — die zet ik daarom voorzichtiger neer.
+    </div>
+    <p class="note">Geen oordeel is goed. Alleen als je iets aanklikt gebeurt er wat.</p>
+  </aside>
+
+</div>
+
+<div class="detail" id="detail">
+  <div class="sheet">
+    <div><h3>Firewall &amp; perimeter</h3><p class="lead">Server &amp; Connectivity · eigenaar is de tower, niet een persoon</p></div>
+    <dl class="kv">
+      <dt>Portal</dt><dd>FortiManager — fmg.boels.local</dd>
+      <dt>Aanmelden</dt><dd>Beheeraccount, MFA via Entra</dd>
+      <dt>Leverancier</dt><dd>Fortinet via reseller</dd>
+      <dt>Contact</dt><dd>accountmanager · reageert op mail, niet op telefoon</dd>
+      <dt>Contract</dt><dd>Support cluster Sittard — nog 31 dagen</dd>
+      <dt>Inzetbaar</dt><dd>1 persoon — Harish AC</dd>
+    </dl>
+    <div class="sheet-sec">
+      <h4>Wat je hier eerder besloot</h4>
+      <div class="feed">
+        <div class="fitem"><b>mrt</b><span>Geen lokale uitzonderingen zonder einddatum — <strong>na Vilnius</strong></span></div>
+        <div class="fitem"><b>jan</b><span>Baseline volgt Boels-standaard, niet Cramo-standaard</span></div>
+      </div>
+    </div>
+    <div class="sheet-sec">
+      <h4>Openstaand</h4>
+      <div class="feed">
+        <div class="fitem"><b>debt</b><span>Bus-factor 1 — autorisatie ligt alleen bij Hari</span></div>
+        <div class="fitem"><b>change</b><span>C-2026-0891 staat op de CAB van 3 september</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn">Open portal</button>
+      <button class="btn ghost">Ticket zoeken</button>
+      <button class="btn ghost" id="dClose">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var SKINS=["nachtwacht","glas","fosfor","radar","papier"];
+  var autoOn=false;
+
+  function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function read(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+
+  function paint(skin){
+    root.dataset.skin=skin;
+    document.querySelectorAll(".sw[data-skin]").forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.skin===skin?"true":"false");
+    });
+  }
+  function setSkin(skin,manual){
+    paint(skin);
+    if(manual){autoOn=false;document.getElementById("autoBtn").setAttribute("aria-pressed","false");store("spow.skin",skin);store("spow.auto","0");}
+  }
+  function skinForHour(h){
+    if(h>=6&&h<10) return "glas";
+    if(h>=10&&h<17) return "papier";
+    if(h>=17&&h<21) return "nachtwacht";
+    if(h>=21||h<2) return "fosfor";
+    return "radar";
+  }
+  function tickAuto(){
+    if(!autoOn) return;
+    paint(skinForHour(new Date().getHours()));
+  }
+
+  document.querySelectorAll(".sw[data-skin]").forEach(function(b){
+    b.addEventListener("click",function(){setSkin(b.dataset.skin,true);});
+  });
+  document.getElementById("autoBtn").addEventListener("click",function(){
+    autoOn=!autoOn;
+    this.setAttribute("aria-pressed",autoOn?"true":"false");
+    store("spow.auto",autoOn?"1":"0");
+    if(autoOn) tickAuto();
+  });
+  document.getElementById("ownBg").addEventListener("click",function(){
+    alert("In de echte build wijst dit naar een map met jouw eigen afbeeldingen. Die kan een browser niet zelf uitlezen — de desktopversie wel.");
+  });
+
+  var savedSkin=read("spow.skin");
+  if(savedSkin&&SKINS.indexOf(savedSkin)>-1) paint(savedSkin); else paint("nachtwacht");
+  if(read("spow.auto")==="1"){autoOn=true;document.getElementById("autoBtn").setAttribute("aria-pressed","true");tickAuto();}
+  setInterval(tickAuto,60000);
+
+  var now=new Date();
+  var dagen=["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
+  var mnd=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+  var d=document.getElementById("clockDay");
+  if(d) d.textContent=dagen[now.getDay()].charAt(0).toUpperCase()+dagen[now.getDay()].slice(1)+" "+now.getDate()+" "+mnd[now.getMonth()];
+  function clock(){
+    var n=new Date(),t=document.getElementById("clockTime");
+    if(t) t.textContent=("0"+n.getHours()).slice(-2)+":"+("0"+n.getMinutes()).slice(-2);
+  }
+  clock(); setInterval(clock,20000);
+
+  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",soon:"..."};
+  var modes=document.querySelectorAll(".mode");
+  function show(go){
+    document.querySelectorAll(".view").forEach(function(v){v.classList.remove("on");});
+    var el=document.getElementById("v-"+go);
+    if(el) el.classList.add("on");
+  }
+  modes.forEach(function(b){
+    b.addEventListener("click",function(){
+      document.body.classList.remove("present");
+      var go=b.dataset.go;
+      modes.forEach(function(m){m.setAttribute("aria-current", m===b?"true":"false");});
+      show(go);
+      document.getElementById("spoWord").textContent=words[go]||"Work";
+    });
+  });
+
+  var order=["p0","b0","p1","s0","n0"];
+  function goStep(id){
+    document.querySelectorAll(".pstep").forEach(function(s){s.classList.toggle("on", s.dataset.step===id);});
+    window.scrollTo(0,0);
+  }
+  function enterPresent(){document.body.classList.add("present");show("presenteren");goStep("p0");}
+  function exitPresent(){
+    document.body.classList.remove("present");
+    modes.forEach(function(m){m.setAttribute("aria-current", m.dataset.go==="vandaag"?"true":"false");});
+    show("vandaag");
+    document.getElementById("spoWord").textContent="Work";
+    window.scrollTo(0,0);
+  }
+  document.getElementById("goPresent").addEventListener("click",enterPresent);
+  document.querySelectorAll("[data-present]").forEach(function(b){b.addEventListener("click",enterPresent);});
+  var ep1=document.getElementById("exitPresent"); if(ep1) ep1.addEventListener("click",exitPresent);
+  var ep2=document.getElementById("exitPresent2"); if(ep2) ep2.addEventListener("click",exitPresent);
+
+  document.querySelectorAll("[data-next]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var cur=b.closest(".pstep").dataset.step, i=order.indexOf(cur);
+      if(i>-1&&i<order.length-1) goStep(order[i+1]);
+    });
+  });
+  document.querySelectorAll("[data-jump]").forEach(function(b){
+    b.addEventListener("click",function(){goStep(b.dataset.jump);});
+  });
+  document.querySelectorAll("[data-kudo]").forEach(function(b){
+    b.addEventListener("click",function(){b.textContent="Kudos gegeven";b.disabled=true;b.style.opacity=".6";});
+  });
+
+  var REASONS=["verkeerde persoon","timing klopt niet","niet mijn scope","klopt feitelijk niet","te zwaar","mist context"];
+  function settle(row,cls,txt){
+    var r=row.querySelector(".rate"); if(r) r.remove();
+    var w=row.querySelector(".why"); if(w) w.remove();
+    var v=document.createElement("span");
+    v.className="verdict "+cls; v.textContent=txt;
+    row.querySelector("span:last-of-type").appendChild(v);
+  }
+  document.querySelectorAll("[data-up]").forEach(function(b){
+    b.addEventListener("click",function(){settle(b.closest("div"),"hit","raak");});
+  });
+  document.querySelectorAll("[data-dn]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var row=b.closest("div");
+      if(row.querySelector(".why")) return;
+      var w=document.createElement("div");
+      w.className="why";
+      REASONS.forEach(function(t){
+        var x=document.createElement("button"); x.textContent=t;
+        x.addEventListener("click",function(){settle(row,"miss","mis · "+t);});
+        w.appendChild(x);
+      });
+      row.appendChild(w);
+    });
+  });
+
+  var detail=document.getElementById("detail");
+  function open(){detail.classList.add("on");}
+  function close(){detail.classList.remove("on");}
+  document.querySelectorAll("[data-svc],[data-p],[data-detail]").forEach(function(el){el.addEventListener("click",open);});
+  document.getElementById("dClose").addEventListener("click",close);
+  detail.addEventListener("click",function(e){if(e.target===detail) close();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape") close();});
+})();
+</script>
+
+</body></html>

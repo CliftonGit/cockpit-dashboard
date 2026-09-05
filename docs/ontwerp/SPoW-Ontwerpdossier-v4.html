@@ -1,0 +1,1188 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>SPoW Ontwerpdossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&display=swap">
+
+<style>
+:root{
+  --ground:#0E1A20;
+  --panel:#14232A;
+  --raise:#1B2F38;
+  --line:#26404A;
+  --line-soft:#1E333B;
+  --ink:#D8E3E4;
+  --dim:#92A9B1;
+  --faint:#637C85;
+  --signal:#F2751B;
+  --signal-soft:rgba(242,117,27,.13);
+  --signal-line:rgba(242,117,27,.36);
+  --instrument:#6FC3D6;
+  --good:#57C08A;
+  --warn:#E5B23C;
+  --crit:#DE5F4A;
+  --disp:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --col:68ch;
+  --wide:1000px;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:19px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  margin:0;
+  padding:0 0 120px;
+}
+
+/* ---------- shell ---------- */
+.shell{max-width:1200px;margin:0 auto;padding:0 28px;}
+.col{max-width:var(--col);margin-left:auto;margin-right:auto;}
+.wide{max-width:var(--wide);margin-left:auto;margin-right:auto;}
+
+/* ---------- type ---------- */
+p{margin:0 0 1.05em;}
+p:last-child{margin-bottom:0;}
+strong{font-weight:600;color:#EEF5F5;}
+em{font-style:italic;color:var(--dim);}
+
+a{color:var(--instrument);text-decoration:none;border-bottom:1px solid rgba(111,195,214,.34);}
+a:hover{border-bottom-color:var(--instrument);}
+a:focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:2px;}
+
+.eyebrow{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+  margin:0 0 14px;
+}
+.eyebrow .n{color:var(--signal);}
+
+h1{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(38px,6.4vw,68px);
+  line-height:1.02;letter-spacing:-.03em;
+  margin:0 0 18px;color:#F2F8F8;text-wrap:balance;
+}
+h2{
+  font-family:var(--disp);font-weight:700;
+  font-size:clamp(25px,3.3vw,35px);
+  line-height:1.12;letter-spacing:-.022em;
+  margin:0 0 20px;color:#F0F7F7;text-wrap:balance;
+}
+h3{
+  font-family:var(--disp);font-weight:600;
+  font-size:20px;line-height:1.3;letter-spacing:-.012em;
+  margin:0 0 8px;color:#E6F0F0;
+}
+
+.lead{font-size:22px;line-height:1.55;color:#C9D8DA;}
+.note{font-size:16px;line-height:1.55;color:var(--dim);}
+.mono{font-family:var(--mono);}
+
+/* ---------- masthead ---------- */
+.mast{
+  border-bottom:1px solid var(--line);
+  padding:64px 0 0;
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(242,117,27,.10) 0%, rgba(242,117,27,0) 58%),
+    radial-gradient(90% 70% at 92% 4%, rgba(111,195,214,.075) 0%, rgba(111,195,214,0) 60%);
+}
+.mast .col{max-width:74ch;}
+.stamp{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--signal);border:1px solid var(--signal-line);background:var(--signal-soft);
+  padding:6px 12px;border-radius:2px;margin-bottom:26px;
+}
+.stamp .dot{width:5px;height:5px;background:var(--signal);border-radius:50%;}
+.byline{
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--faint);
+  margin:26px 0 56px;display:flex;flex-wrap:wrap;gap:6px 22px;
+}
+.byline span{white-space:nowrap;}
+
+/* ---------- resume band ---------- */
+.band{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--line);
+  background:var(--panel);
+}
+.band > div{
+  padding:26px 26px 30px;
+  border-right:1px solid var(--line-soft);
+}
+.band > div:last-child{border-right:0;}
+.band h4{
+  font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 12px;
+}
+.band p{font-size:17px;line-height:1.5;color:#C6D5D8;margin:0;}
+.band .big{
+  font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.01em;
+  color:#EDF4F4;display:block;margin-bottom:6px;
+}
+@media (max-width:820px){
+  .band{grid-template-columns:1fr;}
+  .band > div{border-right:0;border-bottom:1px solid var(--line-soft);}
+  .band > div:last-child{border-bottom:0;}
+}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:20;
+  background:rgba(14,26,32,.9);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav .inner{
+  max-width:1200px;margin:0 auto;padding:0 28px;
+  display:flex;align-items:center;gap:20px;
+  overflow-x:auto;scrollbar-width:thin;
+}
+.nav .brand{
+  font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.01em;
+  color:#EAF2F2;padding:13px 0;white-space:nowrap;
+}
+.nav .brand b{color:var(--signal);font-weight:700;}
+.nav a{
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--dim);border-bottom:0;padding:13px 0;white-space:nowrap;
+}
+.nav a:hover{color:var(--ink);}
+
+/* ---------- parts & sections ---------- */
+.part{
+  padding:78px 0 0;
+  scroll-margin-top:56px;
+}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+.part-head{
+  border-top:1px solid var(--line);
+  padding-top:22px;margin-bottom:54px;
+  display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;
+}
+.part-head .num{
+  font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--signal);
+}
+.part-head .name{
+  font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.13em;
+  text-transform:uppercase;color:#DCE7E8;
+}
+.part-head .gloss{
+  font-size:16px;color:var(--faint);font-style:italic;
+}
+
+section{margin-bottom:66px;}
+section:last-child{margin-bottom:0;}
+
+/* ---------- instrument blocks ---------- */
+.slab{
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-left:2px solid var(--signal);
+  padding:22px 24px;
+  margin:30px auto;
+  font-size:17px;line-height:1.55;
+}
+.slab .who{
+  font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--faint);display:block;margin-top:12px;
+}
+.slab q{font-style:italic;color:#DCE8E9;quotes:"„" "”";}
+
+.rule{border:0;border-top:1px solid var(--line-soft);margin:44px auto;max-width:var(--col);}
+
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin:30px auto;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin:30px auto;}
+.grid2 > div,.grid3 > div{background:var(--panel);padding:22px 22px 24px;}
+.grid2 .k,.grid3 .k{
+  font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--signal);margin:0 0 10px;
+}
+.grid2 p,.grid3 p{font-size:16px;line-height:1.5;color:#C2D2D5;margin:0;}
+.grid3 h3{font-size:18px;margin-bottom:6px;}
+@media (max-width:800px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+/* ---------- doorlus track ---------- */
+.track{margin:36px auto 8px;max-width:1144px;}
+.stations{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  border:1px solid var(--line-soft);background:var(--line-soft);gap:1px;
+}
+.st{background:var(--panel);padding:20px 16px 22px;position:relative;}
+.st .idx{
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--faint);
+  display:block;margin-bottom:12px;
+}
+.st .nm{
+  font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:-.01em;
+  color:#EDF4F4;display:block;margin-bottom:7px;
+}
+.st .ds{font-size:14.5px;line-height:1.45;color:var(--dim);}
+.st.gate{background:var(--raise);}
+.st.gate .idx{color:var(--signal);}
+.st.gate::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--signal);
+}
+.loopback{
+  display:flex;align-items:center;gap:14px;
+  border:1px solid var(--line-soft);border-top:0;
+  background:rgba(111,195,214,.05);
+  padding:13px 18px;
+}
+.loopback .arrow{
+  font-family:var(--mono);color:var(--instrument);font-size:14px;letter-spacing:.1em;flex:0 0 auto;
+}
+.loopback p{font-size:15.5px;color:var(--dim);margin:0;}
+@media (max-width:860px){
+  .stations{grid-template-columns:1fr;}
+  .st.gate::after{width:2px;height:auto;top:0;bottom:0;right:auto;}
+}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:30px auto;border:1px solid var(--line-soft);}
+table{border-collapse:collapse;width:100%;min-width:520px;font-family:var(--mono);font-size:13.5px;}
+caption{
+  text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--faint);padding:16px 18px 0;
+}
+th{
+  text-align:left;font-weight:600;color:var(--faint);
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:16px 18px 10px;border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+td{
+  padding:12px 18px;border-bottom:1px solid var(--line-soft);
+  color:#C4D4D7;vertical-align:top;font-variant-numeric:tabular-nums;
+}
+tr:last-child td{border-bottom:0;}
+td.name{color:#E7F1F1;font-weight:500;}
+td.num{text-align:right;}
+
+/* ---------- chips ---------- */
+.chip{
+  display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 8px;border-radius:2px;white-space:nowrap;
+}
+.chip.on{color:var(--good);background:rgba(87,192,138,.12);border:1px solid rgba(87,192,138,.3);}
+.chip.half{color:var(--warn);background:rgba(229,178,60,.12);border:1px solid rgba(229,178,60,.3);}
+.chip.off{color:var(--faint);background:rgba(99,124,133,.1);border:1px solid var(--line);}
+
+/* ---------- ladder ---------- */
+.ladder{margin:30px auto;border:1px solid var(--line-soft);}
+.rung{
+  display:grid;grid-template-columns:78px 1fr;
+  border-bottom:1px solid var(--line-soft);background:var(--panel);
+}
+.rung:last-child{border-bottom:0;}
+.rung .p{
+  font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;
+  padding:16px 18px;border-right:1px solid var(--line-soft);
+  display:flex;align-items:flex-start;
+}
+.rung .b{padding:15px 20px;font-size:16px;line-height:1.5;color:#C4D4D7;}
+.rung .b b{color:#E9F2F2;font-weight:600;}
+.rung.p0 .p{color:var(--crit);background:rgba(222,95,74,.09);}
+.rung.p1 .p{color:var(--signal);background:var(--signal-soft);}
+.rung.p2 .p{color:var(--warn);background:rgba(229,178,60,.08);}
+.rung.lo .p{color:var(--faint);}
+
+/* ---------- log ---------- */
+.log{margin:30px auto;}
+.entry{
+  display:grid;grid-template-columns:170px 1fr;gap:24px;
+  padding:20px 0;border-top:1px solid var(--line-soft);
+}
+.entry:last-child{border-bottom:1px solid var(--line-soft);}
+.entry .subj{
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--signal);line-height:1.5;padding-top:3px;
+}
+.entry .body{font-size:17px;line-height:1.55;color:#C6D5D8;}
+.entry .body q{font-style:italic;color:#DDE9EA;quotes:"„" "”";}
+@media (max-width:760px){
+  .entry{grid-template-columns:1fr;gap:8px;}
+}
+
+/* ---------- open items ---------- */
+.open{list-style:none;padding:0;margin:30px auto;}
+.open li{
+  display:grid;grid-template-columns:26px 1fr;gap:14px;
+  padding:16px 0;border-top:1px solid var(--line-soft);
+  font-size:17px;line-height:1.5;color:#C6D5D8;
+}
+.open li:last-child{border-bottom:1px solid var(--line-soft);}
+.open .mark{
+  font-family:var(--mono);font-size:12px;color:var(--faint);padding-top:4px;
+}
+.open b{display:block;font-family:var(--disp);font-weight:600;font-size:17px;color:#EAF2F2;margin-bottom:2px;letter-spacing:-.01em;}
+
+/* ---------- closer ---------- */
+.closer{
+  margin-top:80px;border-top:1px solid var(--line);padding-top:40px;
+}
+.closer .col{max-width:64ch;}
+.closer p{font-size:20px;line-height:1.55;color:#C9D8DA;}
+
+::selection{background:var(--signal);color:#0E1A20;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important;}
+}
+</style>
+
+<nav class="nav">
+  <div class="inner">
+    <div class="brand">SPoW <b>·</b> Ontwerp</div>
+    <a href="#fundament">Fundament</a>
+    <a href="#doorlus">De doorlus</a>
+    <a href="#ritme">Ritme &amp; mensen</a>
+    <a href="#bouw">Bouw</a>
+    <a href="#voeding">Voeding</a>
+    <a href="#vondsten">Vondsten</a>
+    <a href="#logboek">Logboek</a>
+  </div>
+</nav>
+
+<header class="mast">
+  <div class="shell">
+    <div class="col">
+      <div class="stamp"><span class="dot"></span> Persoonlijk · niet gedeeld</div>
+      <h1>Single&nbsp;Point of&nbsp;Work</h1>
+      <p class="lead">Het ontwerp achter SPoW: wat het belooft, waarom het zo in elkaar zit, wat er al staat en wat je onderweg gecorrigeerd hebt. Dit dossier bestaat omdat een ontwerp dat alleen in een gesprek leeft precies het probleem is dat SPoW oplost.</p>
+      <div class="byline">
+        <span>Clifton Dobbelsteyn</span>
+        <span>IT Infra · Server &amp; Connectivity Lead</span>
+        <span>Boels</span>
+        <span class="mono">Versie 4 · september 2026</span>
+      </div>
+    </div>
+  </div>
+  <div class="band">
+    <div>
+      <h4>Waar we gebleven waren</h4>
+      <p><span class="big">Het ontwerp is rond.</span>Drie ruggengraten, één doorlus, en een cockpit die je al gezien hebt. Het denkwerk zat tot nu toe in een chat.</p>
+    </div>
+    <div>
+      <h4>Wat er veranderd is</h4>
+      <p><span class="big">Er staat echte data.</span>Dataverse-omgeving, twee tabellen, negentien diensten ingevuld. De cockpit toont nog voorbeelddata.</p>
+    </div>
+    <div>
+      <h4>De eerstvolgende stap</h4>
+      <p><span class="big">App-registratie in Entra.</span>Daarna hangt de cockpit aan je eigen gegevens en kijk je niet langer naar verzonnen namen.</p>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+<!-- ============ DEEL 1 ============ -->
+<div class="part" id="fundament">
+  <div class="part-head">
+    <span class="num">DEEL 1</span>
+    <span class="name">Fundament</span>
+    <span class="gloss">wat het is, wat het niet is, waar het op rust</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 1 &nbsp;·&nbsp; De belofte</p>
+      <h2>Dertig seconden</h2>
+      <p>SPoW heeft één maatstaf, en die is meedogenloos simpel. Je opent het en binnen een halve minuut weet je drie dingen: <strong>waar was ik gebleven, wat is er sindsdien veranderd, en wat is de eerstvolgende stap.</strong> Lukt dat niet, dan is die schermvulling mislukt — hoe mooi hij ook is.</p>
+      <p>Alles wat hierna volgt is ondergeschikt aan die drie vragen. Elke tabel, elke knop, elk lijstje moet zich kunnen verantwoorden tegenover minstens één ervan. Dat is ook de reden dat dit dossier ermee opent: de band bovenaan deze pagina stelt dezelfde drie vragen over het ontwerp zelf.</p>
+      <p>De pijn die dit oplost is niet dat je informatie mist. Die is er wel — in TOPdesk, in Outlook, in Teams, in je hoofd. De pijn is dat je <em>elke keer opnieuw moet uitzoeken waar je wat moet zoeken</em>, en dat de reden achter een besluit van vier maanden geleden nergens staat opgeschreven.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 2 &nbsp;·&nbsp; Afbakening</p>
+      <h2>Wat SPoW niet is</h2>
+      <p>SPoW vervangt niets. TOPdesk blijft waar tickets leven, Outlook waar mail en agenda leven, Teams waar het gesprek leeft, Jira waar het werk van de bouwers leeft. Die systemen blijven de waarheid over hun eigen ding.</p>
+      <p>SPoW is de laag erboven. Het onthoudt <em>waar</em> iets stond, <em>waarom</em> je er was, en het heeft de knop die je met context terugbrengt — en daarna registreert dat je er geweest bent. Dat laatste is het hele punt van de doorlus verderop: SPoW stuurt je weg en vangt je weer op.</p>
+    </div>
+    <div class="grid3 wide">
+      <div>
+        <p class="k">Bron blijft bron</p>
+        <p>Niets wordt gekopieerd om het gekopieerd te hebben. SPoW bewaart de verwijzing en de aanleiding, niet de inhoud van het bronsysteem.</p>
+      </div>
+      <div>
+        <p class="k">Doorklikken, niet overtypen</p>
+        <p>Een knop brengt je naar de juiste plek in het juiste systeem, met de context die je daar nodig hebt. Geen zoekactie meer.</p>
+      </div>
+      <div>
+        <p class="k">Terugkomen telt</p>
+        <p>Zodra je terug bent legt SPoW vast dat het gebeurd is. Daarmee vult de geschiedenis zichzelf, zonder aparte administratie.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 3 &nbsp;·&nbsp; Structuur</p>
+      <h2>Drie ruggengraten</h2>
+      <p>Alles in SPoW hangt aan een van drie dingen. Niet aan projecten, niet aan tickets, niet aan mappen — die komen en gaan. Aan een <strong>dienst</strong>, aan een <strong>persoon</strong>, of aan de <strong>doorlus</strong> die die twee met elkaar in beweging houdt.</p>
+      <p>Deze keuze is de belangrijkste van het hele ontwerp. Zolang je informatie ophangt aan het werk dat toevallig langskomt, verdampt ze zodra dat werk klaar is. Hang je haar op aan een dienst of aan een mens, dan blijft ze staan.</p>
+    </div>
+    <div class="grid3 wide">
+      <div>
+        <p class="k">Ruggengraat 1</p>
+        <h3>Dienst</h3>
+        <p>Elke dienst één kaart: portaal, account waarmee je erin komt, leverancier, contactpersoon, vervaldatum, waar de documentatie te vinden is, hoe inzetbaar we erop zijn, en onder welke tower hij valt. Nooit wachtwoorden — wél wélk account en welke methode.</p>
+      </div>
+      <div>
+        <p class="k">Ruggengraat 2</p>
+        <h3>Persoon</h3>
+        <p>Wie kan wat, waar zitten de gaten, wie is inzetbaar en wie juist niet, en wat is er nodig aan training of motivatie. Komt uit Entra, niet uit typen — het towermodel bestaat daar al als groepen.</p>
+      </div>
+      <div>
+        <p class="k">Ruggengraat 3</p>
+        <h3>Doorlus</h3>
+        <p>De beweging: signaal, weging, voorstel, actie, registratie, les. Elke ronde laat iets achter waar de volgende ronde beter van wordt. Zonder deze ruggengraat is SPoW een archief in plaats van een werkplek.</p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="slab">
+        <q>Toch moet je je niet vergissen of blind staren op die verdeling — veel van hun zijn vliegende keep zeg maar.</q>
+        <span class="who">Correctie op de personenlaag</span>
+      </div>
+      <p class="note">De Entra-groepen vertellen op papier wie bij welke tower hoort. Ze vertellen niet wie er werkelijk inzetbaar is. De personenlaag leest de groepen als startpunt, maar inzetbaarheid is een eigen veld dat jij bijhoudt.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEEL 2 ============ -->
+<div class="part" id="doorlus">
+  <div class="part-head">
+    <span class="num">DEEL 2</span>
+    <span class="name">De doorlus</span>
+    <span class="gloss">hoe een signaal een les wordt</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 4 &nbsp;·&nbsp; Het mechaniek</p>
+      <h2>Zes stations, en dan weer van voren af aan</h2>
+      <p>Er komt iets binnen. Een mail, een ticket, een opmerking in een overleg, een certificaat dat over zes weken verloopt. In plaats van dat het in je hoofd blijft hangen tot het te laat is, loopt het langs zes vaste stations. Elk station laat iets achter voor het volgende.</p>
+    </div>
+    <div class="track wide">
+      <div class="stations">
+        <div class="st">
+          <span class="idx">01</span>
+          <span class="nm">Signaal</span>
+          <span class="ds">Iets vraagt aandacht. Mail, ticket, overleg, of een datum die nadert.</span>
+        </div>
+        <div class="st gate">
+          <span class="idx">02 · POORT</span>
+          <span class="nm">Weging</span>
+          <span class="ds">Raakt het een dienst? Wie is eigenaar? Welke pet? Past het in dit kwartaal?</span>
+        </div>
+        <div class="st">
+          <span class="idx">03</span>
+          <span class="nm">Voorstel</span>
+          <span class="ds">Wat zou ik doen, en waarom. Beoordeelbaar, dus SPoW kan ervan leren.</span>
+        </div>
+        <div class="st">
+          <span class="idx">04</span>
+          <span class="nm">Actie</span>
+          <span class="ds">De knop die je met context naar het juiste systeem brengt.</span>
+        </div>
+        <div class="st">
+          <span class="idx">05</span>
+          <span class="nm">Registratie</span>
+          <span class="ds">Wat er feitelijk gebeurd is, en waarop het besluit gebaseerd was.</span>
+        </div>
+        <div class="st">
+          <span class="idx">06</span>
+          <span class="nm">Les</span>
+          <span class="ds">Wat we hier de volgende keer aan hebben. Geen apart moment, een bijproduct.</span>
+        </div>
+      </div>
+      <div class="loopback">
+        <span class="arrow">&#8592; &#8592; &#8592;</span>
+        <p>De les voedt het volgende signaal. Daarom heet het een doorlus en geen proces: er is geen eindpunt waar de kennis stopt.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 5 &nbsp;·&nbsp; Station 02</p>
+      <h2>De weging is een poort, geen formaliteit</h2>
+      <p>Dit is het enige station dat mag tegenhouden. Zonder weging geen voorstel — en dat is met opzet, want de meeste ellende ontstaat doordat iets in beweging komt voordat iemand heeft vastgesteld of het überhaupt van ons is.</p>
+      <p>De weging beantwoordt vijf vragen, en legt de antwoorden vast. Niet omdat er een dossier moet komen, maar omdat je over vier maanden wilt kunnen terugzien waar een besluit op gebaseerd was.</p>
+    </div>
+    <div class="grid2 wide">
+      <div>
+        <p class="k">Raakt het een dienst?</p>
+        <p>Zo ja, welke. Daarmee hangt het signaal meteen aan een ruggengraat en niet in de lucht.</p>
+      </div>
+      <div>
+        <p class="k">Wie is eigenaar?</p>
+        <p>Van de dienst, en van dit specifieke signaal. Twee verschillende vragen, en het antwoord is vaak niet dezelfde persoon.</p>
+      </div>
+      <div>
+        <p class="k">Welke pet draag ik?</p>
+        <p>Lead, architectuurdeelnemer, security, compliance, of gewoon degene die het toevallig ziet. Bepaalt hoe zwaar je zelf moet optreden.</p>
+      </div>
+      <div>
+        <p class="k">Wat kost het, en aan wie?</p>
+        <p>Niet in euro's per se — in uren van wie. Dit is de vraag die de kwartaalvulling verderop mogelijk maakt.</p>
+      </div>
+    </div>
+    <div class="col">
+      <p>De vijfde vraag staat apart, want die is de scherpste: <strong>past dit in dit kwartaal, of duwt het iets anders eruit?</strong> Als het antwoord "duwt iets eruit" is, dan is dat een besluit dat je bewust neemt en dat SPoW vastlegt — inclusief wat eruit geduwd werd.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 6 &nbsp;·&nbsp; Terugkoppeling</p>
+      <h2>Geen bericht is goed bericht</h2>
+      <p>Op elke weging en elk voorstel kun je een oordeel geven, zodat SPoW leert wat bij jou wél en niet werkt. Maar je gaat niet elke dag zitten beoordelen, dus de regel is omgedraaid: <strong>geef je geen score, dan zat het goed.</strong></p>
+      <p>Daar zit één valkuil in, en die is opgelost. Stilte telt alleen als goedkeuring wanneer het advies ook daadwerkelijk <em>opgevolgd</em> is. Advies dat je genegeerd hebt en waar je niets over gezegd hebt, telt als niets — niet als een succes. Anders leert SPoW precies de verkeerde les uit jouw drukte.</p>
+      <p>Andersom geef je wél expliciet iets terug als het raak was. Kudos is een eigen knop, geen vinkje in een schaal, omdat het een ander soort signaal is dan "klopt".</p>
+    </div>
+    <div class="tw wide">
+      <table>
+        <caption>Waarom een advies een misser was — vaste redenen, zodat er patroon in te zien is</caption>
+        <thead>
+          <tr><th>Reden</th><th>Wat SPoW ervan leert</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="name">verkeerde persoon</td><td>De koppeling dienst&nbsp;→&nbsp;eigenaar klopt niet, of de inzetbaarheid is verouderd.</td></tr>
+          <tr><td class="name">timing klopt niet</td><td>Het kwartaal of de freeze is niet meegewogen.</td></tr>
+          <tr><td class="name">niet mijn scope</td><td>Er wordt werk naar je toe getrokken dat bij een andere afdeling hoort.</td></tr>
+          <tr><td class="name">klopt feitelijk niet</td><td>De onderliggende gegevens zijn fout. Zwaarste categorie: dit raakt de registratielaag.</td></tr>
+          <tr><td class="name">te zwaar</td><td>Het voorstel is groter dan het signaal rechtvaardigt.</td></tr>
+          <tr><td class="name">mist context</td><td>Er is iets bekend dat niet in SPoW staat. Dit is meteen een gat in de kennisbank.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 7 &nbsp;·&nbsp; Kennis</p>
+      <h2>De kennisbank vult zichzelf</h2>
+      <p>Elke kennisbank die een aparte handeling vereist, sterft. Niet omdat mensen lui zijn, maar omdat "documenteer het even" altijd de eerste taak is die sneuvelt als het druk wordt.</p>
+      <p>Daarom is er in SPoW geen documenteerstap. Station 05 en 06 van de doorlus <em>zijn</em> de kennisbank. Je legt vast wat er gebeurd is omdat je dat morgen zelf nodig hebt, en de les die eruit volgt is een bijproduct van werk dat je toch al deed.</p>
+      <p>Dat maakt één ding mogelijk dat anders nooit lukt: het <strong>integratiedraaiboek</strong>. Boels is niet klaar met acquisities. Elke keer dat er een overname geïntegreerd wordt, laat die een spoor van lessen achter. Vandaag is dat spoor weg zodra het project sluit. In SPoW groeit het draaiboek voor de volgende overname vanzelf uit de lessen van de vorige — ook al zijn de KT-sessies van Riwal en Cramo onvolledig, want vanaf nu wordt het wél vastgelegd.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 8 &nbsp;·&nbsp; Vervaldatums</p>
+      <h2>Het vervalregister</h2>
+      <p>Certificaten, contracten en licenties die verlopen zijn een terugkerende ergernis, en de reden is altijd dezelfde: niemand kijkt ernaar tot het misgaat. Dat is geen discipline­probleem maar een ontwerp­probleem — de datum staat nergens waar hij vanzelf langskomt.</p>
+      <p>In SPoW staat de vervaldatum op de dienstkaart zelf, niet in een aparte lijst. Daardoor is hij onderdeel van de dienst en niet van iemands geheugen, en kan hij een signaal afgeven <em>voordat</em> hij verstrijkt in plaats van erna. Dat signaal loopt gewoon de doorlus in, net als alles.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEEL 3 ============ -->
+<div class="part" id="ritme">
+  <div class="part-head">
+    <span class="num">DEEL 3</span>
+    <span class="name">Ritme &amp; mensen</span>
+    <span class="gloss">overleg, planning, groei, koers</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 9 &nbsp;·&nbsp; Presenteermodus</p>
+      <h2>Wat je laat zien is niet wat je ziet</h2>
+      <p>Je privé-SPoW en de versie die op het scherm staat tijdens het dagelijkse of wekelijkse overleg zijn twee verschillende dingen. Dat is geen cosmetische scheiding: in je eigen weergave staan wegingen, twijfels en oordelen die niet in een groep thuishoren.</p>
+      <p>De presenteerbare variant is <strong>op urgentie geordend</strong>, en dat is met opzet de belangrijkste eigenschap. Overleggen worden afgekapt. Als dat gebeurt wil je dat het belangrijkste al behandeld is, niet dat je alfabetisch tot de M gekomen bent.</p>
+    </div>
+    <div class="grid2 wide">
+      <div>
+        <p class="k">Persoon → stapje terug → persoon</p>
+        <p>Na elke medewerkersbeurt komt er een gezamenlijk moment. Dat voorkomt dat een overleg een rij losse rapportages wordt waarin niemand naar elkaar luistert.</p>
+      </div>
+      <div>
+        <p class="k">Kudos zijn ingebouwd</p>
+        <p>Er is een knop om iets goeds te benoemen, op dezelfde plek als de rest. Zonder dat wordt een statusoverleg vanzelf een klaagoverleg.</p>
+      </div>
+      <div>
+        <p class="k">Live bewerkbaar</p>
+        <p>Wat tijdens het overleg gezegd wordt, gaat er tijdens het overleg in. Anders is het na afloop weg.</p>
+      </div>
+      <div>
+        <p class="k">Doorklikbaar naar de kaart</p>
+        <p>Vanuit de presentatie spring je door naar de medewerkerskaart, en van daaruit naar de omgeving waar je kunt bijsturen. Optioneel met een uitgeklede roadmap en resultaten erbij.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 10 &nbsp;·&nbsp; Nabespreking</p>
+      <h2>De vijf minuten na afloop</h2>
+      <p>Het waardevolste moment van een overleg ligt erna, en het is precies het moment dat altijd overgeslagen wordt omdat de volgende afspraak begint. SPoW maakt er een vaste stap van, direct aansluitend op de presenteermodus.</p>
+      <p>Vier vragen, elke keer dezelfde: wat zijn de <strong>lessen</strong>, wat zijn de <strong>aandachtspunten</strong>, welke van <strong>jouw petten</strong> zijn geraakt, en waar kun je <strong>direct of indirect bijdragen</strong>. Die laatste splitsing is belangrijk — indirect bijdragen (iemand introduceren, een blokkade wegnemen, dekking geven) is werk dat nergens geregistreerd wordt en daardoor onzichtbaar blijft.</p>
+      <p>De uitkomsten van de nabespreking zijn nieuwe signalen. Ze gaan gewoon de doorlus in.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 11 &nbsp;·&nbsp; Discipline</p>
+      <h2>De dagmail, en wat er gebeurt als iemand niet reageert</h2>
+      <p>Elke dag gaat er een mail rond met de agendapunten, de ontbrekende informatie, en wie er nog niet geleverd heeft. Aanleveren mag tot uiterlijk <strong>vijf minuten voor aanvang</strong>. Afmelden mag, maar met reden. Afmelden via een collega mag ook — maar niet als vanzelfsprekendheid, en SPoW ziet het verschil tussen één keer en structureel.</p>
+      <p>Wat SPoW hier <em>niet</em> doet is zelf een berisping sturen. Dat is bewust en het blijft zo. SPoW laat het patroon zien; jij bepaalt wanneer een patroon een gesprek wordt. Een systeem dat zelf mensen aanspreekt beschadigt de verhouding die je juist nodig hebt.</p>
+    </div>
+    <div class="col">
+      <div class="slab">
+        <q>Afmelden via via moet ook kunnen, maar niet als vanzelfsprekend.</q>
+        <span class="who">Uitgangspunt voor de dagmail</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 12 &nbsp;·&nbsp; Planning</p>
+      <h2>Jouw planning, en die van ieder van hen</h2>
+      <p>Niet je agenda — die staat in Outlook en blijft daar. Wél de planning die je maakt: voor jezelf, en per teamlid. Naast elkaar, zodat je in één beeld ziet wie waaraan zit en waar de knel zit.</p>
+      <p>Daaroverheen komt wat de planning waardeloos maakt als je het vergeet: de Outlook-agenda's van het team, en verlof, ziekte en feestdagen. Inclusief de Indiase feestdagen, want een deel van het team werkt vanuit India voor CGI en die dagen vallen niet samen met de Nederlandse.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 13 &nbsp;·&nbsp; Koers</p>
+      <h2>40 / 30 / 30 is een richting, geen meetlat</h2>
+      <p>Veertig procent project, dertig procent change, dertig procent overig. Dat is het streven, en die balans hoeft niet in een week te kloppen — over een langere periode moet ze kloppen. SPoW toont de verhouding daarom over een lopende periode en niet per week, want een weekcijfer nodigt uit tot precies het verkeerde gesprek.</p>
+      <p>Gestuurd wordt er bij de planning, niet achteraf. En als het bij iemand structureel niet lukt, dan is de uitkomst geen berisping maar een <strong>schriftelijke uitzondering voor die medewerker</strong>. Vaak ligt het namelijk aan wat iemand zelf prefereert of aan welke vaardigheden hij bezit, en dat is informatie, geen tekortkoming.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 14 &nbsp;·&nbsp; Mensen</p>
+      <h2>Inzetbaarheid, groei en veerkracht</h2>
+      <p>Als je per dienst vastlegt wie je erop kunt inzetten en wie niet, krijg je er iets gratis bij dat veel meer waard is dan de lijst zelf: je ziet <strong>waar je behoefte hebt om iemand te trainen of te motiveren</strong>. Een gat in de inzetbaarheid is een opleidingsvraag die zichzelf stelt.</p>
+      <p>Daaruit volgt de tweede meting die er echt toe doet: de <strong>bus-factor per dienst</strong>. Hoeveel mensen kunnen deze dienst dragen? Bij één is het geen dienst maar een risico met een naam eraan. Investeren in de groei van een medewerker is daarmee tegelijk investeren in de veerkracht van het team — dezelfde handeling, twee opbrengsten.</p>
+      <p>Het derde effect is retentie. Werk dat uitdagend is maar in balans houdt mensen; werk dat alleen maar zwaar is of alleen maar saai laat ze vertrekken. De verdeling die je in de planning maakt is dus ook een retentie-instrument, of je dat nou zo noemt of niet.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 15 &nbsp;·&nbsp; Roadmap</p>
+      <h2>Van onderop, niet overgenomen</h2>
+      <p>De CTO-roadmap sijpelt naar beneden en daar valt niet aan te ontkomen. Juist daarom is jouw roadmap er een die van onderop opgebouwd wordt, in gesprek met Roel: uit de diensten, de gaten en de signalen die je zelf ziet. Overnemen wat van boven komt betekent dat je nooit iets inbrengt.</p>
+    </div>
+    <div class="ladder wide">
+      <div class="rung p0"><div class="p">P0</div><div class="b"><b>Nu, en er komt een business case.</b> P0 is geen prioriteit maar een uitzonderingstoestand. Er hoort een onderbouwing bij, anders is het geen P0.</div></div>
+      <div class="rung p1"><div class="p">P1</div><div class="b"><b>Krijgt voorrang, en houdt die.</b> Een P1 blijft voorgaan op iets dat later P1 geworden is. Volgorde van binnenkomst telt binnen hetzelfde niveau.</div></div>
+      <div class="rung p2"><div class="p">P2</div><div class="b"><b>Dit kwartaal, als de capaciteit het toelaat.</b> Wordt gevuld tot het kwartaal vol is, niet verder.</div></div>
+      <div class="rung lo"><div class="p">P3</div><div class="b">Volgend kwartaal of later. <b>Kan nooit stijgen naar P2 of hoger.</b></div></div>
+      <div class="rung lo"><div class="p">P4</div><div class="b">Bekend, gepland, geen haast.</div></div>
+      <div class="rung lo"><div class="p">P5</div><div class="b">Vastgelegd zodat het niet verdwijnt. Meer niet.</div></div>
+    </div>
+    <div class="col">
+      <div class="slab">
+        <q>Een P1 moet wel degelijk voorrang blijven krijgen op een P1 geworden P4. Ik vind niet dat een P3 t/m P5 ooit P2 of hoger kan worden.</q>
+        <span class="who">Correctie op prioriteitsveroudering</span>
+      </div>
+      <p>Dit is een expliciete afwijzing van het gebruikelijke model waarin oud werk vanzelf omhoog kruipt. De reden is praktisch: als lage prioriteiten kunnen stijgen, dan wordt de prioriteit uiteindelijk bepaald door wachttijd in plaats van door belang, en verliest het hele stelsel zijn betekenis.</p>
+      <p>De kwartaalvulling houdt bovendien rekening met <strong>freezes</strong> — changefreezes én de Indiase feestdagen van het CGI-team. Een kwartaal dat op papier vol kan, is dat in werkelijkheid niet.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 16 &nbsp;·&nbsp; Vastleggen</p>
+      <h2>Overleggen die je niet opneemt</h2>
+      <p>Binnen Boels geldt de expliciete, unanieme afspraak dat elk overleg opgenomen en elk gesprek geregistreerd mag worden. Je meldt het desondanks altijd — maar je meldt het als mededeling, niet als vraag. Dat is een bewuste formulering.</p>
+      <p>Fysieke overleggen zijn het gat: daar staat geen Teams aan. De verkenning is dat je telefoon of laptop meeluistert en het resultaat rechtstreeks in SPoW landt — <strong>als concept, wachtend op jouw bevestiging</strong>, nooit als vaststaand feit. Daarbij houdt SPoW bij welke agendapunten daadwerkelijk behandeld zijn, want dat is de informatie die je de volgende keer nodig hebt.</p>
+      <p>Eén principe staat vast: <strong>bewaar de uitkomst, niet de opname.</strong> Een transcript is steigerwerk. Het heeft een houdbaarheidsdatum en hoort te verdwijnen zodra de les en de besluiten eruit gehaald zijn. Anders bouw je een archief van gesprekken waar niemand ooit in kijkt en dat wel bewaard moet blijven.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEEL 4 ============ -->
+<div class="part" id="bouw">
+  <div class="part-head">
+    <span class="num">DEEL 4</span>
+    <span class="name">Bouw</span>
+    <span class="gloss">waar het op draait, en wat er al staat</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 17 &nbsp;·&nbsp; Architectuur</p>
+      <h2>Eén pagina, geen server</h2>
+      <p>De gegevens staan in <strong>Dataverse</strong>. De cockpit is <strong>één statische webpagina</strong> die zich met je eigen account aanmeldt en rechtstreeks met Dataverse praat. Er is geen server, geen backend, niets dat draait en dus niets dat kan omvallen of onderhouden moet worden.</p>
+      <p>Dat is ook het antwoord op de vraag "browser of desktop-app": het is niet of-of. Dezelfde pagina die je nu in de browser opent, wordt later door een desktopschil omhuld. Je bouwt dus niet twee keer.</p>
+      <p>De model-driven app die er in Power Platform bij hoort is uitsluitend de achterkant. Dat is de plek waar velden en tabellen beheerd worden, en waar jij nooit hoeft te komen.</p>
+    </div>
+    <div class="tw wide">
+      <table>
+        <caption>Wat een desktopschil toevoegt dat een browser niet kan</caption>
+        <thead>
+          <tr><th>Mogelijkheid</th><th>Waarom het uitmaakt</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="name">Automatisch starten</td><td>SPoW staat er al als je inlogt. Anders is het weer iets dat je moet openen.</td></tr>
+          <tr><td class="name">Schermgeheugen</td><td>Onthoudt op welke monitor en in welke grootte het stond.</td></tr>
+          <tr><td class="name">Apps op een gekozen scherm openen</td><td>De doorklik-knop opent TOPdesk daar waar jij hem wilt hebben, niet waar Windows hem gooit.</td></tr>
+          <tr><td class="name">Adviesvenster naast een presentatie</td><td>Tijdens de presenteermodus zie jij op je eigen scherm wat de zaal niet ziet.</td></tr>
+          <tr><td class="name">Achtergronden uit een map lezen</td><td>Een browser mag niet in een lokale map kijken. Voor je eigen thema's en achtergronden is dat precies wat nodig is.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 18 &nbsp;·&nbsp; Duurzaamheid</p>
+      <h2>Twee lagen, en één ervan mag sterven</h2>
+      <p>Er zit een spanning in dit ontwerp die opgelost moest worden: SPoW wordt mét AI gebouwd en met Copilot gebruikt, maar SPoW moet blijven werken <em>zonder</em> AI. Anders bouw je een afhankelijkheid in van iets waar je geen controle over hebt.</p>
+      <p>De oplossing is een scheiding in twee lagen, en de scheiding is hard.</p>
+    </div>
+    <div class="grid2 wide">
+      <div>
+        <p class="k">Registratielaag &nbsp;— &nbsp;overleeft</p>
+        <h3>De feiten</h3>
+        <p>Diensten, personen, hervatpunten, besluiten, lessen, vervaldatums. Gewone gegevens in Dataverse. Werkt zonder één regel AI, en blijft werken als er nooit meer een taalmodel bij komt. Dit is SPoW.</p>
+      </div>
+      <div>
+        <p class="k">Intelligentielaag &nbsp;— &nbsp;mag sterven</p>
+        <h3>De duiding</h3>
+        <p>Samenvatten, wegen, voorstellen, patronen zien, concepten schrijven. Prettig, en soms indrukwekkend. Valt die weg, dan verlies je gemak — geen gegevens, geen geschiedenis, geen werkende cockpit.</p>
+      </div>
+    </div>
+    <div class="col">
+      <p class="note">Praktische consequentie: niets wat in de intelligentielaag ontstaat wordt opgeslagen als een AI-object. Een gewogen voorstel wordt weggeschreven als tekst met een reden erbij — leesbaar, controleerbaar, en over vijf jaar nog steeds te begrijpen door iemand die niet weet wat het gemaakt heeft.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 19 &nbsp;·&nbsp; Stand van zaken</p>
+      <h2>Wat er nu werkelijk staat</h2>
+      <p>Onderstaande is gebouwd en werkt. Gebouwd met het beheeraccount, en straks gebruikt en functioneel getest met je gewone account — die scheiding blijft.</p>
+    </div>
+    <div class="tw wide">
+      <table>
+        <caption>Stand per september 2026</caption>
+        <thead>
+          <tr><th>Onderdeel</th><th>Wat het is</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">Omgeving SPoW</td>
+            <td>Eigen Dataverse-omgeving, gescheiden van de rest van de tenant. Toegang via een aparte beveiligingsgroep.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Oplossing SPoWCore</td>
+            <td>De container waarin alle tabellen en velden zitten, zodat het geheel te verplaatsen is.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Tabel Hervatpunt</td>
+            <td>Waar was ik gebleven, wat is er veranderd, eerstvolgende actie, waar wacht ik op, opvolgdatum, bronlink, status, prioriteit.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Tabel Dienst</td>
+            <td>Portaal, account, leverancier, contactpersoon, vervaldatum, waar te vinden, inzetbaarheid, tower.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Diensten ingevuld</td>
+            <td>19 diensten: 13 onder Server &amp; Connectivity, 3 onder Cloud Services, 3 onder Endpoint Management.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Model-driven app</td>
+            <td>De achterkant voor beheer van velden en records. Formulier en weergave voor Dienst zijn bewust niet afgemaakt.</td>
+            <td><span class="chip half">deels</span></td>
+          </tr>
+          <tr>
+            <td class="name">Cockpit</td>
+            <td>Werkende schermvulling met vijf thema's, presenteermodus, nabespreking en doorklik. Toont nog voorbeelddata.</td>
+            <td><span class="chip half">voorbeeld</span></td>
+          </tr>
+          <tr>
+            <td class="name">Tabel Signaal</td>
+            <td>Elf kolommen plus de koppelingen naar Dienst en Hervatpunt. Getest met een proefsignaal dat aan een echte dienst hing en daarna is opgeruimd.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Tabel Portaal</td>
+            <td>Negentien plekken waar je heen moet, met het account waarmee je erin komt. Acht ervan hangen aan een dienstkaart. Enige eigenaar van doorkliklinks.</td>
+            <td><span class="chip on">staat</span></td>
+          </tr>
+          <tr>
+            <td class="name">Dienstkaarten gevuld</td>
+            <td>Alleen naam en tower. Leverancier, contactpersoon, account, vervaldatum, inzetbaarheid en vindplaats staan nog open — dat is wat de vondstenlaag moet oplossen.</td>
+            <td><span class="chip half">leeg</span></td>
+          </tr>
+          <tr>
+            <td class="name">Koppeling cockpit ↔ Dataverse</td>
+            <td>App-registratie in Entra en aanmelding, zodat de cockpit je eigen gegevens toont.</td>
+            <td><span class="chip off">volgt</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEEL 5 ============ -->
+<div class="part" id="voeding">
+  <div class="part-head">
+    <span class="num">DEEL 5</span>
+    <span class="name">Voeding</span>
+    <span class="gloss">hoe SPoW gevuld raakt zonder dat jij typt</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 20 &nbsp;·&nbsp; Het principe</p>
+      <h2>Signalen, geen kopieën</h2>
+      <p>De verleiding is om alles binnen te trekken: elke mail, elk ticket, elke transcriptie, elke logregel. Dat is precies wat je niet moet doen. Dan wordt SPoW een tweede kopie van elk systeem, verouderd binnen een maand, en sneuvelt de belangrijkste afspraak uit §2 — de bron blijft de bron.</p>
+      <p>Wat er binnenkomt is daarom geen inhoud maar een <strong>signaal</strong>: vijf velden en een link terug. Waar het over gaat, uit welk systeem het komt, wanneer, wat er veranderd is, en de knop die je naar het origineel brengt. De inhoud blijft staan waar hij hoort.</p>
+      <p>Eén ding maakt dit mogelijk, en dat staat er al: elke signaal wordt gehangen aan een <strong>dienst</strong>. Die negentien dienstkaarten in Dataverse zijn niet een lijstje — het zijn de haken waar alles zich aan vastgrijpt. Zonder die haak is een ticket een los ding. Mét die haak is het het veertiende ticket op dezelfde dienst deze maand, en dat is een heel ander gegeven.</p>
+      <div class="slab">
+        <q>Ik verwachtte dat er een scan gedaan kon worden op basis van tickets in TOPdesk of alarmen in N-able, de logging meermaals per dag gescand, maar het allerbelangrijkste is dat er trends zichtbaar gaan worden of problems.</q>
+        <span class="who">De vraag die dit deel beantwoordt</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 21 &nbsp;·&nbsp; De bronnen</p>
+      <h2>Wie levert wat, en hoe vaak</h2>
+      <p>Zes bronnen, elk met een eigen ritme en een eigen soort signaal. Duwen is beter dan trekken: waar een systeem zelf een melding kan sturen, gebruiken we dat, en pas anders halen we op.</p>
+    </div>
+    <div class="tw wide">
+      <table>
+        <caption>De voedingslaag per bron</caption>
+        <thead><tr><th>Bron</th><th>Wat er binnenkomt</th><th>Ritme</th><th>Hoe</th></tr></thead>
+        <tbody>
+          <tr><td class="name">TOPdesk</td><td>Incidenten, changes, problems, wijzigingen in status en toewijzing. De belangrijkste bron, want hier zit het operationele leven.</td><td>Elk uur · P1 direct</td><td>REST-API</td></tr>
+          <tr><td class="name">N-able N-central</td><td>Alarmen en herstelmeldingen per device, plus patchafwijkingen: welke servers en werkplekken achterlopen, welke patch faalde, wat op een herstart wacht.</td><td>Elk kwartier · patch dagelijks</td><td>API of melding</td></tr>
+          <tr><td class="name">Outlook</td><td>Uit jouw eigen mailbox: toezeggingen, afspraken en datums. Niet de mail zelf — de afspraak eruit.</td><td>Elk uur</td><td>Graph</td></tr>
+          <tr><td class="name">Teams</td><td>Vergaderingssamenvattingen en actiepunten van Copilot of Facilitator, plus wie erbij was.</td><td>Bij afloop</td><td>Graph</td></tr>
+          <tr><td class="name">Agenda</td><td>Overleggen, changevensters, verlof en afwezigheid van het team.</td><td>Elk uur</td><td>Graph</td></tr>
+          <tr><td class="name">Veeam</td><td>Geen documenten. Wél <strong>dekking</strong>: welke systemen beschermd zijn, wanneer de laatste geslaagde back-up was, en vooral wat er nog nergens in zit.</td><td>Dagelijks</td><td>API</td></tr>
+          <tr><td class="name">Netwerkschijven</td><td>Waar documentatie, draaiboeken en tekeningen staan. Alleen de vindplaats, nooit de inhoud.</td><td>Periodiek</td><td>Scan of connector</td></tr>
+          <tr><td class="name">Logging</td><td><strong>Alleen afgeleide signalen.</strong> Niet syslog zelf: dat wordt geaggregeerd in het systeem dat daarvoor gemaakt is, en SPoW krijgt de uitkomst.</td><td>Tweemaal daags</td><td>Query</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p>Die laatste regel is de enige waar ik je expliciet tegenspreek. Syslog hoort niet in SPoW. Het is veel volume met weinig betekenis, en Dataverse is er niet voor gebouwd. Wat SPoW wel moet weten is de <em>conclusie</em>: dat een switch deze week veertien keer geflapt heeft, niet de veertien regels. Dat scheelt een factor duizend en levert meer inzicht op.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 22 &nbsp;·&nbsp; Jouw aandeel</p>
+      <h2>Wat je zelf blijft doen</h2>
+      <p>Niet nul. Dat zou een leugen zijn, en je zou het binnen een week merken. Maar het is iets heel anders dan invoeren.</p>
+      <p>Alles wat binnenkomt landt in <strong>één stroom van concepten</strong>. Elk concept heeft een voorstel: dit signaal hoort bij die dienst, dit is de eerstvolgende actie, dit lijkt op wat er in maart gebeurde. Jij doet drie dingen — bevestigen, bijstellen, of wegwerpen. Dat is de weging uit §5, en die kan een machine niet voor je doen omdat hij niet weet wat er politiek speelt of wat je vorige week hebt afgesproken.</p>
+      <p>Wat een machine ook niet weet: waarom een besluit genomen is. Een samenvatting geeft je wat er gezegd is; de reden erachter zit in jouw hoofd. Die ene regel typ je zelf, en dat is precies de regel die over vier maanden goud waard is.</p>
+    </div>
+    <div class="grid2 wide">
+      <div>
+        <p class="k">Automatisch</p>
+        <p>Signalen ophalen. Koppelen aan de juiste dienst. Concepten voorstellen. Datums en uren bijwerken. Trends en problems berekenen. Schattingsfouten omrekenen naar kalibratiefactoren. Runbooks vullen.</p>
+      </div>
+      <div>
+        <p class="k">Van jou</p>
+        <p>Bevestigen of afwijzen. De reden achter een besluit. Prioriteit toekennen. Uren reserveren. Een trend erkennen als problem. En de les in woorden — het getal rolt er zelf uit.</p>
+      </div>
+    </div>
+    <div class="col">
+      <p class="note">Het streven is een paar minuten per dag in die conceptenstroom, en één langer moment per week. Lukt dat niet, dan is er iets mis met de voorstellen en niet met jouw discipline — dan moet de weging beter, niet jij harder.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 23 &nbsp;·&nbsp; Van ruis naar roadmap</p>
+      <h2>Signaal, trend, problem, plan</h2>
+      <p>Dit is waar de voedingslaag zijn geld terugverdient, en het is precies de weg die je zelf beschreef: van onderop.</p>
+      <p>Losse signalen zijn ruis. Maar omdat ze allemaal aan een dienst hangen, kun je ze tellen. En zodra je kunt tellen, verschijnen er patronen die niemand ziet als hij één ticket per keer bekijkt.</p>
+    </div>
+    <div class="track wide">
+      <div class="stations">
+        <div class="st"><span class="idx">01</span><span class="nm">Signaal</span><span class="ds">Eén ticket, één alarm, één afspraak. Op zichzelf niets waard.</span></div>
+        <div class="st"><span class="idx">02</span><span class="nm">Reeks</span><span class="ds">Hetzelfde onderwerp op dezelfde dienst, meerdere keren.</span></div>
+        <div class="st gate"><span class="idx">03 · POORT</span><span class="nm">Trend</span><span class="ds">SPoW ziet het patroon en legt het aan jou voor, met de tickets erbij.</span></div>
+        <div class="st"><span class="idx">04</span><span class="nm">Problem</span><span class="ds">Jij erkent het. Nu is het een problem met een oorzaak, geen reeks incidenten.</span></div>
+        <div class="st"><span class="idx">05</span><span class="nm">Weging</span><span class="ds">Wat kost het om te laten liggen, wat kost het om op te lossen.</span></div>
+        <div class="st"><span class="idx">06</span><span class="nm">Roadmap</span><span class="ds">Een P-niveau, gereserveerde uren, en een plek in een kwartaal.</span></div>
+      </div>
+      <div class="loopback">
+        <span class="arrow">&#8592; &#8592; &#8592;</span>
+        <p>Is het opgelost, dan stopt de reeks. Blijft de reeks doorlopen, dan was het de verkeerde oplossing — en dat is zelf weer een signaal.</p>
+      </div>
+    </div>
+    <div class="col">
+      <p>De detectieregels blijven met opzet <strong>simpel en uitlegbaar</strong>. Geen zwarte doos die zegt dat er iets mis is; regels die je aan Roel kunt voorlezen:</p>
+      <ul class="open">
+        <li><span class="mark">A</span><span><b>Herhaling op één dienst</b>Meer dan een afgesproken aantal incidenten op dezelfde dienst binnen een lopend venster.</span></li>
+        <li><span class="mark">B</span><span><b>Terugkerend device</b>Hetzelfde configuration item duikt op in incidenten die los van elkaar zijn afgesloten.</span></li>
+        <li><span class="mark">C</span><span><b>Alarm dat terugkomt</b>Dezelfde alarmsignatuur na een melding dat het opgelost was.</span></li>
+        <li><span class="mark">D</span><span><b>Change-geïnduceerd</b>Incidenten die zich verzamelen in de dagen ná een change op diezelfde dienst.</span></li>
+        <li><span class="mark">E</span><span><b>Veerkracht onder druk</b>Een dienst waarvan de incidenten oplopen terwijl er maar één iemand op inzetbaar is. De bus-factor uit §14, maar nu met een aanleiding.</span></li>
+      </ul>
+      <p>Elke gedetecteerde trend komt als kaart met het bewijs eraan vast: welke tickets, welke datums, welk device. Je kijkt naar het bewijs en niet naar een score. Erken je hem, dan is het een problem en gaat hij de weging in. Wijs je hem af, dan onthoudt SPoW dat en verschijnt hetzelfde patroon niet elke week opnieuw.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 24 &nbsp;·&nbsp; In control</p>
+      <h2>Weten wat je niet weet</h2>
+      <p>In control zijn is niet méér gegevens hebben. Het is weten waar je blind bent. Een dienst met nul incidenten is gezond óf onbewaakt, en van buiten zien die twee er identiek uit.</p>
+      <p>Daarom houdt SPoW per dienst een <strong>dekkingsgraad</strong> bij: komen er signalen binnen, uit welke bronnen, en wanneer voor het laatst. Een dienst die drie maanden niets heeft gemeld terwijl hij wel in gebruik is, is geen goed nieuws maar een openstaande vraag. Dat lijstje is korter en nuttiger dan welk dashboard ook.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 25 &nbsp;·&nbsp; Bouwvolgorde</p>
+      <h2>In welke orde, en wat er nog uitgezocht moet</h2>
+      <p>Alles hangt aan de signalentabel en de koppeling naar de dienst. Die eerst, dan één bron aansluiten en er een week op vertrouwen, en pas dan de volgende. Zes bronnen in één keer aansluiten levert zes half werkende koppelingen op.</p>
+    </div>
+    <div class="wide">
+      <ul class="open">
+        <li><span class="mark">01</span><span><b>Signalentabel in Dataverse</b>Met de koppeling naar dienst, persoon en project, en de conceptenstroom erbovenop. Zonder dit heeft geen enkele koppeling ergens om te landen.</span></li>
+        <li><span class="mark">02</span><span><b>TOPdesk</b>Grootste opbrengst, schoonste koppeling. De API bestaat; de toegang moet nog met jou gedeeld worden. Tot dat er is, staat deze stap stil — en het is de enige stap die op iemand anders wacht.</span></li>
+        <li><span class="mark">03</span><span><b>Agenda en verlof via Graph</b>Voedt direct de capaciteitsberekening en de balans. Relatief eenvoudig, want dezelfde tenant.</span></li>
+        <li><span class="mark">04</span><span><b>N-central</b>Bevestigd: Boels draait N-able N-central voor patchbeheer op servers en werkplekken. Twee soorten signaal komen hieruit — alarmen, en patchafwijkingen per device. Dat laatste is meteen een dekkingsmeting: een dienst waarvan de servers achterlopen op patches is een dienst die aandacht vraagt, ook als er geen ticket over open staat.</span></li>
+        <li><span class="mark">05</span><span><b>Teams-samenvattingen</b>Actiepunten als concept, wachtend op jouw bevestiging. Graph zou moeten kunnen; de precieze rechten kijken we samen na op het moment dat we hier klaar voor zijn.</span></li>
+        <li><span class="mark">06</span><span><b>Afgeleide logsignalen</b>Geaggregeerd elders, alleen de conclusie hierheen.</span></li>
+        <li><span class="mark">07</span><span><b>Trend- en problemdetectie</b>De vijf regels uit §23, nachtelijk herrekend. Pas zinvol als er een paar maanden signalen liggen — eerder is er niets om een patroon in te zien.</span></li>
+      </ul>
+      <p class="note" style="max-width:var(--col);margin:22px auto 0;">Van de drie vraagtekens zijn er twee weg: het is N-central, en Graph gaat naar verwachting lukken. Eén blijft staan, en die wacht niet op techniek maar op toegang — de TOPdesk-API moet nog met je gedeeld worden. Alles wat daar niet van afhangt kan intussen doorgebouwd worden.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEEL 6 ============ -->
+<div class="part" id="vondsten">
+  <div class="part-head">
+    <span class="num">DEEL 6</span>
+    <span class="name">Vondsten</span>
+    <span class="gloss">hoe SPoW weet waar iets staat</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 26 &nbsp;·&nbsp; Het principe</p>
+      <h2>Waar het staat, niet wat erin staat</h2>
+      <p>De voedingslaag uit §20 haalt gebeurtenissen op. De vondstenlaag doet iets anders: die zoekt uit <em>waar dingen liggen</em>. Documentatie, draaiboeken, tekeningen, contactgegevens, het antwoord dat iemand twee jaar geleden in een mail gaf.</p>
+      <p>En de regel is dezelfde, alleen strenger: wat SPoW bewaart is de <strong>vindplaats plus een korte aanduiding</strong>. Pad, naam, soort, datum, en waar het over lijkt te gaan. Niet de inhoud. Dat maakt de vondstenlaag klein, snel, weggooibaar en verdedigbaar — en het houdt de bron de bron.</p>
+      <p>Dit lost de klacht op waarmee dit hele ontwerp begon. Niet dat je informatie mist, maar dat je elke keer opnieuw uitzoekt waar je wat moet zoeken.</p>
+      <div class="slab">
+        <q>Als ik alle documentatie en informatie en tekeningen al gevonden had, dan had ik denk ik nooit aan het bouwen van SPoW gedacht.</q>
+        <span class="who">De aanleiding voor dit deel</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 27 &nbsp;·&nbsp; Drie soorten bronnen</p>
+      <h2>Niet één zoektocht, maar drie</h2>
+      <p>De verleiding is om er één ding van te maken: een eigen index over alles. Dat is verkeerd, want de drie soorten bronnen vragen elk iets anders.</p>
+    </div>
+    <div class="grid3 wide">
+      <div>
+        <p class="k">Soort 1</p>
+        <h3>Al geïndexeerd</h3>
+        <p>Mail, Teams-berichten, samenvattingen, SharePoint, OneDrive. Dit staat al in de index van Microsoft. Daar een eigen zoekmachine bovenop bouwen is namaken wat je al betaalt. Hier is het antwoord: <strong>vragen, niet indexeren</strong>.</p>
+      </div>
+      <div>
+        <p class="k">Soort 2</p>
+        <h3>Buiten het zicht</h3>
+        <p>De netwerkschijven en de DFS-omgeving. Daar komt Graph niet en Copilot niet. Dit vraagt iets binnen het netwerk — een scan onder je eigen account, of een connector die de shares aan de index van Microsoft toevoegt.</p>
+      </div>
+      <div>
+        <p class="k">Soort 3</p>
+        <h3>Onleesbaar</h3>
+        <p>Oude KT-materialen, Visio-tekeningen, gescande PDF's. Daar moet eerst tekst uit voordat er iets te vinden valt. Het kleinste stapeltje, en het duurste per stuk.</p>
+      </div>
+    </div>
+    <div class="col">
+      <p>Voor soort 2 is het aanbevolen pad een <strong>Graph-connector voor bestandsshares</strong>: een agent binnen het netwerk crawlt de shares en indexeert ze in Microsoft Search, met de toegangsrechten mee. Daarna zien Copilot en Graph de shares náást de rest, met dezelfde begrenzing als op de share zelf. Dan is er geen tweede index en geen tweede rechtenmodel.</p>
+      <p class="note">Twee dingen zijn hier nog niet nagekeken en staan daarom niet als belofte: de indexhoeveelheid die zo'n connector mag gebruiken, en of de licenties het toestaan.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 28 &nbsp;·&nbsp; De harde grens</p>
+      <h2>Een index moet rechten erven</h2>
+      <p>Dit is de belangrijkste veiligheidsafspraak van de vondstenlaag, en de reden dat een aantrekkelijke kortere weg afvalt.</p>
+      <p>Op een share bepalen de toegangsrechten wie wat mag lezen. Bouw je een index zonder rechtenmodel, dan is alles wat erin zit daarna vindbaar voor iedereen die de index mag bevragen — ook bestanden die diegene nooit had mogen openen. Salarisgegevens, dossiers van HR, stukken van de directie.</p>
+      <p>Daarom viel de gedachte af om de <strong>back-up</strong> te scannen in plaats van de live omgeving. Aantrekkelijk, want de kopie staat er al en het belast de fileservers niet. Maar in een back-up is de rechtenstructuur weg. Bovendien loopt een back-up per definitie achter, en voor de vraag "waar staat de actuele tekening" is een kopie van vorige week actief schadelijk.</p>
+      <p>De praktische uitweg is elegant: <strong>scan onder je eigen account</strong>. Wat jij niet mag openen, komt er niet in — de begrenzing hoeft niet ontworpen te worden, die is er al. En het aantal mappen dat buiten je zicht ligt wordt geteld; dat getal is zelf informatie.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 29 &nbsp;·&nbsp; Vertrouwen</p>
+      <h2>Vijf niveaus, en ze zijn zichtbaar</h2>
+      <p>Elk gegeven op een kaart in SPoW heeft een herkomst, en die staat er altijd bij. Dat is geen versiering: het bepaalt of je erop kunt bouwen.</p>
+    </div>
+    <div class="tw wide">
+      <table>
+        <caption>Herkomst per veld</caption>
+        <thead><tr><th>Niveau</th><th>Wat het betekent</th><th>Wat je ermee doet</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Uit een bron</td><td>Aanwijsbaar afkomstig uit een document, mail of systeem, met de verwijzing erbij.</td><td>Vertrouwen tot het tegendeel blijkt.</td></tr>
+          <tr><td class="name">Afgeleid</td><td>SPoW heeft het geconcludeerd. Een gok met een reden, geen vondst.</td><td>Controleren voordat je erop handelt.</td></tr>
+          <tr><td class="name">Niet gezocht</td><td>Er is nog niet naar gekeken. Anders dan &bdquo;bestaat niet&rdquo;.</td><td>Op de zoeklijst, niet op je bord.</td></tr>
+          <tr><td class="name">Bevestigd</td><td>Jij hebt gezegd dat het klopt, of je hebt het gebruikt en het werkte.</td><td>Klaar.</td></tr>
+          <tr><td class="name">Open</td><td>Jij weet het niet en het moet uitgezocht worden.</td><td>Wordt een actie op je planning.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p>Het onderscheid tussen <em>niet gezocht</em> en <em>bestaat niet</em> is waar veel systemen de fout in gaan. Een leeg veld dat &bdquo;geen&rdquo; betekent en een leeg veld dat &bdquo;onbekend&rdquo; betekent zien er identiek uit, en dat is precies hoe een certificaat verloopt waarvan niemand wist dat het er was.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 30 &nbsp;·&nbsp; Verifiëren</p>
+      <h2>Nakijken door te gebruiken</h2>
+      <p>Een scan levert honderden vondsten op. Die allemaal nalezen is hetzelfde werk als ze zelf gaan zoeken, en dan is er niets gewonnen. Dus wordt er niet nagelezen maar <strong>gebruikt</strong>.</p>
+      <p>Een vondst komt binnen als concept. Klik je de tekening open en het is de goede, dan is dat de bevestiging — SPoW hoeft er niets over te vragen. Bel je de contactpersoon en het klopt, idem. Kom je iets tegen dat niet klopt, dan is er één knop en staat het op de lijst.</p>
+      <p>Dat is dezelfde afspraak als bij het advies uit §6, nu toegepast op gegevens: <strong>geen bericht is goed bericht</strong>, met dezelfde valkuil en dezelfde oplossing. Stilte telt alleen als bevestiging wanneer je de vondst ook daadwerkelijk gebruikt hebt. Een vondst waar je nooit naar gekeken hebt blijft onbevestigd, want anders leert SPoW dat alles klopt zolang jij het druk hebt.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 31 &nbsp;·&nbsp; Corrigeren</p>
+      <h2>Eén knop, geen formulier</h2>
+      <p>Het moment waarop je merkt dat iets niet klopt is bijna nooit het moment waarop je het kunt uitzoeken. Je zit in een overleg, je bent iets anders aan het doen, of je hebt de goede naam niet bij de hand. Als SPoW op dat moment een formulier opent, gebeurt het niet.</p>
+      <p>Dus doet SPoW het omgekeerde. Eén knop bij elk gegeven: <em>klopt niet</em>. Daarmee is het gegeven gemarkeerd, de correctie is een <strong>openstaande actie</strong>, en die actie landt op je planning met de dienst en het veld erbij. Niet negentien losse klusjes maar één taak per dienst met de ontbrekende velden eronder — lage prioriteit, behalve als het een vervaldatum is, want die kan je verrassen.</p>
+      <p>En daarmee is de cirkel rond: een correctie is een signaal, een signaal doorloopt de doorlus, en de doorlus eindigt op de roadmap.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 32 &nbsp;·&nbsp; Dekking</p>
+      <h2>Veeam vertelt je wat er níet is</h2>
+      <p>Boels heeft back-ups van Microsoft 365, Entra ID en Salesforce in Veeam Data Cloud. Als documentbron is dat onbruikbaar, om de redenen uit §28. Maar er zit iets anders in dat niemand anders heeft.</p>
+      <p>Back-up &amp; restore is een van de negentien diensten, en de belangrijkste vraag erover kan vandaag niemand beantwoorden: <strong>welke systemen zitten er niet in</strong>. Veeam weet welke workloads beschermd zijn, wanneer de laatste geslaagde back-up was, en waar de afspraak overschreden wordt. Een server die vorige maand is opgeleverd en in geen enkele job zit — dat is een signaal dat je nu pas ontdekt als het misgaat.</p>
+      <p>Dat is een betere reden om Veeam aan te sluiten dan documenten scannen. Het past bovendien precies in de dekkingsgedachte uit §24: in control zijn is niet méér gegevens hebben, het is weten waar je blind bent.</p>
+      <p class="note">Salesforce staat daar wél in de back-up, en niet in de negentien dienstkaarten. Dat is een van de nieuwe kaarten die uit deze exercitie voortkomt — precies zoals voorzien.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEEL 7 ============ -->
+<div class="part" id="logboek">
+  <div class="part-head">
+    <span class="num">DEEL 7</span>
+    <span class="name">Logboek</span>
+    <span class="gloss">correcties, en wat er nog open staat</span>
+  </div>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 33 &nbsp;·&nbsp; Correcties</p>
+      <h2>Waar het ontwerp is bijgesteld</h2>
+      <p>Dit is het waardevolste deel van dit dossier en tegelijk het deel dat normaal nooit bewaard wordt: de plekken waar een aanname sneuvelde. Zonder dit weet je over een half jaar wél wat er besloten is, maar niet waarom het níet anders is.</p>
+    </div>
+    <div class="log wide">
+      <div class="entry">
+        <div class="subj">Scope · Endpoint</div>
+        <div class="body">Endpoint Management valt onder IT Infra en is dus van jou. Werkplekbeheer — site support — en IT Telecom zijn van Steinar Heijkoop. Print en telefonie vallen daarmee buiten SPoW. Cloud Services en Endpoint Management hebben op papier een lead, maar die posities zijn onbezet, dus de taak ligt bij jou en Roel.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Roadmap · Richting</div>
+        <div class="body"><q>Shit trickles down (CTO roadmap) maar daarom moet ik van onderop werken.</q> De roadmap wordt niet overgenomen maar opgebouwd. Wat van boven komt is een gegeven om rekening mee te houden, geen vulling van je eigen agenda.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Team · Capaciteit</div>
+        <div class="body">Groepslidmaatschap in Entra is een indeling op papier, geen capaciteitsmodel. Meerdere teamleden zijn vliegende keep. Inzetbaarheid is daarom een eigen veld dat jij onderhoudt, en geen afgeleide van een groep.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Prioriteit · Veroudering</div>
+        <div class="body">Prioriteiten stijgen niet met de tijd. Een P1 houdt voorrang op iets dat later P1 werd, en P3 tot en met P5 bereiken nooit P2 of hoger. Wachttijd is geen argument.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Overleg · Opname</div>
+        <div class="body">De opnamevraag was al beslecht: bij Boels bestaat de unanieme staande afspraak dat opnemen en registreren mag. Je meldt het altijd, maar je biedt geen gelegenheid tot bezwaar. Het ontwerp gaat daarvan uit.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Kennis · Bronnen</div>
+        <div class="body">Er bestaan geen opnames van de Riwal- en Cramo-integraties. Copilot en Teams Facilitator kwamen later. Er zijn KT-sessies, maar vaak onvolledig of ontoereikend. Het integratiedraaiboek begint dus bij nul en groeit vooruit, niet terug.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Aanpak · Volgorde</div>
+        <div class="body"><q>Ik wil wel eerst een visueel voorbeeld zien.</q> Terecht: er werden tabellen gebouwd zonder dat de bestemming zichtbaar was. Sindsdien komt het beeld eerst en de structuur daarna.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Toon · Meten</div>
+        <div class="body">Het eerste statusoverzicht met percentages werd afgewezen. Er is geen behoefte aan meten, maar aan creatief meedenken over wat er functioneel nodig is. Meetwaarden komen alleen voor waar ze een besluit ondersteunen — inzetbaarheid, bus-factor, kwartaalvulling.</div>
+      </div>
+      <div class="entry">
+        <div class="subj">Techniek · Wizard</div>
+        <div class="body">Het opslaan bij het toevoegen van Dataverse liep vast op de beveiligingsgroep, niet op de URL. Dat veld is verplicht. Hiermee is de openstaande vraag uit de oorspronkelijke overdracht beantwoord.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> 34 &nbsp;·&nbsp; Open</p>
+      <h2>Wat er nog moet gebeuren</h2>
+      <p>Op volgorde van wat het meeste oplevert per uur werk. Twee dingen wachten op iemand anders; de rest niet.</p>
+    </div>
+    <div class="wide">
+      <ul class="open">
+        <li><span class="mark">01</span><span><b>Cockpit aan Dataverse hangen</b>App-registratie in Entra en de pagina op een statische website in de eigen omgeving. Een artefact op claude.ai mag geen verbinding met de tenant maken, dus daar kan de echte cockpit nooit draaien. Dit is het moment waarop SPoW van schets naar gereedschap gaat.</span></li>
+        <li><span class="mark">02</span><span><b>Vindplaatsenscan draaien</b>Onder eigen account, op de DFS-omgeving. Levert de kaart van waar documentatie ligt, én de meting die de onderbouwing wordt voor het bredere informatievraagstuk.</span></li>
+        <li><span class="mark">03</span><span><b>Agenda en verlof via Graph</b>Voedt direct de balans, die nu op verzonnen verlofgegevens draait. Zelfde tenant, geen externe afhankelijkheid.</span></li>
+        <li><span class="mark">04</span><span><b>Trend- en problemdetectie</b>De vijf regels uit §23 tegen de signalentabel. Te bouwen en te testen met verzonnen signalen, zodat het klaarstaat als de echte bronnen gaan lopen.</span></li>
+        <li><span class="mark">05</span><span><b>TOPdesk</b><em>Wacht op toegang.</em> De API bestaat, het verzoek ligt bij de beheerder. Grootste opbrengst van alle bronnen.</span></li>
+        <li><span class="mark">06</span><span><b>N-central</b>Alarmen én patchafwijkingen per device, gekoppeld aan de dienst. Bevestigd dat het N-central is.</span></li>
+        <li><span class="mark">07</span><span><b>Veeam als dekkingsbron</b>Niet voor documenten. Voor de vraag welke systemen nergens in zitten.</span></li>
+        <li><span class="mark">08</span><span><b>Teams-samenvattingen via Graph</b><em>Samen na te kijken.</em> Actiepunten als concept, wachtend op bevestiging. De rechten kijken we samen na.</span></li>
+        <li><span class="mark">09</span><span><b>Graph-connector voor de netwerkschijven</b>De structurele oplossing voor soort 2 uit §27. Vraagt een besluit en infrastructuur, en is groter dan SPoW.</span></li>
+        <li><span class="mark">10</span><span><b>Thema's en achtergronden uit een map</b>Kan pas in de desktopschil. De vijf thema's die er zijn werken al.</span></li>
+      </ul>
+      <p class="note" style="max-width:var(--col);margin:22px auto 0;">Alles behalve 05 en 08 kan doorgebouwd worden zonder op iemand te wachten.</p>
+    </section>
+</div>
+
+<div class="closer">
+    <div class="col">
+      <p class="eyebrow"><span class="n">§</span> Slot</p>
+      <p>SPoW wordt gebouwd met jou als enige gebruiker, en dat is geen tussenstap maar het uitgangspunt. Iets dat voor één iemand echt werkt is later uit te breiden; iets dat vanaf dag één voor iedereen bedoeld is werkt meestal voor niemand.</p>
+      <p>Pas als het zich een jaar lang bewezen heeft — en pas na je vaste contract — is het onderwerp van een volgend gesprek.</p>
+      <p class="note" style="margin-top:32px;">Dit dossier hoort bij de cockpit. Verandert het ontwerp, dan verandert dit document mee; het is de plek waar het ontwerp woont, en niet langer een chatgesprek.</p>
+    </div>
+</div>
+
+</main>
+
+</body></html>

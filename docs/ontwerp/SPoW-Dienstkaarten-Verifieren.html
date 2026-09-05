@@ -1,0 +1,522 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Dienstkaarten Verifiëren</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#0A0F16; --panel:#111A24; --raise:#16222E; --sunk:#0B1219;
+  --line:#22323F; --line-soft:#1A2833;
+  --ink:#DCE7EC; --dim:#8FA6B2; --faint:#5E7684;
+  --accent:#FF7A29; --accent-soft:rgba(255,122,41,.12);
+  --hard:#0ca30c; --afg:#fab219; --leeg:#5A7387; --crit:#d03b3b;
+  --disp:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --cond:"Barlow Semi Condensed","Archivo",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--disp);font-size:14px;-webkit-font-smoothing:antialiased;}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+.top{display:flex;align-items:center;gap:14px;padding:0 24px;height:58px;border-bottom:1px solid var(--line);
+  background:rgba(10,15,22,.97);position:sticky;top:0;z-index:20;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);}
+.brand{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:-.01em;white-space:nowrap;}
+.brand i{font-style:normal;color:var(--accent);}
+.brand small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--faint);font-weight:400;margin-top:1px;}
+.spacer{flex:1 1 auto;}
+.tel{font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--faint);white-space:nowrap;}
+.tel b{color:var(--ink);font-weight:600;}
+.tel s{text-decoration:none;color:var(--accent);}
+.topbtn{border:1px solid var(--line);border-radius:3px;padding:7px 12px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--dim);white-space:nowrap;}
+.topbtn:hover{color:var(--ink);border-color:var(--dim);}
+.topbtn.pri{border-color:var(--accent);color:var(--accent);}
+.topbtn.pri:hover{background:var(--accent);color:#0A0F16;}
+.bar{height:2px;background:var(--line-soft);position:sticky;top:58px;z-index:19;}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s;}
+
+.uitleg-band{display:flex;gap:11px;align-items:flex-start;padding:12px 24px;background:var(--accent-soft);
+  border-bottom:1px solid rgba(255,122,41,.22);font-family:var(--cond);font-size:13.5px;color:#F3C9A8;line-height:1.45;}
+.uitleg-band b{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);flex:0 0 auto;padding-top:2px;}
+
+.shell{display:grid;grid-template-columns:262px minmax(0,1fr);max-width:1180px;margin:0 auto;}
+@media (max-width:900px){.shell{grid-template-columns:1fr;}.rail{display:none;}}
+.rail{border-right:1px solid var(--line);padding:18px 0 60px;}
+.railkop{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);padding:0 20px 8px;}
+.railgrp{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:15px 20px 5px;}
+.rl{display:grid;grid-template-columns:34px 1fr;gap:8px;align-items:center;width:100%;text-align:left;
+  padding:6px 20px;font-family:var(--cond);font-size:14.5px;color:var(--dim);}
+.rl:hover{background:rgba(255,255,255,.03);color:var(--ink);}
+.rl[aria-current="true"]{background:var(--accent-soft);color:var(--ink);border-left:2px solid var(--accent);padding-left:18px;}
+.rl .mini{display:flex;gap:2px;}
+.rl .mini i{width:4px;height:11px;border-radius:1px;background:var(--line);display:block;}
+.rl .mini i.hard{background:var(--hard);} .rl .mini i.afg{background:var(--afg);}
+.rl .mini i.ok{background:var(--accent);} .rl .mini i.open{background:var(--crit);}
+
+.work{padding:28px 32px 90px;}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--faint);margin:0 0 10px;}
+.eyebrow b{color:var(--accent);}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(25px,3.4vw,34px);line-height:1.1;letter-spacing:-.025em;margin:0 0 8px;text-wrap:balance;}
+.sub{font-family:var(--cond);font-size:16px;color:var(--dim);margin:0 0 24px;line-height:1.45;}
+
+/* veld als kaart met herkomst */
+.vk{border:1px solid var(--line-soft);border-left:2px solid var(--leeg);background:var(--panel);margin-bottom:12px;}
+.vk.hard{border-left-color:var(--hard);}
+.vk.afg{border-left-color:var(--afg);}
+.vk.ok{border-left-color:var(--accent);}
+.vk.open{border-left-color:var(--crit);}
+.vkkop{display:flex;align-items:center;gap:10px;padding:11px 15px 0;flex-wrap:wrap;}
+.vkkop label{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);}
+.herk{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;padding:2px 7px;border-radius:2px;white-space:nowrap;}
+.herk.hard{color:var(--hard);border:1px solid rgba(12,163,12,.42);background:rgba(12,163,12,.1);}
+.herk.afg{color:var(--afg);border:1px solid rgba(250,178,25,.42);background:rgba(250,178,25,.1);}
+.herk.leeg{color:var(--faint);border:1px solid var(--line);}
+.herk.ok{color:var(--accent);border:1px solid rgba(255,122,41,.42);background:var(--accent-soft);}
+.herk.open{color:var(--crit);border:1px solid rgba(208,59,59,.45);background:rgba(208,59,59,.1);}
+.vkwaarde{padding:9px 15px 0;}
+.vkwaarde .toon{font-family:var(--cond);font-size:18px;color:var(--ink);line-height:1.35;}
+.vkwaarde .toon.leeg{color:var(--faint);font-style:italic;font-size:16px;}
+input[type=text],input[type=date],textarea{width:100%;background:var(--sunk);border:1px solid var(--line);border-radius:3px;
+  padding:9px 11px;color:var(--ink);font-family:var(--cond);font-size:16px;}
+input::placeholder,textarea::placeholder{color:var(--faint);}
+input:focus,textarea:focus{border-color:var(--accent);}
+textarea{min-height:58px;resize:vertical;line-height:1.45;}
+.vkact{display:flex;gap:7px;flex-wrap:wrap;padding:11px 15px 13px;}
+.vkact button{border:1px solid var(--line);border-radius:2px;padding:5px 10px;font-family:var(--cond);font-size:13.5px;color:var(--dim);}
+.vkact button:hover{color:var(--ink);border-color:var(--dim);}
+.vkact button.ja{border-color:rgba(255,122,41,.45);color:var(--accent);}
+.vkact button.ja:hover{background:var(--accent);color:#0A0F16;}
+.vkact button.nee:hover{border-color:var(--crit);color:var(--crit);}
+.vkact .bron{font-family:var(--cond);font-size:12.5px;color:var(--faint);align-self:center;margin-left:auto;}
+
+.mensen{display:flex;flex-wrap:wrap;gap:6px;padding:9px 15px 0;}
+.mensen button{border:1px solid var(--line);border-radius:2px;padding:5px 10px;font-family:var(--cond);font-size:14px;color:var(--dim);display:flex;align-items:center;gap:6px;}
+.mensen button:hover{color:var(--ink);border-color:var(--dim);}
+.mensen button[aria-pressed="true"]{background:var(--accent);color:#0A0F16;border-color:var(--accent);font-weight:500;}
+.mensen button span{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;opacity:.72;}
+.mensen button.extra{border-style:dashed;color:var(--accent);border-color:rgba(255,122,41,.45);}
+.toevoeg{display:flex;gap:7px;padding:9px 15px 0;}
+.toevoeg input{flex:1 1 auto;font-size:15px;}
+.toevoeg button{border:1px solid var(--accent);border-radius:2px;padding:0 13px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent);white-space:nowrap;}
+.toevoeg button:hover{background:var(--accent);color:#0A0F16;}
+.bus{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:center;margin:11px 15px 0;
+  border:1px solid var(--line);border-left:2px solid var(--faint);background:var(--raise);padding:11px 14px;}
+.bus.b1{border-left-color:var(--crit);} .bus.b2{border-left-color:var(--afg);} .bus.b3{border-left-color:var(--hard);}
+.bus .n{font-family:var(--mono);font-size:25px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;color:var(--faint);}
+.bus.b1 .n{color:var(--crit);} .bus.b2 .n{color:var(--afg);} .bus.b3 .n{color:var(--hard);}
+.bus .tx{font-family:var(--cond);font-size:14px;line-height:1.4;color:var(--dim);}
+.bus .tx b{display:block;font-family:var(--disp);font-weight:600;font-size:13.5px;color:var(--ink);margin-bottom:2px;}
+
+.nav{display:flex;gap:10px;align-items:center;margin-top:26px;padding-top:20px;border-top:1px solid var(--line);flex-wrap:wrap;}
+.nav button{border:1px solid var(--line);border-radius:3px;padding:11px 17px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--dim);}
+.nav button:hover{color:var(--ink);border-color:var(--dim);}
+.nav button[disabled]{opacity:.35;cursor:default;}
+.nav button.pri{border-color:var(--accent);color:var(--accent);margin-left:auto;}
+.nav button.pri:hover{background:var(--accent);color:#0A0F16;}
+.nav .hint{font-family:var(--cond);font-size:13px;color:var(--faint);}
+
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:var(--line-soft);
+  border:1px solid var(--line-soft);margin:20px 0 24px;}
+.sum > div{background:var(--panel);padding:14px 15px;}
+.sum .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sum .v{font-family:var(--mono);font-size:21px;font-weight:600;line-height:1.2;margin-top:3px;font-variant-numeric:tabular-nums;}
+.sum .v.crit{color:var(--crit);} .sum .v.warn{color:var(--afg);} .sum .v.good{color:var(--hard);} .sum .v.hi{color:var(--accent);}
+.sum .s{font-family:var(--cond);font-size:12.5px;color:var(--faint);}
+.sec{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);
+  margin:26px 0 10px;padding-top:15px;border-top:1px solid var(--line);}
+.lijst .r{display:grid;grid-template-columns:1fr auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--line-soft);
+  font-family:var(--cond);font-size:15px;color:#C4D4DA;align-items:baseline;}
+.lijst .r b{color:var(--ink);font-weight:600;}
+.lijst .r .m{font-family:var(--mono);font-size:10px;color:var(--faint);white-space:nowrap;}
+.lijst .r .m.crit{color:var(--crit);}
+.advies{border:1px solid var(--line);border-left:2px solid var(--accent);background:var(--raise);padding:13px 15px;margin-top:14px;}
+.advies b{display:block;font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);margin-bottom:4px;}
+.advies p{font-family:var(--cond);font-size:13.5px;line-height:1.45;color:var(--dim);margin:0 0 7px;}
+.advies p:last-child{margin-bottom:0;}
+
+.modal{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:rgba(4,7,11,.74);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:24px;}
+.modal.on{display:grid;}
+.mbox{width:min(720px,100%);background:var(--panel);border:1px solid var(--line);padding:22px;max-height:86vh;overflow-y:auto;}
+.mbox h3{font-family:var(--disp);font-weight:700;font-size:18px;margin:0 0 8px;}
+.mbox p{font-family:var(--cond);font-size:14px;color:var(--dim);margin:0 0 13px;line-height:1.45;}
+.mbox textarea{height:260px;font-family:var(--mono);font-size:11px;line-height:1.5;}
+.mbox .rij{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap;}
+.mbox .rij button{border:1px solid var(--line);border-radius:3px;padding:10px 15px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--dim);}
+.mbox .rij button.pri{border-color:var(--accent);color:var(--accent);}
+.mbox .rij button.pri:hover{background:var(--accent);color:#0A0F16;}
+.mbox .rij button:hover{color:var(--ink);}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+
+<header class="top">
+  <div class="brand">SPoW <i>/</i> Dienstkaarten<small>VERIFIËREN, NIET INVULLEN</small></div>
+  <div class="spacer"></div>
+  <div class="tel" id="tel"></div>
+  <button class="topbtn" id="btnKlaar">Overzicht</button>
+  <button class="topbtn pri" id="btnExport">Naar SPoW</button>
+</header>
+<div class="bar"><i id="barI" style="width:0%"></i></div>
+<div class="uitleg-band">
+  <b>Zo werkt dit</b>
+  <span>Je vult niets op. Per veld staat wat SPoW gevonden heeft en waar het vandaan komt — groen is uit een bron, oranje is door mij afgeleid, grijs is nog niet gezocht. Jij zegt alleen <em>klopt</em> of <em>klopt niet</em>. Wat je niet weet laat je open; dat komt op je lijst van openstaande acties en niet op je bord.</span>
+</div>
+
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <main class="work" id="work"></main>
+</div>
+
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i);};
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+/* ---------- team, uitbreidbaar ---------- */
+var TEAM=[
+ ["CD","Clifton Dobbelsteyn","IT Infra"],["RP","Roel Pluijmen","Manager Infra"],
+ ["HAC","Harish AC","CGI"],["PK","Pavan Kumar","CGI"],["SM","Siddlingappa Masali","CGI"],
+ ["MS","Manjula Salem","CGI"],["PTA","Pavan Kumar TA","CGI"],
+ ["EJ","Eric de Jong","Architectuur"],["MM","Maarten Merkens","Security"],
+ ["SH","Steinar Heijkoop","Site support"]
+];
+try{var ex=JSON.parse(localStorage.getItem("spow.extramensen")||"[]");
+ ex.forEach(function(m){if(!TEAM.some(function(t){return t[0]===m[0];}))TEAM.push(m);});}catch(e){}
+function bewaarMensen(){
+ try{localStorage.setItem("spow.extramensen",JSON.stringify(TEAM.slice(10)));}catch(e){}
+}
+
+var VELDEN=[
+ {k:"lev",l:"Leverancier",ph:"wie levert deze dienst"},
+ {k:"cp",l:"Contactpersoon",ph:"naam, of de partij als er geen naam is"},
+ {k:"acc",l:"Account of methode",ph:"wélk account, nooit het wachtwoord"},
+ {k:"verval",l:"Vervaldatum",ph:"",datum:true},
+ {k:"waar",l:"Waar te vinden",ph:"documentatie, draaiboek, tekening",lang:true}
+];
+
+/* h = hard uit een bron, a = door mij afgeleid, leeg = niets gevonden */
+function v(waarde,soort,bron){return {w:waarde||"",s:soort||"leeg",b:bron||""};}
+var D=[
+ {n:"WAN & vestigingsconnectiviteit",t:"sc",f:{
+   lev:v("Infopact","h","runbook BW2606 4650"),
+   cp:v("Pieter Zeldenthuis (Infopact)","h","runbook BW2606 4650"),
+   acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"LAN & wifi",t:"sc",f:{
+   lev:v("Extreme Networks","a","portaal ExtremeCloud IQ"),
+   cp:v("","leeg"),acc:v("eigen account ExtremeCloud IQ","h","portaal in SPoW"),
+   verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Firewall & perimeter",t:"sc",f:{
+   lev:v("Fortinet via Axians","h","runbook BW2606 4650"),
+   cp:v("Axians","h","runbook BW2606 4650"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"VPN & remote access",t:"sc",f:{
+   lev:v("Fortinet via Axians","a","zelfde cluster als perimeter"),
+   cp:v("Axians","a","runbook BW2606 4650"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"DNS, DHCP & IPAM",t:"sc",f:{
+   lev:v("Microsoft","a","doorgaans Windows-rollen"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Datacenter Sittard",t:"sc",f:{
+   lev:v("","leeg"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),
+   waar:v("Rackschema DC Sittard, labelmanagement","h","runbook BW2606 4650")}},
+ {n:"Windows Server-platform",t:"sc",f:{
+   lev:v("Microsoft","a","platform"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Virtualisatie",t:"sc",f:{lev:v("","leeg"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Storage",t:"sc",f:{lev:v("","leeg"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Fileservices",t:"sc",f:{lev:v("Microsoft","a","platform"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Back-up & restore",t:"sc",f:{lev:v("","leeg"),cp:v("","leeg"),acc:v("","leeg"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Certificaten & PKI",t:"sc",f:{lev:v("","leeg"),cp:v("","leeg"),acc:v("","leeg"),
+   verval:v("","leeg"),waar:v("Certificatenlijst in opbouw","a","taak C-104860")}},
+ {n:"Patch- & kwetsbaarhedenbeheer",t:"sc",f:{
+   lev:v("N-able","h","portaal N-central"),cp:v("","leeg"),
+   acc:v("eigen operator N-central","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Azure-platform",t:"cl",f:{
+   lev:v("Microsoft","h","portaal Azure"),cp:v("","leeg"),
+   acc:v("azadm + PIM","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Entra ID & Active Directory",t:"cl",f:{
+   lev:v("Microsoft","h","portaal Entra"),cp:v("","leeg"),
+   acc:v("azadm + PIM","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Monitoring & alerting",t:"cl",f:{
+   lev:v("Netdata","h","portaal Netdata Cloud"),cp:v("","leeg"),
+   acc:v("eigen account Netdata Cloud","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Endpoint-beheer",t:"ep",f:{
+   lev:v("Microsoft","h","portaal M365 Apps"),cp:v("","leeg"),
+   acc:v("azadm","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Endpoint-patching",t:"ep",f:{
+   lev:v("N-able","h","portaal N-central"),cp:v("","leeg"),
+   acc:v("eigen operator N-central","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}},
+ {n:"Endpoint-beveiligingsbaseline",t:"ep",f:{
+   lev:v("SentinelOne","h","portaal SentinelOne"),cp:v("","leeg"),
+   acc:v("eigen account SentinelOne","h","portaal in SPoW"),verval:v("","leeg"),waar:v("","leeg")}}
+];
+var TOWER={sc:"Server & Connectivity",cl:"Cloud Services",ep:"Endpoint Management"};
+
+/* staat: per dienst per veld een oordeel */
+var st={}, cur=0, klaarmodus=false, bewerk=null;
+D.forEach(function(d,i){
+ st[i]={oordeel:{},waarde:{},mensen:[],geenVerval:false};
+ VELDEN.forEach(function(f){st[i].oordeel[f.k]="";st[i].waarde[f.k]=d.f[f.k].w;});
+});
+try{var raw=localStorage.getItem("spow.dienstkaarten2");
+ if(raw){var o=JSON.parse(raw);Object.keys(o).forEach(function(k){if(st[k])st[k]=Object.assign(st[k],o[k]);});}
+}catch(e){}
+function bewaar(){try{localStorage.setItem("spow.dienstkaarten2",JSON.stringify(st));}catch(e){}}
+
+function veldStaat(i,k){
+ var o=st[i].oordeel[k];
+ if(o==="ok") return "ok";
+ if(o==="open") return "open";
+ var s=D[i].f[k].s;
+ if(k==="verval"&&st[i].geenVerval) return "ok";
+ if(st[i].waarde[k]&&s==="leeg") return "ok";
+ return s==="h"?"hard":(s==="a"?"afg":"leeg");
+}
+function herkTekst(s){
+ return s==="hard"?"uit een bron":s==="afg"?"afgeleid":s==="ok"?"bevestigd":s==="open"?"openstaande actie":"nog niet gezocht";
+}
+function afgehandeld(i){
+ var n=0; VELDEN.forEach(function(f){var s=veldStaat(i,f.k); if(s==="ok"||s==="open") n++;});
+ if(st[i].mensen.length) n++;
+ return n;
+}
+function openActies(){
+ var uit=[];
+ D.forEach(function(d,i){
+  VELDEN.forEach(function(f){
+   if(veldStaat(i,f.k)==="open") uit.push({dienst:d.n,veld:f.l,tower:TOWER[d.t]});
+  });
+ });
+ return uit;
+}
+
+function railTeken(){
+ var h='<div class="railkop">Herkomst per dienst</div>', vorige=null;
+ D.forEach(function(d,i){
+  if(d.t!==vorige){h+='<div class="railgrp">'+TOWER[d.t]+'</div>';vorige=d.t;}
+  var mini=VELDEN.map(function(f){
+   var s=veldStaat(i,f.k); return '<i class="'+(s==="leeg"?"":s)+'"></i>';
+  }).join("");
+  h+='<button class="rl" data-i="'+i+'" aria-current="'+((!klaarmodus&&i===cur)?"true":"false")+'">'+
+     '<span class="mini">'+mini+'</span><span>'+esc(d.n)+'</span></button>';
+ });
+ $("rail").innerHTML=h;
+ var klaar=D.filter(function(_,i){return afgehandeld(i)>=6;}).length;
+ var op=openActies().length;
+ $("tel").innerHTML='<b>'+klaar+'</b> van '+D.length+' nagelopen'+(op?' &nbsp;·&nbsp; <s>'+op+' open acties</s>':'');
+ $("barI").style.width=(klaar/D.length*100)+"%";
+}
+
+function busTekst(k){
+ if(k===0) return ["b0","Nog niemand aangewezen","Onbekend risico, niet nul-risico. Dit is het enige veld dat ik echt niet voor je kan vinden — wie iets kan, staat nergens opgeschreven."];
+ if(k===1) return ["b1","Bus-factor 1","Eén persoon draagt deze dienst. Valt hij weg, dan valt de dienst weg."];
+ if(k===2) return ["b2","Bus-factor 2","Krap maar werkbaar. Met verlof van één van de twee wordt het spannend."];
+ return ["b3","Bus-factor "+k,"Voldoende gedragen."];
+}
+
+function veldKaart(i,f){
+ var d=D[i], s=veldStaat(i,f.k), o=st[i].oordeel[f.k], val=st[i].waarde[f.k];
+ var bron=d.f[f.k].b;
+ var h='<div class="vk '+s+'"><div class="vkkop"><label>'+f.l+'</label>'+
+   '<span class="herk '+s+'">'+herkTekst(s)+'</span></div>';
+ if(bewerk===f.k){
+  h+='<div class="vkwaarde">'+
+    (f.datum?'<input type="date" id="in_'+f.k+'" value="'+esc(val)+'">'
+     :(f.lang?'<textarea id="in_'+f.k+'" placeholder="'+esc(f.ph)+'">'+esc(val)+'</textarea>'
+              :'<input type="text" id="in_'+f.k+'" value="'+esc(val)+'" placeholder="'+esc(f.ph)+'">'))+
+    '</div><div class="vkact"><button class="ja" data-bewaar="'+f.k+'">Bewaren</button>'+
+    '<button data-annuleer="1">Annuleren</button></div>';
+ } else {
+  h+='<div class="vkwaarde"><div class="toon'+(val?"":" leeg")+'">'+
+    (val?esc(f.datum?val:val):(f.k==="verval"&&st[i].geenVerval?"niets dat verloopt":"niets gevonden"))+'</div></div>';
+  h+='<div class="vkact">';
+  if(val&&o!=="ok") h+='<button class="ja" data-ok="'+f.k+'">Klopt</button>';
+  h+='<button data-edit="'+f.k+'">'+(val?"Aanpassen":"Zelf invullen")+'</button>';
+  if(f.k==="verval") h+='<button data-geen="1">'+(st[i].geenVerval?"Toch een datum":"Niets dat verloopt")+'</button>';
+  if(o!=="open") h+='<button data-open="'+f.k+'">Weet ik niet — zoek dit uit</button>';
+  else h+='<button data-unopen="'+f.k+'">Van de lijst halen</button>';
+  h+='<button data-vraag="'+f.k+'">Laat Copilot zoeken</button>';
+  if(bron) h+='<span class="bron">'+esc(bron)+'</span>';
+  h+='</div>';
+ }
+ return h+'</div>';
+}
+
+function kaartTeken(){
+ var d=D[cur], s=st[cur];
+ var h='<p class="eyebrow"><b>'+(cur+1)+'</b> / '+D.length+' &nbsp;·&nbsp; '+TOWER[d.t]+'</p><h1>'+esc(d.n)+'</h1>';
+ var hard=VELDEN.filter(function(f){return veldStaat(cur,f.k)==="hard";}).length;
+ var leeg=VELDEN.filter(function(f){return veldStaat(cur,f.k)==="leeg";}).length;
+ h+='<p class="sub">'+(hard?hard+' veld'+(hard>1?"en":"")+' komt uit een bron die ik kan aanwijzen':'Nog niets uit een harde bron')+
+    (leeg?', '+leeg+' is nog niet gezocht':'')+'. Zeg wat klopt, zet de rest op de lijst.</p>';
+ VELDEN.forEach(function(f){h+=veldKaart(cur,f);});
+
+ h+='<div class="vk '+(s.mensen.length?"ok":"leeg")+'"><div class="vkkop"><label>Wie kan deze dienst dragen</label>'+
+    '<span class="herk '+(s.mensen.length?"ok":"leeg")+'">'+(s.mensen.length?"door jou bepaald":"alleen jij weet dit")+'</span></div>';
+ h+='<div class="mensen" id="mensen">'+TEAM.map(function(t){
+   return '<button data-wie="'+t[0]+'" aria-pressed="'+(s.mensen.indexOf(t[0])>-1?"true":"false")+'">'+
+     esc(t[1])+' <span>'+esc(t[2])+'</span></button>';
+ }).join("")+'</div>';
+ h+='<div class="toevoeg"><input type="text" id="nieuwPersoon" placeholder="iemand die er niet tussen staat — naam, en eventueel de partij">'+
+    '<button data-addpersoon="1">Toevoegen</button></div>';
+ var b=busTekst(s.mensen.length);
+ h+='<div class="bus '+b[0]+'"><div class="n">'+s.mensen.length+'</div><div class="tx"><b>'+b[1]+'</b>'+b[2]+'</div></div>';
+ h+='<div class="vkact"><button data-open="mensen">Weet ik niet — zoek dit uit</button></div></div>';
+
+ h+='<div class="nav"><button id="bVorige"'+(cur===0?" disabled":"")+'>Vorige</button>'+
+    '<button id="bAlleKlopt">Alles hier klopt</button>'+
+    '<span class="hint">Ctrl+Enter voor de volgende</span>'+
+    '<button class="pri" id="bVolgende">'+(cur===D.length-1?"Naar het overzicht":"Volgende")+'</button></div>';
+ $("work").innerHTML=h; window.scrollTo(0,0);
+}
+
+function klaarTeken(){
+ klaarmodus=true; bewerk=null;
+ var hard=0,afg=0,leegT=0,okT=0,openT=0,bus1=[],bus0=[];
+ D.forEach(function(d,i){
+  VELDEN.forEach(function(f){
+   var s=veldStaat(i,f.k);
+   if(s==="hard")hard++; else if(s==="afg")afg++; else if(s==="ok")okT++; else if(s==="open")openT++; else leegT++;
+  });
+  if(st[i].mensen.length===1) bus1.push([d.n,TEAM.filter(function(t){return t[0]===st[i].mensen[0];})[0]]);
+  if(st[i].mensen.length===0) bus0.push(d.n);
+ });
+ var op=openActies();
+ var h='<p class="eyebrow">Overzicht</p><h1>'+(okT+openT)+' van de '+(D.length*VELDEN.length)+' velden nagelopen</h1>';
+ h+='<p class="sub">Je hoeft niet klaar te zijn. Wat open staat is werk dat op je planning komt, niet werk dat nu moet.</p>';
+ h+='<div class="sum">'+
+   tile("Bevestigd",okT,"hi","door jou goedgekeurd")+
+   tile("Uit een bron",hard,"good","nog niet nagelopen")+
+   tile("Afgeleid",afg,afg?"warn":"","mijn gok, controleer dit")+
+   tile("Niet gezocht",leegT,"","wacht op de scan")+
+   tile("Open acties",openT,openT?"crit":"good","naar je planning")+
+   '</div>';
+ if(op.length){
+  h+='<div class="sec">Openstaande acties</div><div class="lijst">';
+  op.forEach(function(x){h+='<div class="r"><span><b>'+esc(x.veld)+'</b> — '+esc(x.dienst)+'</span><span class="m crit">uitzoeken</span></div>';});
+  h+='</div><div class="advies"><b>Deze gaan naar je roadmap</b>'+
+     '<p>Niet als negentien losse taakjes, maar als één taak per dienst met de ontbrekende velden erbij. Prioriteit laag, tenzij het een vervaldatum is — die kan je verrassen.</p></div>';
+ }
+ if(bus1.length){
+  h+='<div class="sec">Diensten die op één persoon rusten</div><div class="lijst">';
+  bus1.forEach(function(x){h+='<div class="r"><span><b>'+esc(x[0])+'</b></span><span class="m crit">'+esc(x[1]?x[1][1]:"?")+'</span></div>';});
+  h+='</div>';
+ }
+ if(bus0.length){
+  h+='<div class="sec">Nog niemand aangewezen</div><div class="lijst">';
+  bus0.forEach(function(n){h+='<div class="r"><span>'+esc(n)+'</span><span class="m">onbekend</span></div>';});
+  h+='</div>';
+ }
+ h+='<div class="nav"><button id="bTerug">Terug naar nalopen</button><button class="pri" id="bNaarSpow">Naar SPoW</button></div>';
+ $("work").innerHTML=h; railTeken(); window.scrollTo(0,0);
+}
+function tile(k,v,cls,s){return '<div><div class="k">'+k+'</div><div class="v '+(cls||"")+'">'+v+'</div><div class="s">'+s+'</div></div>';}
+
+function vraagPrompt(k){
+ var d=D[cur], f=VELDEN.filter(function(x){return x.k===k;})[0];
+ var L=["Zoek in mijn mail, Teams-berichten, SharePoint en OneDrive het antwoord op deze vraag.","",
+  "Dienst: "+d.n+" ("+TOWER[d.t]+", IT Infrastructure bij Boels)",
+  "Gevraagd: "+f.l,""];
+ if(k==="lev") L.push("Wie is de leverancier of partner van deze dienst? Zoek naar contracten, offertes, ondersteuningsafspraken en mailwisselingen met externe partijen.");
+ if(k==="cp") L.push("Wie is bij die leverancier mijn aanspreekpunt? Geef naam, functie en het e-mailadres zoals het in de correspondentie staat. Geen privételefoonnummers.");
+ if(k==="acc") L.push("Met welk account of welke methode kom ik in het beheerportaal van deze dienst? Alleen de aanduiding van het account, nooit een wachtwoord.");
+ if(k==="verval") L.push("Verloopt er iets aan deze dienst — een certificaat, contract of licentie? Geef de datum en waar die staat.");
+ if(k==="waar") L.push("Waar staat de documentatie, het draaiboek of de tekening van deze dienst? Geef de vindplaats en de titel van het document.");
+ L.push("");
+ L.push("Wat ik al meen te weten: "+(d.f[k].w?d.f[k].w+" (bron: "+(d.f[k].b||"onbekend")+")":"niets"));
+ L.push("");
+ L.push("Geef per vondst de bron erbij: het document, de mail met datum en afzender, of het bericht. Verzin niets. Vind je het niet, zeg dan dat je het niet vindt.");
+ return L.join("\n");
+}
+function modal(titel,tekst,uitleg){
+ $("mbox").innerHTML='<h3>'+esc(titel)+'</h3><p>'+uitleg+'</p><textarea readonly id="uit">'+esc(tekst)+'</textarea>'+
+  '<div class="rij"><button class="pri" id="mSel">Alles selecteren</button><button id="mClose">Sluiten</button></div>';
+ $("modal").classList.add("on");
+ setTimeout(function(){var u=$("uit");if(u){u.focus();u.select();}},60);
+}
+function exporteer(){
+ var uit=D.map(function(d,i){
+  var r={dienst:d.n,tower:TOWER[d.t],inzetbaar:st[i].mensen.slice(),busfactor:st[i].mensen.length,velden:{}};
+  VELDEN.forEach(function(f){
+   r.velden[f.k]={waarde:st[i].waarde[f.k]||null,staat:veldStaat(i,f.k),bron:D[i].f[f.k].b||null};
+  });
+  return r;
+ });
+ modal("Kopieer dit naar het gesprek",
+  "SPoW dienstkaarten — "+new Date().toISOString().slice(0,10)+"\n"+JSON.stringify({kaarten:uit,openacties:openActies()},null,1),
+  "Ik schrijf het weg naar Dataverse en zet de openstaande acties op je planning. Deze pagina mag zelf geen verbinding met je tenant maken.");
+}
+
+/* ---------- bediening ---------- */
+$("work").addEventListener("click",function(e){
+ var t;
+ if((t=e.target.closest("[data-ok]"))){ st[cur].oordeel[t.dataset.ok]="ok"; bewaar(); kaartTeken(); railTeken(); return; }
+ if((t=e.target.closest("[data-open]"))){
+   var k=t.dataset.open;
+   if(k==="mensen"){ st[cur].oordeel.mensen="open"; }
+   else st[cur].oordeel[k]="open";
+   bewaar(); kaartTeken(); railTeken(); return; }
+ if((t=e.target.closest("[data-unopen]"))){ st[cur].oordeel[t.dataset.unopen]=""; bewaar(); kaartTeken(); railTeken(); return; }
+ if((t=e.target.closest("[data-edit]"))){ bewerk=t.dataset.edit; kaartTeken();
+   setTimeout(function(){var el=$("in_"+bewerk);if(el)el.focus();},30); return; }
+ if((t=e.target.closest("[data-bewaar]"))){
+   var kk=t.dataset.bewaar, el=$("in_"+kk);
+   if(el){ st[cur].waarde[kk]=el.value.trim(); st[cur].oordeel[kk]=el.value.trim()?"ok":""; }
+   bewerk=null; bewaar(); kaartTeken(); railTeken(); return; }
+ if(e.target.closest("[data-annuleer]")){ bewerk=null; kaartTeken(); return; }
+ if(e.target.closest("[data-geen]")){
+   st[cur].geenVerval=!st[cur].geenVerval;
+   if(st[cur].geenVerval){st[cur].waarde.verval="";st[cur].oordeel.verval="ok";} else st[cur].oordeel.verval="";
+   bewaar(); kaartTeken(); railTeken(); return; }
+ if((t=e.target.closest("[data-vraag]"))){
+   modal("Vraag dit aan Copilot",vraagPrompt(t.dataset.vraag),
+    "Copilot ziet je mail, Teams, SharePoint en OneDrive — ik niet. Plak dit daar, en plak het antwoord hier terug. Tot de scan er is, is dit de snelste weg.");
+   return; }
+ if((t=e.target.closest("[data-wie]"))){
+   var w=t.dataset.wie, a=st[cur].mensen, ix=a.indexOf(w);
+   if(ix>-1) a.splice(ix,1); else a.push(w);
+   if(st[cur].oordeel.mensen==="open") st[cur].oordeel.mensen="";
+   bewaar(); kaartTeken(); railTeken(); return; }
+ if(e.target.closest("[data-addpersoon]")){
+   var inp=$("nieuwPersoon"), naam=inp?inp.value.trim():"";
+   if(!naam) return;
+   var deel=naam.split(",");
+   var code="X"+(TEAM.length+1);
+   TEAM.push([code,deel[0].trim(),(deel[1]||"extern").trim()]);
+   bewaarMensen();
+   st[cur].mensen.push(code);
+   bewaar(); kaartTeken(); railTeken(); return; }
+ if(e.target.closest("#bAlleKlopt")){
+   VELDEN.forEach(function(f){ if(st[cur].waarde[f.k]) st[cur].oordeel[f.k]="ok"; });
+   bewaar(); kaartTeken(); railTeken(); return; }
+ if(e.target.closest("#bVorige")){ bewerk=null; if(cur>0){cur--;kaartTeken();railTeken();} return; }
+ if(e.target.closest("#bVolgende")){ bewerk=null; if(cur<D.length-1){cur++;kaartTeken();railTeken();} else klaarTeken(); return; }
+ if(e.target.closest("#bTerug")){ klaarmodus=false; kaartTeken(); railTeken(); return; }
+ if(e.target.closest("#bNaarSpow")){ exporteer(); return; }
+});
+$("rail").addEventListener("click",function(e){
+ var b=e.target.closest("[data-i]"); if(!b) return;
+ klaarmodus=false; bewerk=null; cur=+b.dataset.i; kaartTeken(); railTeken();
+});
+$("modal").addEventListener("click",function(e){
+ if(e.target===this||e.target.id==="mClose"){this.classList.remove("on");return;}
+ if(e.target.id==="mSel"){var u=$("uit");if(u){u.focus();u.select();}}
+});
+$("btnKlaar").addEventListener("click",klaarTeken);
+$("btnExport").addEventListener("click",exporteer);
+document.addEventListener("keydown",function(e){
+ if(e.key==="Escape"){$("modal").classList.remove("on");if(bewerk){bewerk=null;kaartTeken();}return;}
+ if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!klaarmodus){
+  e.preventDefault(); bewerk=null;
+  if(cur<D.length-1){cur++;kaartTeken();railTeken();} else klaarTeken();
+ }
+});
+kaartTeken(); railTeken();
+})();
+</script>
+
+</body></html>
