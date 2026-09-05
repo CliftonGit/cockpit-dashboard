@@ -867,16 +867,41 @@ main{min-width:0;display:flex;flex-direction:column;}
   }
   function enterPresent(){document.body.classList.add("present");show("presenteren");goStep("p0");}
   function exitPresent(){
+    if(window.opener){ window.close(); return; }
     document.body.classList.remove("present");
     modes.forEach(function(m){m.setAttribute("aria-current", m.dataset.go==="vandaag"?"true":"false");});
     show("vandaag");
     document.getElementById("spoWord").textContent="Work";
     window.scrollTo(0,0);
   }
-  document.getElementById("goPresent").addEventListener("click",enterPresent);
-  document.querySelectorAll("[data-present]").forEach(function(b){b.addEventListener("click",enterPresent);});
+  function openPresenterWindow(){
+    var w=null;
+    try{
+      w=window.open(location.pathname+"?present=1","spow-presenter","width=1400,height=900,resizable=yes,menubar=no,toolbar=no,location=no");
+    }catch(e){ w=null; }
+    if(!w){
+      // Popup geblokkeerd door de browser: val terug op presenteren in dit venster.
+      enterPresent();
+    }else{
+      w.focus();
+    }
+  }
+  document.getElementById("goPresent").addEventListener("click",openPresenterWindow);
+  document.querySelectorAll("[data-present]").forEach(function(b){b.addEventListener("click",openPresenterWindow);});
   var ep1=document.getElementById("exitPresent"); if(ep1) ep1.addEventListener("click",exitPresent);
   var ep2=document.getElementById("exitPresent2"); if(ep2) ep2.addEventListener("click",exitPresent);
+
+  // Dit venster is zelf geopend als los presentatievenster (?present=1): zodra de
+  // app na inloggen zichtbaar wordt, direct in presenteermodus starten i.p.v. Vandaag.
+  if(location.search.indexOf("present=1")>-1){
+    var _presentBoot=setInterval(function(){
+      var shell=document.getElementById("appShell");
+      if(shell && !shell.hidden){
+        clearInterval(_presentBoot);
+        enterPresent();
+      }
+    },150);
+  }
 
   document.querySelectorAll("[data-next]").forEach(function(b){
     b.addEventListener("click",function(){
