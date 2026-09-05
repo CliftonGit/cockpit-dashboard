@@ -126,4 +126,82 @@ Huidige live records (6 stuks, 5 sept 2026):
 
 ---
 
+## 12. Update — laat in de avond, 5 september 2026: rail-overlap en vensterpositie
+
+Clifton testte de live presenteren-fix met een verticaal opgestelde monitor en stuurde een screenshot. Twee dingen kwamen daaruit naar voren, beide verwerkt in `cockpit_rebuilt.html` (nog niet gedeployed op het moment van schrijven — zie sectie 3 voor de laatste live-status):
+
+**a) Layout-bug bij smallere/verticale schermen.** Tussen 720px en 1180px breedte kneep het ontwerp de linker-navigatiebalk terug naar 66px, maar de knoppen/labels (o.a. "Presenteren") waren daar niet op voorbereid — geen tekstterugloop, geen kleinere opmaak — waardoor tekst over de rand van de knop heen liep en leek te overlappen met de rest van de pagina. Opgelost door: dat kneep-niveau te laten vervallen (de navigatiebalk blijft nu leesbaar op volle breedte tot 720px, alleen het rechterpaneel verdwijnt eerder om ruimte te besparen); onder de 720px wordt de balk niet langer onzichtbaar maar klapt om tot een compacte, horizontaal omlopende rij knoppen bovenaan — dus niets valt meer helemaal weg.
+
+**b) Onthouden op welk scherm/positie de vensters laatst stonden.** Voor het **presentatievenster** (het losse venster uit sectie 5) is dit nu echt gebouwd: bij het sluiten (via "Terug naar SPoW" of via het kruisje) wordt de positie en grootte (`screenX/screenY/outerWidth/outerHeight`) opgeslagen in `localStorage`; bij de volgende keer "Presenteren" opent het venster automatisch weer op dezelfde plek/grootte. Voor het **hoofdvenster van de cockpit zelf kan dit niet via code** — een normaal genavigeerd browsertabblad mag door een webpagina niet verplaatst of van grootte veranderd worden, dat is een browserbeveiliging, geen keuze van mij. De praktische oplossing die er wél is en al klaarligt: de cockpit heeft al een `manifest.json` en iconen (PWA-ondersteuning); als Clifton de cockpit als app installeert (in Chrome/Edge: installatie-icoon in de adresbalk, of menu → "App installeren"), onthoudt de browser zelf de vensterpositie en -grootte per launch, net als een native app — dat is geen extra bouwwerk, alleen een andere manier van openen. Dit is nog niet door Clifton gedaan of getest, dus ook hier: aanbevolen pad, geen bevestigde werking.
+
+Beide fixes zitten in dezelfde `cockpit_rebuilt.html` als eerder, klaar voor een volgende run van `DEPLOY-RICH-COCKPIT.ps1` — geen haast, kan ook morgen.
+
+## 13. Update — 5 september 2026, volgende dag: Contributor/Owner op RG-BOELS-D-SPOW bevestigd
+
+Clifton PIMde en vroeg mij te checken of hij nu Owner is op `RG-BOELS-D-SPOW` (subscription "Boels - LZ Generic - Development"). Gecontroleerd via Access control (IAM) op de resource group zelf, ingelogd als `azadm_dobbec@boels.com`:
+
+- **Owner** — direct op deze resource group, "Active permanent assignments" (dus geen tijdgebonden PIM-activatie die weer afloopt, maar een permanente toewijzing).
+- **Contributor** — geërfd vanaf subscription-niveau via groep `Azure_Group_TeamPlatf...` (naam afgekapt in de UI), ook permanent.
+- **Reader** — de oudere, al bekende inherited-rol vanaf management-group-niveau via groep "Team Cloud Services" (dit is het item dat eerder als hervatpunt "Contributor op rg-boels-d-spow" in Vandaag stond — dat losstaande Reader-erfenis is niet weg, maar wordt nu overstemd door de nieuwe, hogere Owner-toewijzing direct op de resource group).
+
+Kortom: **bevestigd, klopt** — Clifton (azadm) kan nu deployen/beheren op deze resource group. Dit was puur een verificatie; ik heb naar aanleiding hiervan nog niets gebouwd of geprovisioneerd (de Managed Identity/Voedingslaag-vraag uit sectie 7 stond nog geparkeerd in afwachting van Cliftons "ga" op de bredere ontwerpvraag, en het vrijkomen van de rechten alleen is daar geen impliciete toestemming voor).
+
+**Apart genoteerd, niet actie op ondernomen**: Clifton wil de twee openstaande `spow_onboarding`-offboardingpunten (Owner-rechten Dennis Knarren en Diederik Mulder, sectie 8, beide status "Ingediend") pas na 15 september aanpakken, zodra hun vervangers zijn begonnen. Bewust laten liggen tot dan — niet per ongeluk oppakken als "nu maar even opruimen".
+
+## 14. Nieuw concept: SPoF-register (Single Points of Failure) — nog niet gebouwd, mag nooit vergeten worden
+
+Clifton realiseerde zich (5 sept) dat we tijdens dit hele traject gegarandeerd steeds weer SPoFs (Single Points of Failure) gaan tegenkomen — mensen, systemen, leveranciersrelaties die maar door één schakel gedragen worden. Zijn punt: eenmaal gezien of gevonden moet daar iets mee gebeuren, dus het moet op de planning/roadmap komen — ook als we het nu nog niet oppakken, mag het nooit zomaar vergeten worden. En belangrijk: als er later, via een heel andere route, een nieuw project of incident opduikt dat aan zo'n SPoF gerelateerd is, moet die kruisverwijzing er al lang liggen — want dat verandert de urgentie/impact van die SPoF met terugwerkende kracht.
+
+Dit is nog geen gebouwde functionaliteit — puur het concept, vastgelegd zodat het niet kwijtraakt. Twee dingen zijn al ontdekt die hier feitelijk al onder vallen, zonder dat ze ooit zo genoemd zijn:
+
+- De **bus-factor-waarschuwing** in "Dienstkaarten Verifiëren" (sectie 6) — "diensten die op één persoon rusten" — is in de praktijk al een eerste, primitieve SPoF-detector, alleen dan voor de dimensie "wie kan dit dragen".
+- De twee **Owner-rechten van Knarren en Mulder** (sectie 8/13) zijn zelf ook een SPoF-achtig patroon: tenantbrede rechten die aan mensen hangen die er niet meer zijn, en die niemand anders heeft overgenomen.
+
+Voorstel (nog niet uitgevoerd, wacht op prioritering samen met Clifton): een eigen `spow_spof`-achtige registratie, met minimaal een titel, waar/wie het raakt, urgentie én impact (die dus achteraf kunnen veranderen als er een kruisverwijzing bijkomt), status, en een lijst van kruisverwijzingen naar projecten/incidenten/onboardingpunten die 'm raken. Qua patroon vergelijkbaar met hoe `spow_onboarding` is opgezet (sectie 8) — mogelijk zelfs met overlap of hergebruik van diezelfde tabel (een SPoF zou je kunnen zien als "iets dat ooit ge-offboard moet worden, maar nu vooral gevolgd moet worden"). Dat ontwerp moet nog gemaakt worden, dit is alleen de vastlegging van het idee zelf.
+
+## 15. Strategische koers — 5 september 2026, vervolgdag
+
+Clifton's prioriteit voor de eerstvolgende stap, expliciet zo gezegd: **agenda's, Excels en andere systemen uitleesbaar maken, te beginnen met de mail-agenda's**, en vervolgens het mechanisme bouwen waarbij informatie die uit alle meetings komt ook als voeding dient voor al het andere binnen SPoW (dus niet alleen "lees de agenda", maar: wat een meeting oplevert — acties, besluiten, gevonden SPoFs — stroomt door naar de rest van SPoW). Dit is de facto een herprioritering van de Graph/Voedingslaag-vraag uit sectie 7: onderdeel (a), Cliftons eigen agenda via de bestaande app-registratie + `Calendars.Read`, is nu met voorrang aangewezen als eerste concrete stap. Nog steeds niet uitgevoerd — dat blijft een expliciete ja/nee-vraag aan Clifton per de standing rules (OAuth-scope-wijziging), maar wel: dit is niet langer "geparkeerd", dit is nu de top van de lijst.
+
+Daarnaast wil Clifton dat alles wat al klaar is (rijke cockpit, presentatievenster-fix) volgende week al écht in gebruik genomen wordt, zeker tijdens vergaderingen — dus deployen en testen krijgt voorrang boven nieuwe features.
+
+Tot slot een fundamentele architectuurvraag van Clifton: hoe moet SPoW straks samenwerken met de verschillende Copilots (M365 Copilot, GitHub Copilot, Security Copilot, Copilot Studio zijn allemaal aparte producten), en waar zit in SPoW eigenlijk de AI/compute? Zijn eigen constatering: SPoW voelt nu aan als "een zeer uitgebreide koppeling van tabellen" — geen AI-laag, geen slimmigheden op of boven AI-niveau, terwijl dat wel zijn visie is. Eerlijk antwoord genoteerd: die AI/compute-laag bestaat op dit moment nergens in SPoW zelf. Alle intelligentie tot nu toe (schema ontdekken, velden koppelen, teksten schrijven, dit document) komt van Claude, handmatig, in gesprekken — niet van iets dat een gebruiker van de live cockpit zelf ervaart of aanroept. Dit is een apart, nog te ontwerpen fase (een soort "denklaag" bovenop de voedingslaag — bijvoorbeeld een Azure OpenAI-aanroep die door een Dataverse-trigger/Power Automate wordt afgevuurd zodra er nieuwe data binnenkomt, of een eigen Copilot Studio-agent die dezelfde Dataverse als bron gebruikt en vanuit de cockpit of Teams aanspreekbaar is) — nog niet gestart, hier moet nog een apart ontwerpgesprek over komen.
+
+## 16. Rooster CGI-team + uitsluiting Boels-collega's — 5 september 2026
+
+Vervolg op sectie 15 ("wie zit onder/naast mij" voor agenda/planning/inzetbaarheid/vakantie/verlof/verzuim). Clifton gaf twee dingen tegelijk: een harde uitsluiting, en het volledige CGI-rooster.
+
+**a) Expliciete uitsluiting — voorlopig niet aanraken.** De volgende 10 Boels-interne collega's mogen voorlopig NIET benaderd, bekeken of ge(re)onboard worden in dit traject — reden letterlijk: *"ik kan het me niet permitteren dat er alarmbellen bij hun afgaan. bedoeld of onbedoeld. laten we het eerst testen en kijken wat er gebeurd."* Dit is een staande beperking totdat Clifton expliciet anders aangeeft:
+
+Bob de Leeuw, Dave Lardinois, Emile Coenen, Eric de Jong, Maarten Merkens, Richard Bolk, Roel Pluijmen, Roland Peeters, Toussin Pooters, Steinar Heijkoop.
+
+Alle 10 bestaan al als `spow_persoon`-record (groep Intern, `spow_upn` grotendeels al gevuld) — ze worden dus met rust gelaten zoals ze zijn, geen wijzigingen, geen agenda/mailkoppeling, geen nieuwe velden.
+
+**b) CGI-rooster — deze wil Clifton er wél allemaal in ("die wil ik er allemaal in sowieso"):**
+
+| Naam | Boels-adres (van Clifton) | cgi.com-adres (van Clifton) | Status in Dataverse (`spow_persoon`, live gecheckt) |
+|---|---|---|---|
+| Prashanth Doddamane Ramappa | Prashanth.DoddamaneRamappa@boels.nl | prashanth.dr@cgi.com | **Nieuw** — nog geen record |
+| Manjula Salem | Ext_Manjula.Salem@boels.nl | manjula.salem@cgi.com | **Bestaat al** (groep CGI, `spow_upn` nu nog leeg) |
+| Suma GS | Suma.GS@boels.nl | — | **Nieuw** — nog geen record |
+| Chethan KM | Ext_Chethan.KM@boels.nl | chethan.m@cgi.com | **Nieuw** — nog geen record |
+| Harish AC | Ext_Harish.AC@boels.nl | harish.ac@cgi.com | **Bestaat al** (groep CGI, `spow_upn` nu nog leeg) |
+| Aathavan A | aathavan.a@boels.nl | aathavan.a@cgi.com | **Nieuw** — nog geen record |
+| Pavan Kumar | Pavan.Kumar@boels.nl | pavan.ta@cgi.com | **Onduidelijk, zie let op hieronder** |
+| Jayaprakash Rao Gollapalli | JayaprakashRao.Gollapalli@boels.nl | — | **Nieuw** — nog geen record |
+| Pavan Vishwanath Pochinapeddi | Pavan.Vishwanath@boels.nl | pavanvishwanath.pochinapeddi@cgi.com | **Nieuw** — nog geen record |
+| Soumya Prateem Roy | SoumyaPrateem.Roy@boels.nl | — | **Nieuw** — nog geen record |
+| Vishwanath S | Vishwanath.S@boels.nl | — | **Nieuw** — nog geen record |
+
+**Let op — twee openstaande vragen aan Clifton, kan ik niet zelf raden:**
+
+1. **"Pavan Kumar" is dubbel in Dataverse.** Er bestaan al twee aparte records: `Pavan Kumar` én `Pavan Kumar TA` (beide groep CGI, beide FTE 1, beide zonder upn). Het cgi.com-adres dat Clifton meegaf voor "Pavan Kumar" is `pavan.ta@cgi.com` — de "ta" erin doet vermoeden dat dit eigenlijk bij het record `Pavan Kumar TA` hoort, niet bij het kale `Pavan Kumar`-record. Maar dat is een gok, geen zekerheid: het kunnen ook gewoon twee verschillende mensen zijn die toevallig dezelfde naam delen, waarbij Clifton er hier maar één van doorgaf. Graag even bevestigen welk record welk adres krijgt (en of het andere "Pavan Kumar"-record een andere, nog ontbrekende persoon is).
+2. **Siddlingappa Masali staat al in Dataverse (groep CGI) maar zat niet in het doorgestuurde rooster.** Hoort hij (nog) bij het team, of is dit iemand die inmiddels weg is / niet meer relevant is voor deze tracking? Zolang dat niet duidelijk is, laat ik dit record met rust.
+
+**Ook genoteerd, geen actie op ondernomen:** het "Ext_"-voorvoegsel zit niet consistent op de Boels-adressen — Manjula, Chethan en Harish hebben het, de overige 8 namen niet. Kan een echt verschil in provisioning zijn (bijv. ouder vs. nieuwer aangemaakte gastaccounts), kan ook een tikfout/inconsistentie in de bron zijn. Niet zelf gecorrigeerd of aangenomen — vermeld zodat het niet als "fout" wordt gezien als het straks ergens niet matcht.
+
+**Nog niet gedaan (bewust, wacht op akkoord):** er is nog niets weggeschreven naar Dataverse. De 8 nieuwe personen zijn nog niet aangemaakt als `spow_persoon`-record, en `spow_upn` van Manjula/Harish (en eventueel Pavan Kumar/TA) is nog niet gevuld. Reden: `spow_upn` is één los tekstveld — voor deze mensen zijn er per persoon minimaal 2 adressen (Boels + cgi.com), soms mogelijk 3 (+Cramo, nog niet bevestigd). Eerst moet het datamodel dat aankan (nieuwe velden, of een los kindtabelletje "e-mailadres per persoon per type"), anders gaat het eerste veld dat ingevuld wordt het andere overschrijven zodra er een tweede adres bijkomt. Dit sluit aan bij de al bekende datamodel-valkuil uit sectie 9.
+
+**Openstaande vervolgvraag (ongewijzigd van eerder, hoort er inhoudelijk bij):** zodra namen en adressen vaststaan, is de volgende stap — precies zoals Clifton zelf aangaf — welke toegang/akkoorden nodig zijn om agenda's/kalenders van deze 11 mensen daadwerkelijk te kunnen uitlezen (cross-tenant: een cgi.com-mailbox valt buiten het Boels-tenant, dus Graph-consent vanuit de Boels-kant kan die niet bereiken; alleen de Boels-mailbox zou in potentie via de bestaande "SPoW Cockpit"-appregistratie + een gedelegeerde `Calendars.Read`-scope te benaderen zijn, en dat wacht nog steeds op Cliftons ja/nee daarop uit sectie 15/7). Nog niets aangevraagd of aangezet.
+
 *Volgende keer dat dit project wordt opgepakt: begin met dit bestand lezen, dan pas verder kijken.*
