@@ -204,4 +204,21 @@ Alle 10 bestaan al als `spow_persoon`-record (groep Intern, `spow_upn` grotendee
 
 **Openstaande vervolgvraag (ongewijzigd van eerder, hoort er inhoudelijk bij):** zodra namen en adressen vaststaan, is de volgende stap — precies zoals Clifton zelf aangaf — welke toegang/akkoorden nodig zijn om agenda's/kalenders van deze 11 mensen daadwerkelijk te kunnen uitlezen (cross-tenant: een cgi.com-mailbox valt buiten het Boels-tenant, dus Graph-consent vanuit de Boels-kant kan die niet bereiken; alleen de Boels-mailbox zou in potentie via de bestaande "SPoW Cockpit"-appregistratie + een gedelegeerde `Calendars.Read`-scope te benaderen zijn, en dat wacht nog steeds op Cliftons ja/nee daarop uit sectie 15/7). Nog niets aangevraagd of aangezet.
 
+## 17. Vervolg sectie 16 — CGI-rooster daadwerkelijk in Dataverse geschreven, 5 september 2026
+
+Clifton beantwoordde de twee openstaande vragen uit sectie 16: **"Pavan Kumar TA"** is bevestigd hetzelfde record als "Pavan Kumar / Pavan.Kumar@boels.nl / pavan.ta@cgi.com" (1 persoon), en **"Pavan Vishwanath Pochinapeddi"** is een aparte, tweede persoon (bevestigd met screenshots van Teams-profielkaarten van beiden). **Siddlingappa Masali ("Siddu")** hoort er zeker bij.
+
+Op basis daarvan is daadwerkelijk geschreven naar `spow_persoon` in Dataverse (live geverifieerd na afloop):
+
+- **Bijgewerkt** (bestonden al, `spow_upn` was leeg): Manjula Salem → `Ext_Manjula.Salem@boels.nl`; Harish AC → `Ext_Harish.AC@boels.nl`; Pavan Kumar TA → `Pavan.Kumar@boels.nl`.
+- **Nieuw aangemaakt** (groep CGI, actief): Prashanth Doddamane Ramappa, Suma GS, Chethan KM, Aathavan A, Jayaprakash Rao Gollapalli, Pavan Vishwanath Pochinapeddi, Soumya Prateem Roy, Vishwanath S — elk met naam, groep=CGI en het Boels-adres in `spow_upn`.
+
+**Bewuste keuze hierin:** alleen het **Boels-adres** is in `spow_upn` gezet, niet het cgi.com-adres. Reden: `spow_upn` is één los tekstveld — er is nog geen plek voor een tweede adres. Zodra dat er is (zie open vraag hieronder), volgt het cgi.com-adres alsnog voor alle 11 mensen.
+
+**Nog open, drie punten:**
+
+1. **Waar slaan we het cgi.com-adres (en straks eventueel Cramo) op?** Twee redelijke opties: (a) twee losse nieuwe velden op `spow_persoon` (bijv. "Boels e-mail" / "CGI e-mail") — simpel, snel, maar niet oneindig uitbreidbaar als er ooit een derde adres bijkomt; (b) een los kindtabelletje "e-mailadres per persoon" (persoon + adres + type) — flexibeler, iets meer bouwwerk. Dit raakt ook de nog openstaande vraag "welk omgevingstype is SPoW" (Developer vs Production/Sandbox, sectie 10) omdat schemawijzigingen op een Production-omgeving anders lopen dan op Developer. Nog geen keuze gemaakt, nog niets gebouwd.
+2. **Het kale record "Pavan Kumar" (zonder "TA", `spow_upn` nog leeg) lijkt nu een wees.** Beide bekende Pavans hebben inmiddels een eigen, bevestigd record (Pavan Kumar TA, en het nieuwe Pavan Vishwanath Pochinapeddi) — dit derde, naamloos-overlappende record hoort dus mogelijk bij niemand (meer). Niet aangeraakt, niet verwijderd of samengevoegd — even navragen of dit een oud/dubbel record is dat opgeruimd mag worden, of dat er toch een derde, nog onbekende "Pavan Kumar" bestaat.
+3. **Siddlingappa Masali (Siddu) heeft nog geen enkel e-mailadres in Dataverse.** Hij hoort er bevestigd bij, maar zijn Boels- en/of cgi.com-adres zijn nog niet doorgegeven.
+
 *Volgende keer dat dit project wordt opgepakt: begin met dit bestand lezen, dan pas verder kijken.*
