@@ -221,4 +221,53 @@ Op basis daarvan is daadwerkelijk geschreven naar `spow_persoon` in Dataverse (l
 2. **Het kale record "Pavan Kumar" (zonder "TA", `spow_upn` nog leeg) lijkt nu een wees.** Beide bekende Pavans hebben inmiddels een eigen, bevestigd record (Pavan Kumar TA, en het nieuwe Pavan Vishwanath Pochinapeddi) — dit derde, naamloos-overlappende record hoort dus mogelijk bij niemand (meer). Niet aangeraakt, niet verwijderd of samengevoegd — even navragen of dit een oud/dubbel record is dat opgeruimd mag worden, of dat er toch een derde, nog onbekende "Pavan Kumar" bestaat.
 3. **Siddlingappa Masali (Siddu) heeft nog geen enkel e-mailadres in Dataverse.** Hij hoort er bevestigd bij, maar zijn Boels- en/of cgi.com-adres zijn nog niet doorgegeven.
 
+## 18. Vervolg sectie 17 — archivering, Siddu's adres, en een geblokkeerde schemawijziging, 5 september 2026
+
+Clifton beantwoordde de drie laatste open punten uit sectie 17 ("akkoord" / "archiveren" / screenshots van Siddu's Teams-profiel + zoekresultaat).
+
+**Uitgevoerd, live geverifieerd:**
+
+- Het kale, wees geworden record **"Pavan Kumar"** (zonder "TA") is **gearchiveerd**: `spow_actief` op `false` gezet. Niet verwijderd — bewust een archivering, geen permanente deletie, zodat de historie intact blijft.
+- **Siddlingappa Masali ("Siddu")** z'n Boels-adres is nu bekend uit de screenshots en ingevuld: `spow_upn = ext_Siddlingappa.Masali@boels.nl`. Zijn cgi.com-adres is ook bekend (`siddlingappa.masali@cgi.com`, uit het zoekresultaat-screenshot) maar kon nog niet weggeschreven worden — zie volgende punt.
+
+**Niet gelukt — een schemawijziging werd geblokkeerd, dit is bewust geen work-around geprobeerd:**
+
+Clifton's "akkoord" op de vorige vraag (waar slaan we het cgi.com-adres op) werd opgevat als: voeg één nieuw veld toe aan `spow_persoon` (bijv. "E-mail (extern/CGI)") naast het bestaande `spow_upn` (dat voortaan het Boels-adres blijft dragen). De poging om dat veld daadwerkelijk aan te maken via de Dataverse-metadata-API werd **geblokkeerd door een automatische veiligheidscontrole** aan mijn kant — schema/structuur van een live systeem aanpassen (een kolom toevoegen) is kennelijk een stap te ver om zomaar automatisch te doen, ook al had Clifton er al "akkoord" op gegeven. Ik heb dit niet geprobeerd te omzeilen.
+
+**Gevolg:** alle 11 CGI-adressen op cgi.com (inclusief Siddu's) staan nu **nergens** in Dataverse — alleen hier in dit document (sectie 16) en in Cliftons eigen berichten. Twee opties om verder te gaan, Clifton mag kiezen:
+
+1. **Clifton maakt het veld zelf aan** in de Power Apps Maker-portal (Tabellen → `spow_persoon` (Persoon) → Kolommen → Nieuwe kolom: naam bijv. "E-mail (extern/CGI)", type Eén regel tekst, formaat E-mail, niet verplicht) — zodra dat veld bestaat, kan ik de 11 cgi.com-adressen daar in één keer instraten.
+2. **Tijdelijke noodgreep**: de cgi.com-adressen ergens anders parkeren die al bestaat (bijv. in dit projectlog, zoals nu, totdat er een veld is) — geen structurele oplossing, maar wel meteen beschikbaar.
+
+Nog steeds ontbrekend, sowieso onafhankelijk van bovenstaande: cgi.com-adressen van **Suma GS, Jayaprakash Rao Gollapalli, Soumya Prateem Roy en Vishwanath S** zijn nooit doorgegeven (mogelijk hebben zij die niet, of is het nog niet bekend) — nog niet nagevraagd, geen aanname gedaan.
+
+## 19. CGI-rooster afgerond — nieuw veld aangemaakt, alle bekende adressen erin, 5 september 2026
+
+Vervolg op sectie 18. Ik kon zelf geen kolom aanmaken (geblokkeerd, zie sectie 18), dus heb ik Cliftons Chrome (via de browserextensie) genavigeerd tot op de "Nieuwe kolom"-pagina in de Power Apps Maker-portal, alle velden vooringevuld, en Clifton hoefde alleen op "Save" te klikken.
+
+**Resultaat:** nieuwe kolom op `spow_persoon`: display name **"E-mail (extern/CGI)"**, logische naam **`spow_emailexterncgi`**, type Eén regel tekst / formaat E-mail, niet verplicht. `spow_upn` blijft het Boels-adres dragen; dit nieuwe veld is voor het tweede (cgi.com, of ooit Cramo) adres.
+
+Daarna zijn alle bekende cgi.com-adressen erin gezet en live geverifieerd. Eindstand van de CGI-groep in `spow_persoon` (naam → Boels-adres → cgi.com-adres):
+
+| Naam | Boels (`spow_upn`) | CGI (`spow_emailexterncgi`) |
+|---|---|---|
+| Prashanth Doddamane Ramappa | Prashanth.DoddamaneRamappa@boels.nl | prashanth.dr@cgi.com |
+| Manjula Salem | Ext_Manjula.Salem@boels.nl | manjula.salem@cgi.com |
+| Suma GS | Suma.GS@boels.nl | *(onbekend)* |
+| Chethan KM | Ext_Chethan.KM@boels.nl | chethan.m@cgi.com |
+| Harish AC | Ext_Harish.AC@boels.nl | harish.ac@cgi.com |
+| Aathavan A | aathavan.a@boels.nl | aathavan.a@cgi.com |
+| Pavan Kumar TA | Pavan.Kumar@boels.nl | pavan.ta@cgi.com |
+| Jayaprakash Rao Gollapalli | JayaprakashRao.Gollapalli@boels.nl | *(onbekend)* |
+| Pavan Vishwanath Pochinapeddi | Pavan.Vishwanath@boels.nl | pavanvishwanath.pochinapeddi@cgi.com |
+| Soumya Prateem Roy | SoumyaPrateem.Roy@boels.nl | *(onbekend)* |
+| Vishwanath S | Vishwanath.S@boels.nl | *(onbekend)* |
+| Siddlingappa Masali ("Siddu") | ext_Siddlingappa.Masali@boels.nl | siddlingappa.masali@cgi.com |
+
+Het gearchiveerde, kale "Pavan Kumar"-record (sectie 18) staat nog steeds op `spow_actief = false`, met rust gelaten. "CGI Infra Team" is een teamrecord, geen persoon, ook met rust gelaten.
+
+**Nog open:** cgi.com-adres van Suma GS, Jayaprakash Rao Gollapalli, Soumya Prateem Roy en Vishwanath S is nooit doorgegeven — niet nagevraagd, geen aanname gedaan. Zodra Clifton die heeft, is het invullen een kwestie van een paar seconden (het veld bestaat nu).
+
+**Hiermee is stap 1 van Cliftons oorspronkelijke vraag (sectie 15) afgerond:** de lijst van collega's + hun e-mailadressen staat, voor het CGI-deel, nu echt in SPoW zelf. Volgende stap, zoals Clifton zelf al aangaf: bepalen welke toegang/akkoorden nodig zijn om de agenda's/kalenders van deze mensen daadwerkelijk te kunnen uitlezen (cross-tenant probleem voor de cgi.com-mailboxen, en de nog openstaande `Calendars.Read`-scope-vraag voor de Boels-kant, beide nog onbeantwoord).
+
 *Volgende keer dat dit project wordt opgepakt: begin met dit bestand lezen, dan pas verder kijken.*
