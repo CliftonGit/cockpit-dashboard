@@ -112,8 +112,14 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
 .shell{display:grid;grid-template-columns:206px minmax(0,1fr) 300px;min-height:100vh;position:relative;z-index:1;}
-@media(max-width:1180px){.shell{grid-template-columns:66px minmax(0,1fr);} .rail-right{display:none;}}
-@media(max-width:720px){.shell{grid-template-columns:1fr;} .rail-left{display:none;}}
+@media(max-width:1180px){.shell{grid-template-columns:206px minmax(0,1fr);} .rail-right{display:none;}}
+@media(max-width:720px){
+  .shell{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+  .rail-left{flex-direction:row;flex-wrap:wrap;align-items:center;padding:8px 10px;gap:6px;border-right:none;border-bottom:1px solid var(--line);}
+  .rail-left .brand,.rail-left .rail-foot,.rail-left .rail-sep,.rail-left .rail-lbl{display:none;}
+  .mode{width:auto;padding:6px 10px;font-size:13px;border-left:none;border-radius:3px;}
+  .present-btn{margin:0;padding:6px 10px;font-size:11px;}
+}
 body.present .shell{grid-template-columns:1fr;}
 body.present .rail-left,body.present .rail-right,body.present .topbar,body.present .banner{display:none;}
 
@@ -867,17 +873,29 @@ main{min-width:0;display:flex;flex-direction:column;}
   }
   function enterPresent(){document.body.classList.add("present");show("presenteren");goStep("p0");}
   function exitPresent(){
-    if(window.opener){ window.close(); return; }
+    if(window.opener){ bewaarPresenterGeom(); window.close(); return; }
     document.body.classList.remove("present");
     modes.forEach(function(m){m.setAttribute("aria-current", m.dataset.go==="vandaag"?"true":"false");});
     show("vandaag");
     document.getElementById("spoWord").textContent="Work";
     window.scrollTo(0,0);
   }
-  function openPresenterWindow(){
-    var w=null;
+  function presenterGeom(){
+    try{ return JSON.parse(localStorage.getItem("spow.presenterGeom")||"null"); }catch(e){ return null; }
+  }
+  function bewaarPresenterGeom(){
     try{
-      w=window.open(location.pathname+"?present=1","spow-presenter","width=1400,height=900,resizable=yes,menubar=no,toolbar=no,location=no");
+      localStorage.setItem("spow.presenterGeom", JSON.stringify({
+        left:window.screenX, top:window.screenY, width:window.outerWidth, height:window.outerHeight
+      }));
+    }catch(e){}
+  }
+  function openPresenterWindow(){
+    var w=null, g=presenterGeom();
+    var feat="resizable=yes,menubar=no,toolbar=no,location=no,width="+(g&&g.width||1400)+",height="+(g&&g.height||900);
+    if(g && typeof g.left==="number") feat+=",left="+g.left+",top="+g.top;
+    try{
+      w=window.open(location.pathname+"?present=1","spow-presenter",feat);
     }catch(e){ w=null; }
     if(!w){
       // Popup geblokkeerd door de browser: val terug op presenteren in dit venster.
@@ -901,6 +919,9 @@ main{min-width:0;display:flex;flex-direction:column;}
         enterPresent();
       }
     },150);
+    // Ook als dit venster met de kruisknop (OS) gesloten wordt i.p.v. "Terug naar SPoW":
+    // laatste positie/grootte alsnog onthouden voor de volgende keer.
+    window.addEventListener("beforeunload", bewaarPresenterGeom);
   }
 
   document.querySelectorAll("[data-next]").forEach(function(b){
