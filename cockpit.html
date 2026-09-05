@@ -454,7 +454,7 @@ main{min-width:0;display:flex;flex-direction:column;}
     <button class="mode" aria-current="true" data-go="vandaag"><i class="dot"></i>Vandaag</button>
     <button class="mode" data-go="team"><i class="dot"></i>Team</button>
     <button class="mode" data-go="planning"><i class="dot"></i>Planning</button>
-    <button class="mode" data-go="soon"><i class="dot"></i>Werk</button>
+    <button class="mode" data-go="werk"><i class="dot"></i>Werk</button>
     <button class="mode" data-go="kennis"><i class="dot"></i>Kennis</button>
     <button class="mode" data-go="services"><i class="dot"></i>Services</button>
     <button class="mode" data-go="soon"><i class="dot"></i>Roadmap</button>
@@ -495,8 +495,12 @@ main{min-width:0;display:flex;flex-direction:column;}
         </div>
 
         <div class="card">
-          <div class="card-h"><h2>Vandaag in je agenda</h2><span class="count">Outlook</span></div>
-          <div class="meet"><div class="emptyhint">Nog niet gekoppeld — de app-registratie voor Outlook/Graph (Calendars.Read) staat nog open, zie het hervatpunt "Wat te doen met de app-registratie SPoW Voedingslaag".</div></div>
+          <div class="card-h"><h2>Vandaag in je agenda</h2><span class="count">Outlook · test</span></div>
+          <div class="meet" id="agenda-test">
+            <div class="emptyhint">De Calendars.Read-scope is toegekend (5 sept 2026), maar de opvraging zelf is nog niet end-to-end getest — dit is een handmatige testknop, geen automatisch geladen onderdeel.</div>
+            <button id="agTestBtn" type="button" style="margin-top:8px;padding:6px 12px;border-radius:6px;border:1px solid var(--faint);background:transparent;color:inherit;cursor:pointer;">Vrij/bezet testen</button>
+            <div id="agTestOut" style="margin-top:10px;"></div>
+          </div>
         </div>
 
         <div class="card">
@@ -547,6 +551,17 @@ main{min-width:0;display:flex;flex-direction:column;}
         <div class="card-h"><h2>Nog niet gekoppeld</h2></div>
         <p style="margin:0 0 10px;color:var(--dim);">Dit bord toont per persoon de Outlook-agenda en het verlof naast jouw eigen planning. Dat kan pas zodra de Graph-koppeling er is — Calendars.Read, verlof en feestdagen.</p>
         <p style="margin:0;color:var(--faint);font-size:13px;">Zie het hervatpunt "Wat te doen met de app-registratie SPoW Voedingslaag": de registratie staat klaar met de juiste scopes, de knoop over hoe hij gebruikt wordt moet nog worden doorgehakt.</p>
+      </div>
+    </section>
+
+    <!-- WERK (spow_onboarding: onboarden/offboarden/wijzigen) -->
+    <section class="view" id="v-werk">
+      <div class="grid">
+        <div class="card wide">
+          <div class="card-h"><h2>Onboarding &amp; offboarding</h2><span class="count" id="cnt-werk">–</span></div>
+          <div class="exp" id="list-werk"><div class="emptyhint">Laden…</div></div>
+          <p style="margin:10px 0 0;color:var(--faint);font-size:12px;">Richting/soort/status en aanvrager komen rechtstreeks uit Dataverse via de FormattedValue-annotaties — geen hardgecodeerde nummer-naar-label-lijst, om geen labels te gokken.</p>
+        </div>
       </div>
     </section>
 
@@ -849,7 +864,7 @@ main{min-width:0;display:flex;flex-direction:column;}
   }
   clock(); setInterval(clock,20000);
 
-  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",soon:"..."};
+  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",werk:"Werk",soon:"..."};
   var modes=document.querySelectorAll(".mode");
   function show(go){
     document.querySelectorAll(".view").forEach(function(v){v.classList.remove("on");});
@@ -1012,6 +1027,15 @@ async function api(path){
   if(!res.ok) throw new Error(path+" -> HTTP "+res.status);
   return res.json();
 }
+/* Variant van api() die Dataverse vraagt om de leesbare labels van choice- en lookup-velden mee te sturen
+   (de @...FormattedValue-annotaties), zodat we spow_onboarding's richting/soort/status en aanvrager/beoordelaar
+   kunnen tonen zonder de numerieke OptionSet-waarden te gokken of hard te coderen. Zie projectlog. */
+async function apiPrefer(path){
+  var token=await getToken();
+  var res=await fetch(API+path,{headers:{"Authorization":"Bearer "+token,"OData-MaxVersion":"4.0","OData-Version":"4.0","Accept":"application/json","Prefer":'odata.include-annotations="OData.Community.Display.V1.FormattedValue"'}});
+  if(!res.ok) throw new Error(path+" -> HTTP "+res.status);
+  return res.json();
+}
 
 var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[]};
 
@@ -1152,6 +1176,30 @@ async function loadTowers(){
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon towers niet laden.</div>'; }
 }
 
+async function loadWerk(){
+  var el=document.getElementById("list-werk"), cnt=document.getElementById("cnt-werk");
+  try{
+    var data=await apiPrefer("spow_onboardings?$select=spow_titel,spow_richting,spow_soort,spow_status,_spow_aanvrager_value,_spow_beoordelaar_value,modifiedon&$orderby=modifiedon desc");
+    var rows=data.value||[];
+    cnt.textContent=rows.length+" items";
+    if(!rows.length){ el.innerHTML='<div class="emptyhint">Nog geen onboarding/offboarding-items.</div>'; return; }
+    el.innerHTML=rows.map(function(r){
+      var richting=r["spow_richting@OData.Community.Display.V1.FormattedValue"]||"";
+      var soort=r["spow_soort@OData.Community.Display.V1.FormattedValue"]||"";
+      var status=r["spow_status@OData.Community.Display.V1.FormattedValue"]||"—";
+      var aanvrager=r["_spow_aanvrager_value@OData.Community.Display.V1.FormattedValue"]||"";
+      var who=[richting,soort].filter(Boolean).join(" · ");
+      var statLow=status.toLowerCase();
+      var cls=(statLow.indexOf("afgewezen")>-1||statLow.indexOf("ingetrokken")>-1)?"red":
+              ((statLow.indexOf("goedgekeurd")>-1||statLow.indexOf("uitgevoerd")>-1)?"good":"grey");
+      var daysCls=cls==="good"?"days":"days "+cls;
+      var style=cls==="good"?' style="color:var(--good);"':"";
+      return '<div class="exp-row"><span>'+esc(r.spow_titel)+(aanvrager?' <span style="color:var(--faint);font-size:11px;">— '+esc(aanvrager)+'</span>':'')+'</span>'+
+        '<span class="who">'+esc(who)+'</span><span class="'+daysCls+'"'+style+'>'+esc(status)+'</span></div>';
+    }).join("");
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon werk-items niet laden: '+esc(e.message)+'</div>'; }
+}
+
 var knAll=null;
 async function loadKennisIndex(){
   if(knAll) return knAll;
@@ -1221,7 +1269,69 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk()]);
+}
+
+/* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
+   Status 5 sept 2026: scope is toegekend (tenant-brede admin-consent op deze app), maar de opvraging zelf
+   is nog niet met een echte, ingelogde sessie bevestigd. Deze knop bestaat om dat in het echt te testen —
+   niet om te doen alsof het al werkt. Zie het projectlog, secties 20-26. */
+var GRAPH_SCOPES=["Calendars.Read"];
+var AGENDA_TEST_SCHEDULES=["Ext_Harish.AC@boels.nl","harish.ac@cgi.com"]; /* bekend Boels- + cgi.com-adres, sectie 19 */
+var VRIJBEZET_LABEL={free:"vrij",tentative:"onder voorbehoud",busy:"bezet",oof:"afwezig (out of office)",workingElsewhere:"werkt elders"};
+function pad2(n){ return (n<10?"0":"")+n; }
+function volgendeWerkdagISO(){
+  var d=new Date(); var dow=d.getDay();
+  var plus=dow===5?3:(dow===6?2:1);
+  d.setDate(d.getDate()+plus);
+  return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+}
+async function getGraphToken(){
+  try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES}); return r.accessToken; }
+  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_SCOPES}); return r2.accessToken; }
+}
+async function testVrijBezet(){
+  var out=document.getElementById("agTestOut"), btn=document.getElementById("agTestBtn");
+  if(!out||!btn) return;
+  btn.disabled=true; out.innerHTML='<div class="emptyhint">Bezig…</div>';
+  try{
+    var acc=msalInstance.getActiveAccount();
+    var me=acc?acc.username:null;
+    if(!me) throw new Error("Geen ingelogde gebruiker gevonden.");
+    var token=await getGraphToken();
+    var iso=volgendeWerkdagISO();
+    var body={
+      schedules:[me].concat(AGENDA_TEST_SCHEDULES),
+      startTime:{dateTime:iso+"T08:00:00",timeZone:"W. Europe Standard Time"},
+      endTime:{dateTime:iso+"T18:00:00",timeZone:"W. Europe Standard Time"},
+      availabilityViewInterval:60
+    };
+    var res=await fetch("https://graph.microsoft.com/v1.0/me/calendar/getSchedule",{
+      method:"POST",
+      headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    });
+    var json=await res.json().catch(function(){return {};});
+    if(!res.ok){
+      out.innerHTML='<div class="emptyhint">Mislukt (HTTP '+res.status+'): '+esc((json.error&&json.error.message)||JSON.stringify(json))+'</div>';
+      return;
+    }
+    var rows=(json.value||[]).map(function(s){
+      var items=s.scheduleItems||[];
+      var samen=items.length?items.map(function(i){
+        var st=i.start&&i.start.dateTime?i.start.dateTime.slice(11,16):"?";
+        var en=i.end&&i.end.dateTime?i.end.dateTime.slice(11,16):"?";
+        return (VRIJBEZET_LABEL[i.status]||i.status)+" "+st+"–"+en;
+      }).join(", "):"geen items — vrij, of geen zichtbaarheid";
+      var err=s.error?(' <span style="color:var(--faint);">('+esc(s.error.message||JSON.stringify(s.error))+')</span>'):"";
+      return '<div class="fitem"><b>'+esc(s.scheduleId)+'</b><span>'+esc(samen)+err+'</span></div>';
+    }).join("");
+    out.innerHTML='<div style="margin-bottom:6px;color:var(--faint);font-size:12px;">Opgevraagd voor '+iso+', 08:00–18:00</div>'+(rows||'<div class="emptyhint">Geen resultaten.</div>');
+  }catch(e){
+    out.innerHTML='<div class="emptyhint">Fout: '+esc(e.message)+'</div>';
+  }finally{
+    btn.disabled=false;
+  }
 }
 
 var knInput=document.getElementById("knSearch");
@@ -1253,6 +1363,8 @@ async function onSignedIn(){
   var acc=msalInstance.getActiveAccount();
   document.getElementById("userName").textContent=acc?acc.name:"";
   document.getElementById("signOutBtn").addEventListener("click",function(){ msalInstance.logoutRedirect(); });
+  var agBtn=document.getElementById("agTestBtn");
+  if(agBtn) agBtn.addEventListener("click",testVrijBezet);
   try{ await loadAll(); }
   catch(e){ setBanner("Fout bij laden: "+e.message,false); }
 }
