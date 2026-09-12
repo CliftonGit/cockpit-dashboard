@@ -538,6 +538,16 @@ main{min-width:0;display:flex;flex-direction:column;}
           <div class="ppl" id="list-team"><div class="emptyhint">Laden…</div></div>
         </div>
 
+        <div class="card wide">
+          <div class="card-h">
+            <h2>Personen — on/offboarden</h2>
+            <span class="count" id="cnt-personen">actieve personen</span>
+          </div>
+          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Nieuw (12 sept 2026): dit schrijft rechtstreeks naar <code>spow_persoon</code> — nog niet end-to-end getest met een echte, gewone login. Probeer 'm gerust, en meld wat er gebeurt.</p>
+          <div style="margin-bottom:10px;"><button class="btn" id="pNewBtn" type="button">+ Nieuwe persoon</button></div>
+          <div class="exp" id="list-personen"><div class="emptyhint">Laden…</div></div>
+        </div>
+
         <div class="card">
           <div class="card-h"><h2>Mensen per tower</h2><span class="count">actieve teamleden</span></div>
           <div class="exp" id="list-towers"><div class="emptyhint">Laden…</div></div>
@@ -808,6 +818,49 @@ main{min-width:0;display:flex;flex-direction:column;}
   </div>
 </div>
 
+<div class="detail" id="personSheet">
+  <div class="sheet">
+    <div id="p-head"><h3>Nieuwe persoon</h3><p class="lead">Zoek in de GAL, of typ handmatig voor een externe/CGI-collega die er niet in staat.</p></div>
+
+    <div>
+      <label style="display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:5px;">Zoeken in GAL</label>
+      <div class="searchbar" style="margin-bottom:0;">
+        <input class="kn-search-real" id="pGalSearch" type="text" placeholder="Typ een naam…" autocomplete="off">
+      </div>
+      <div id="pGalResults" style="margin-top:6px;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);"></div>
+      <p id="pGalStatus" style="margin:6px 0 0;color:var(--faint);font-size:11.5px;"></p>
+    </div>
+
+    <dl class="kv" style="grid-template-columns:112px minmax(0,1fr);">
+      <dt>Naam</dt><dd><input class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;" id="pNaam" type="text" placeholder="Volledige naam"></dd>
+      <dt>Werkaccount</dt><dd><input class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;" id="pUpn" type="text" placeholder="naam@boels.nl of @cgi.com (optioneel)"></dd>
+      <dt>Groep</dt><dd>
+        <select id="pGroep" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;">
+          <option value="420690000">Intern (Boels)</option>
+          <option value="420690001">CGI</option>
+          <option value="420690002">Extern</option>
+        </select>
+      </dd>
+      <dt>Tower</dt><dd>
+        <select id="pTower" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;">
+          <option value="">— geen —</option>
+          <option value="420690000">Server & Connectivity</option>
+          <option value="420690001">Cloud Services</option>
+          <option value="420690002">Endpoint Management</option>
+          <option value="420690003">Buiten IT Infra</option>
+          <option value="420690004">Security</option>
+        </select>
+      </dd>
+      <dt>Rol/inzetbaarheid</dt><dd><input class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;" id="pInzetbaarheid" type="text" placeholder="bijv. IAM, M365"></dd>
+    </dl>
+
+    <p id="pFormStatus" style="margin:0;color:var(--faint);font-size:12.5px;"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" id="pSubmit" type="button">Toevoegen</button>
+      <button class="btn ghost" id="pCancel" type="button">Annuleren</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -1010,7 +1063,7 @@ var API="https://boels-spow.crm4.dynamics.com/api/data/v9.2/";
 var msalInstance;
 
 var TOWER_SERVICE={1:"Server & Connectivity",2:"Cloud Services",3:"Endpoint Management"};
-var TOWER_PERSOON={420690000:"Server & Connectivity",420690001:"Cloud Services",420690002:"Endpoint Management",420690003:"Buiten IT Infra"};
+var TOWER_PERSOON={420690000:"Server & Connectivity",420690001:"Cloud Services",420690002:"Endpoint Management",420690003:"Buiten IT Infra",420690004:"Security"};
 var GROEP_PERSOON={420690000:"Intern",420690001:"CGI",420690002:"Extern"};
 var CATEGORIE_TAAK={420690000:"Project",420690001:"Change",420690002:"Run",420690003:"RI"};
 var STATUS_TAAK={420690000:"Concept",420690001:"Gepland",420690002:"Loopt",420690003:"Wacht",420690004:"Af",420690005:"Vervallen"};
@@ -1040,6 +1093,21 @@ async function apiPrefer(path){
   var res=await fetch(API+path,{headers:{"Authorization":"Bearer "+token,"OData-MaxVersion":"4.0","OData-Version":"4.0","Accept":"application/json","Prefer":'odata.include-annotations="OData.Community.Display.V1.FormattedValue"'}});
   if(!res.ok) throw new Error(path+" -> HTTP "+res.status);
   return res.json();
+}
+/* Generieke schrijfhelpers (POST/PATCH) — voorheen deed alleen ik dit soort schrijfacties zelf rechtstreeks
+   op Dataverse; dit is de eerste plek waar de Cockpit-app zelf ook mag schrijven (Personen aanmaken/offboarden).
+   Gebruikt dezelfde Dataverse-scope/token als api() — schrijft dus met de rechten van wie is ingelogd. */
+async function apiPost(path,body){
+  var token=await getToken();
+  var res=await fetch(API+path,{method:"POST",headers:{"Authorization":"Bearer "+token,"OData-MaxVersion":"4.0","OData-Version":"4.0","Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!res.ok){ var t=await res.text().catch(function(){return "";}); throw new Error(path+" -> HTTP "+res.status+" "+t); }
+  return res;
+}
+async function apiPatch(path,body){
+  var token=await getToken();
+  var res=await fetch(API+path,{method:"PATCH",headers:{"Authorization":"Bearer "+token,"OData-MaxVersion":"4.0","OData-Version":"4.0","Accept":"application/json","Content-Type":"application/json","If-Match":"*"},body:JSON.stringify(body)});
+  if(!res.ok){ var t=await res.text().catch(function(){return "";}); throw new Error(path+" -> HTTP "+res.status+" "+t); }
+  return res;
 }
 
 var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[]};
@@ -1136,9 +1204,9 @@ async function loadPortalenQuick(){
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon portalen niet laden.</div>'; }
 }
 
-async function loadPersoonsData(){
-  if(CACHE.persoons.length) return CACHE.persoons;
-  var data=await api("spow_persoons?$select=spow_persoonid,spow_naam,spow_tower,spow_groep,spow_actief&$filter=spow_actief eq true");
+async function loadPersoonsData(force){
+  if(CACHE.persoons.length && !force) return CACHE.persoons;
+  var data=await api("spow_persoons?$select=spow_persoonid,spow_naam,spow_tower,spow_groep,spow_actief,spow_upn,spow_inzetbaarheid&$filter=spow_actief eq true&$orderby=spow_naam");
   CACHE.persoons=data.value;
   return CACHE.persoons;
 }
@@ -1274,7 +1342,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
@@ -1294,6 +1362,121 @@ function volgendeWerkdagISO(){
 async function getGraphToken(){
   try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES}); return r.accessToken; }
   catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_SCOPES}); return r2.accessToken; }
+}
+
+/* ============ Personen: GAL-zoeken + on/offboarden (User.ReadBasic.All), 12 sept 2026 ============
+   Status: scope toegekend en tenant-breed geconsenteerd (zie projectlog sectie 68), maar deze concrete
+   zoekfunctie en de schrijfacties naar spow_persoon zijn nog niet met een echte, gewone login getest.
+   Los van GRAPH_SCOPES (Calendars.Read) gehouden, zodat een falende scope de ander niet meesleept. */
+var GRAPH_PEOPLE_SCOPES=["User.ReadBasic.All"];
+async function getGraphPeopleToken(){
+  try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_PEOPLE_SCOPES}); return r.accessToken; }
+  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_PEOPLE_SCOPES}); return r2.accessToken; }
+}
+async function searchGAL(term){
+  var token=await getGraphPeopleToken();
+  var url="https://graph.microsoft.com/v1.0/users?$search=\"displayName:"+encodeURIComponent(term)+"\"&$select=displayName,mail,userPrincipalName,jobTitle,department&$top=8&$orderby=displayName";
+  var res=await fetch(url,{headers:{"Authorization":"Bearer "+token,"ConsistencyLevel":"eventual"}});
+  var json=await res.json().catch(function(){return {};});
+  if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
+  return json.value||[];
+}
+var pGalTimer=null;
+function wirePersonSheet(){
+  var searchInput=document.getElementById("pGalSearch");
+  var results=document.getElementById("pGalResults");
+  var status=document.getElementById("pGalStatus");
+  if(searchInput) searchInput.addEventListener("input",function(){
+    var term=searchInput.value.trim();
+    clearTimeout(pGalTimer);
+    if(term.length<2){ results.innerHTML=""; status.textContent=""; return; }
+    pGalTimer=setTimeout(async function(){
+      status.textContent="Zoeken in GAL…";
+      try{
+        var hits=await searchGAL(term);
+        if(!hits.length){ results.innerHTML=""; status.textContent="Geen GAL-treffers voor \""+esc(term)+"\" — vul hieronder handmatig in (bijv. externe collega)."; return; }
+        status.textContent=hits.length+" treffer(s)";
+        results.innerHTML=hits.map(function(u,i){
+          return '<div class="exp-row" data-gali="'+i+'" style="cursor:pointer;grid-template-columns:minmax(0,1fr);"><span>'+esc(u.displayName)+
+            ' <span style="color:var(--faint);font-size:11px;">— '+esc(u.mail||u.userPrincipalName||"")+(u.jobTitle?(" · "+esc(u.jobTitle)):"")+'</span></span></div>';
+        }).join("");
+        results.querySelectorAll("[data-gali]").forEach(function(row){
+          row.addEventListener("click",function(){
+            var u=hits[+row.dataset.gali];
+            document.getElementById("pNaam").value=u.displayName||"";
+            document.getElementById("pUpn").value=u.mail||u.userPrincipalName||"";
+            status.textContent="Gekoppeld aan GAL: "+esc(u.displayName);
+            results.innerHTML="";
+          });
+        });
+      }catch(e){ status.textContent="GAL-zoeken mislukt: "+e.message; results.innerHTML=""; }
+    },350);
+  });
+  var newBtn=document.getElementById("pNewBtn");
+  if(newBtn) newBtn.addEventListener("click",openPersonSheet);
+  var cancelBtn=document.getElementById("pCancel");
+  if(cancelBtn) cancelBtn.addEventListener("click",closePersonSheet);
+  var sheet=document.getElementById("personSheet");
+  if(sheet) sheet.addEventListener("click",function(e){ if(e.target===sheet) closePersonSheet(); });
+  var submitBtn=document.getElementById("pSubmit");
+  if(submitBtn) submitBtn.addEventListener("click",submitNewPersoon);
+}
+function openPersonSheet(){
+  ["pGalSearch","pNaam","pUpn","pInzetbaarheid"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("pGroep").value="420690000";
+  document.getElementById("pTower").value="";
+  document.getElementById("pGalResults").innerHTML="";
+  document.getElementById("pGalStatus").textContent="";
+  document.getElementById("pFormStatus").textContent="";
+  document.getElementById("personSheet").classList.add("on");
+}
+function closePersonSheet(){ document.getElementById("personSheet").classList.remove("on"); }
+async function submitNewPersoon(){
+  var st=document.getElementById("pFormStatus");
+  var naam=document.getElementById("pNaam").value.trim();
+  if(!naam){ st.textContent="Naam is verplicht."; return; }
+  var body={
+    spow_naam:naam,
+    spow_groep:parseInt(document.getElementById("pGroep").value,10),
+    spow_actief:true
+  };
+  var upn=document.getElementById("pUpn").value.trim(); if(upn) body.spow_upn=upn;
+  var tower=document.getElementById("pTower").value; if(tower) body.spow_tower=parseInt(tower,10);
+  var inzet=document.getElementById("pInzetbaarheid").value.trim(); if(inzet) body.spow_inzetbaarheid=inzet;
+  st.textContent="Bezig…";
+  try{
+    await apiPost("spow_persoons",body);
+    st.textContent="Toegevoegd.";
+    await loadPersoonsData(true);
+    await Promise.all([renderPersonenBeheer(),loadTeam(),loadTowers()]);
+    setTimeout(closePersonSheet,600);
+  }catch(e){ st.textContent="Mislukt: "+e.message; }
+}
+async function offboardPersoon(id,naam,btn){
+  if(!window.confirm('"'+naam+'" offboarden (op inactief zetten)? Dit verwijdert niets, het record blijft bestaan maar verdwijnt uit de actieve lijsten.')) return;
+  if(btn){ btn.disabled=true; btn.textContent="…"; }
+  try{
+    await apiPatch("spow_persoons("+id+")",{spow_actief:false});
+    await loadPersoonsData(true);
+    await Promise.all([renderPersonenBeheer(),loadTeam(),loadTowers()]);
+  }catch(e){ alert("Offboarden mislukt: "+e.message); if(btn){ btn.disabled=false; btn.textContent="Offboarden"; } }
+}
+async function renderPersonenBeheer(){
+  var el=document.getElementById("list-personen"), cnt=document.getElementById("cnt-personen");
+  try{
+    var persoons=await loadPersoonsData();
+    if(cnt) cnt.textContent=persoons.length+" actief";
+    if(!persoons.length){ el.innerHTML='<div class="emptyhint">Geen actieve personen.</div>'; return; }
+    el.innerHTML=persoons.map(function(p){
+      var who=(TOWER_PERSOON[p.spow_tower]||"—")+" · "+(GROEP_PERSOON[p.spow_groep]||"");
+      return '<div class="exp-row" data-poff="'+p.spow_persoonid+'" data-pnaam="'+esc(p.spow_naam)+'"><span>'+esc(p.spow_naam)+'</span>'+
+        '<span class="who">'+esc(who)+'</span><button class="btn ghost" style="padding:3px 8px;font-size:10.5px;">Offboarden</button></div>';
+    }).join("");
+    el.querySelectorAll("[data-poff]").forEach(function(row){
+      var btn=row.querySelector("button");
+      btn.addEventListener("click",function(){ offboardPersoon(row.dataset.poff,row.dataset.pnaam,btn); });
+    });
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon personen niet laden: '+esc(e.message)+'</div>'; }
 }
 async function testVrijBezet(){
   var out=document.getElementById("agTestOut"), btn=document.getElementById("agTestBtn");
@@ -1370,6 +1553,7 @@ async function onSignedIn(){
   document.getElementById("signOutBtn").addEventListener("click",function(){ msalInstance.logoutRedirect(); });
   var agBtn=document.getElementById("agTestBtn");
   if(agBtn) agBtn.addEventListener("click",testVrijBezet);
+  wirePersonSheet();
   try{ await loadAll(); }
   catch(e){ setBanner("Fout bij laden: "+e.message,false); }
 }
