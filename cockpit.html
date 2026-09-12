@@ -658,9 +658,14 @@ main{min-width:0;display:flex;flex-direction:column;}
       </div>
 
       <div class="rl-lens" id="rl-week" hidden>
-        <div class="card" style="max-width:640px;">
-          <div class="card-h"><h2>Week</h2><span class="count">weekagenda met changevensters</span></div>
-          <p style="margin:0;color:var(--dim);">Volgende stap na Maand — nog niet gebouwd. Komt op basis van <code>spow_venster</code> (3 vensters bestaan al) en dezelfde taken-data.</p>
+        <div class="grid">
+          <div class="card wide">
+            <div class="card-h"><h2>Week — agenda met changevensters</h2><span class="count" id="cnt-week">–</span></div>
+            <div style="margin-bottom:10px;"><input type="week" id="weekPicker" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:5px 8px;"></div>
+            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Per dag: changes die die dag starten of eindigen, en gedateerde changevensters/freezes/onderhoud uit <code>spow_venster</code>. Onderaan staat een terugkerende afspraak zonder vaste datum, die elke week geldt.</p>
+            <div id="week-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);"><div class="emptyhint">Laden…</div></div>
+            <div id="week-terugkerend" style="margin-top:10px;"></div>
+          </div>
         </div>
       </div>
       <div class="rl-lens" id="rl-dag" hidden>
@@ -1197,13 +1202,15 @@ var GROEP_PERSOON={420690000:"Intern",420690001:"CGI",420690002:"Extern"};
 var SOORT_SPOF={420690000:"Persoon",420690001:"Systeem",420690002:"Leverancier",420690003:"Overig"};
 var STATUS_SPOF={420690000:"Gesignaleerd",420690001:"Erkend",420690002:"In behandeling",420690003:"Gemitigeerd",420690004:"Opgelost",420690005:"Bewust genegeerd"};
 var RISK_LABEL={420690000:"Laag",420690001:"Midden",420690002:"Hoog"};
-/* spow_taak (Roadmap-lenzen, sectie 72) — labels rechtstreeks uit de Dataverse-optionsets overgenomen. */
-var STATUS_TAAK={420690000:"Concept",420690001:"Gepland",420690002:"Loopt",420690003:"Wacht",420690004:"Af",420690005:"Vervallen"};
 var CATEGORIE_TAAK={420690000:"Project",420690001:"Change",420690002:"Run",420690003:"RI"};
 var STATUS_TAAK={420690000:"Concept",420690001:"Gepland",420690002:"Loopt",420690003:"Wacht",420690004:"Af",420690005:"Vervallen"};
 var PRIO_RC={420690000:"Hoog",420690001:"Middel",420690002:"Laag"};
 var STATUS_RC={420690000:"Actief",420690001:"Wacht",420690002:"Geparkeerd",420690003:"Klaar"};
 var SOORT_CI={420690000:"Firewall",420690001:"Switch",420690002:"Router",420690003:"Server",420690004:"Database",420690005:"Applicatieserver",420690006:"Opslag",420690007:"Overig"};
+/* spow_venster (Week-lens, sectie 73) — labels rechtstreeks uit de Dataverse-optionset overgenomen. */
+var VENSTER_SOORT={420690000:"Changevenster",420690001:"Freeze",420690002:"Onderhoud",420690003:"Piekperiode",420690004:"Afwezigheid"};
+var MND_KORT=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+var DAG_NAMEN=["ma","di","wo","do","vr","za","zo"];
 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function fmtDate(s){ if(!s) return null; var d=new Date(s); return d.toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"}); }
@@ -1244,7 +1251,7 @@ async function apiPatch(path,body){
   return res;
 }
 
-var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[]};
+var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[],vensters:[]};
 
 function setBanner(text,ok){
   var b=document.getElementById("statusBanner");
@@ -1588,10 +1595,89 @@ async function loadMaand(){
     }).join("");
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon maandoverzicht niet laden: '+esc(e.message)+'</div>'; }
 }
+/* ISO-8601 weeknummers voor de Week-lens (sectie 73) — geverifieerd tegen bekende ankerpunten
+   (1 jan 2026 is een donderdag -> week 1 begint ma 29 dec 2025; 31 dec 2026 is een donderdag -> week 53)
+   vóórdat dit in de cockpit is gezet, zodat er geen off-by-one in de weekgrens sluipt. */
+function isoWeekValue(d){
+  var date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  var dayNum=(date.getUTCDay()+6)%7;
+  date.setUTCDate(date.getUTCDate()-dayNum+3);
+  var firstThursday=new Date(Date.UTC(date.getUTCFullYear(),0,4));
+  var firstDayNum=(firstThursday.getUTCDay()+6)%7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate()-firstDayNum+3);
+  var weekNum=1+Math.round((date-firstThursday)/(7*24*3600*1000));
+  return date.getUTCFullYear()+"-W"+(weekNum<10?"0":"")+weekNum;
+}
+function isoWeekToMonday(isoWeekStr){
+  var parts=isoWeekStr.split("-W");
+  var year=parseInt(parts[0],10), week=parseInt(parts[1],10);
+  var simple=new Date(Date.UTC(year,0,1+(week-1)*7));
+  var dow=simple.getUTCDay();
+  var start=new Date(simple);
+  if(dow<=4) start.setUTCDate(simple.getUTCDate()-dow+1);
+  else start.setUTCDate(simple.getUTCDate()+8-dow);
+  return start;
+}
+async function loadVensterData(force){
+  if(CACHE.vensters.length && !force) return CACHE.vensters;
+  var data=await api("spow_vensters?$select=spow_vensterid,spow_venstername,spow_soort,spow_start,spow_eind,spow_terugkerend,spow_notitie");
+  CACHE.vensters=data.value;
+  return CACHE.vensters;
+}
+async function loadWeek(){
+  var picker=document.getElementById("weekPicker");
+  if(picker && !picker.value){ picker.value=isoWeekValue(new Date()); }
+  var grid=document.getElementById("week-grid"), cnt=document.getElementById("cnt-week"), terug=document.getElementById("week-terugkerend");
+  if(!grid) return;
+  try{
+    var taken=await loadRoadmapTakenData();
+    var vensters=await loadVensterData();
+    var monday=isoWeekToMonday(picker.value);
+    var days=[]; for(var i=0;i<7;i++){ var d=new Date(monday); d.setUTCDate(monday.getUTCDate()+i); days.push(d); }
+    var dayStrs=days.map(function(d){ return d.toISOString().slice(0,10); });
+    var totalItems=0;
+    grid.innerHTML=days.map(function(d,i){
+      var ds=dayStrs[i];
+      var dayTasks=taken.filter(function(t){
+        var s=t.spow_start?String(t.spow_start).slice(0,10):null;
+        var e=t.spow_eind?String(t.spow_eind).slice(0,10):s;
+        if(!s) s=e;
+        return s && e && s<=ds && e>=ds;
+      });
+      var dayVensters=vensters.filter(function(v){
+        if(!v.spow_start) return false;
+        var s=String(v.spow_start).slice(0,10);
+        var e=v.spow_eind?String(v.spow_eind).slice(0,10):s;
+        return s<=ds && e>=ds;
+      });
+      totalItems+=dayTasks.length+dayVensters.length;
+      var kop=DAG_NAMEN[i]+" "+d.getUTCDate()+" "+MND_KORT[d.getUTCMonth()];
+      var vensterHtml=dayVensters.map(function(v){
+        var soort=VENSTER_SOORT[v.spow_soort]||"?";
+        var kleur=v.spow_soort===420690001?"var(--alert)":((v.spow_soort===420690002||v.spow_soort===420690003)?"var(--warn)":"var(--accent)");
+        return '<div style="font-size:10.5px;padding:3px 5px;border:1px solid '+kleur+';color:'+kleur+';">'+esc(soort)+': '+esc(v.spow_venstername)+'</div>';
+      }).join("");
+      var taskHtml=dayTasks.map(function(t){
+        var st=STATUS_TAAK[t.spow_status]||"—";
+        return '<div style="font-size:11px;padding:3px 5px;background:var(--panel);border-left:2px solid var(--accent-soft);">'+esc(t.spow_titel)+' <span style="color:var(--faint);">('+esc(st)+')</span></div>';
+      }).join("");
+      return '<div style="background:var(--panel2);padding:8px;display:flex;flex-direction:column;gap:5px;min-height:90px;">'+
+        '<b style="font-size:11px;color:var(--dim);">'+esc(kop)+'</b>'+vensterHtml+taskHtml+
+        (!dayTasks.length&&!dayVensters.length?'<span style="font-size:10.5px;color:var(--faint);">—</span>':'')+
+      '</div>';
+    }).join("");
+    if(cnt) cnt.textContent=totalItems+" items deze week";
+    var recurring=vensters.filter(function(v){ return v.spow_terugkerend; });
+    if(terug) terug.innerHTML=recurring.length?
+      ('<div style="color:var(--faint);font-size:11.5px;">Terugkerende afspraak (geen vaste datum, geldt elke week): '+recurring.map(function(v){return esc(v.spow_venstername+" — "+v.spow_terugkerend);}).join("; ")+'</div>'):"";
+  }catch(e){ grid.innerHTML='<div class="emptyhint">Kon weekagenda niet laden: '+esc(e.message)+'</div>'; }
+}
 function wireRoadmap(){
   wireRoadmapLenses();
-  var picker=document.getElementById("maandPicker");
-  if(picker) picker.addEventListener("change",loadMaand);
+  var mp=document.getElementById("maandPicker");
+  if(mp) mp.addEventListener("change",loadMaand);
+  var wp=document.getElementById("weekPicker");
+  if(wp) wp.addEventListener("change",loadWeek);
 }
 
 async function loadWerk(){
@@ -1687,7 +1773,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMaand()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMaand(),loadWeek()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
