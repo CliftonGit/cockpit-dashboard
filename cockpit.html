@@ -206,6 +206,7 @@ main{min-width:0;display:flex;flex-direction:column;}
 .btn:hover{background:var(--accent);color:var(--btn-ink);box-shadow:0 0 18px rgba(var(--glow),.3);}
 .btn.ghost{border-color:var(--line);color:var(--dim);}
 .btn.ghost:hover{background:var(--panel2);color:var(--ink);box-shadow:none;}
+.rl-btn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);}
 
 .ppl{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
 .p-row{background:var(--panel2);padding:11px 13px;display:grid;grid-template-columns:26px minmax(0,1fr) 132px 46px;gap:12px;align-items:center;text-align:left;width:100%;transition:background .16s;}
@@ -463,7 +464,7 @@ main{min-width:0;display:flex;flex-direction:column;}
     <button class="mode" data-go="kennis"><i class="dot"></i>Kennis</button>
     <button class="mode" data-go="services"><i class="dot"></i>Services</button>
     <button class="mode" data-go="spof"><i class="dot"></i>SPoF-register</button>
-    <button class="mode" data-go="soon"><i class="dot"></i>Roadmap</button>
+    <button class="mode" data-go="roadmap"><i class="dot"></i>Roadmap</button>
     <div class="rail-sep"></div>
     <div class="rail-lbl">Publiek</div>
     <button class="present-btn" id="goPresent">Presenteren</button>
@@ -614,10 +615,59 @@ main{min-width:0;display:flex;flex-direction:column;}
       </div>
     </section>
 
-    <section class="view" id="v-soon">
-      <div class="card" style="max-width:520px;">
-        <div class="card-h"><h2>Nog niet gebouwd</h2></div>
-        <p style="margin:0;color:var(--dim);">Deze focus staat in het ontwerp maar nog niet gebouwd. Vandaag, Team, Kennis en Services draaien op je eigen Dataverse-omgeving; Presenteren is nog een illustratieve doorloop.</p>
+    <!-- ROADMAP (spow_taak/spow_venster/spow_betrokkene: zes "lenzen" op dezelfde data, sectie 72) -->
+    <section class="view" id="v-roadmap">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn ghost rl-btn" data-lens="meerjaar" type="button">Meerjaar</button>
+        <button class="btn ghost rl-btn" data-lens="jaar" type="button">Jaar</button>
+        <button class="btn ghost rl-btn" data-lens="kwartaal" type="button">Kwartaal</button>
+        <button class="btn ghost rl-btn" data-lens="maand" type="button" aria-pressed="true">Maand</button>
+        <button class="btn ghost rl-btn" data-lens="week" type="button">Week</button>
+        <button class="btn ghost rl-btn" data-lens="dag" type="button">Dag</button>
+      </div>
+      <p style="margin:0 0 14px;color:var(--faint);font-size:12px;max-width:80ch;">Nieuw (12 sept 2026, sectie 72): zes "lenzen" op dezelfde onderliggende taken-data (<code>spow_taak</code>), van grof naar fijn — geen uitgerekte tijdas, elke lens is een andere blik. Meerjaar/Jaar/Kwartaal draaien om projecten; er staat nog geen enkele taak op categorie "Project" (alle 68 huidige taken zijn "Change"), dus die drie lenzen zijn voorlopig nog leeg. Maand, Week en Dag draaien wel al op je echte changes — Maand staat als eerste.</p>
+
+      <div class="rl-lens" id="rl-meerjaar" hidden>
+        <div class="card" style="max-width:640px;">
+          <div class="card-h"><h2>Meerjaar</h2><span class="count">portfolio, 3 jaar, geen taken</span></div>
+          <p style="margin:0;color:var(--dim);">Deze lens toont het portfolio van projecten over meerdere jaren — niet losse changes. Er bestaat nog geen enkele <code>spow_taak</code> met categorie "Project"; zodra die er zijn, verschijnen ze hier.</p>
+        </div>
+      </div>
+      <div class="rl-lens" id="rl-jaar" hidden>
+        <div class="card" style="max-width:640px;">
+          <div class="card-h"><h2>Jaar</h2><span class="count">kwartaalvulling per project</span></div>
+          <p style="margin:0;color:var(--dim);">Zelfde reden als Meerjaar: dit is de kwartaalvulling per project, en er zijn nog geen projecten.</p>
+        </div>
+      </div>
+      <div class="rl-lens" id="rl-kwartaal" hidden>
+        <div class="card" style="max-width:640px;">
+          <div class="card-h"><h2>Kwartaal</h2><span class="count">projecten met taken per week</span></div>
+          <p style="margin:0;color:var(--dim);">Zelfde reden: dit is de planningsblik per project (taken per week), en die projecten bestaan nog niet.</p>
+        </div>
+      </div>
+
+      <div class="rl-lens" id="rl-maand">
+        <div class="grid">
+          <div class="card wide">
+            <div class="card-h"><h2>Maand — bezetting per medewerker</h2><span class="count" id="cnt-maand">–</span></div>
+            <div style="margin-bottom:10px;"><input type="month" id="maandPicker" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:5px 8px;"></div>
+            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Uren gepland/gerealiseerd per persoon, opgeteld uit de changes die (deels) in de gekozen maand vallen. Er staat nog geen FTE-veld op <code>spow_persoon</code>, dus dit toont uren — geen bezettingspercentage tegen beschikbare capaciteit; dat is een vervolgstap.</p>
+            <div class="exp" id="list-maand"><div class="emptyhint">Laden…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rl-lens" id="rl-week" hidden>
+        <div class="card" style="max-width:640px;">
+          <div class="card-h"><h2>Week</h2><span class="count">weekagenda met changevensters</span></div>
+          <p style="margin:0;color:var(--dim);">Volgende stap na Maand — nog niet gebouwd. Komt op basis van <code>spow_venster</code> (3 vensters bestaan al) en dezelfde taken-data.</p>
+        </div>
+      </div>
+      <div class="rl-lens" id="rl-dag" hidden>
+        <div class="card" style="max-width:640px;">
+          <div class="card-h"><h2>Dag</h2><span class="count">runbook van de dag</span></div>
+          <p style="margin:0;color:var(--dim);">Volgende stap na Week — nog niet gebouwd. Komt op basis van de runbook-velden op <code>spow_taak</code> (afspraken/testplan/terugval/downtime) en <code>spow_betrokkene</code> (escalatielijst, 23 records bestaan al).</p>
+        </div>
       </div>
     </section>
 
@@ -999,7 +1049,7 @@ main{min-width:0;display:flex;flex-direction:column;}
   }
   clock(); setInterval(clock,20000);
 
-  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",werk:"Werk",spof:"Failure",soon:"..."};
+  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",werk:"Werk",spof:"Failure",roadmap:"Roadmap"};
   var modes=document.querySelectorAll(".mode");
   function show(go){
     document.querySelectorAll(".view").forEach(function(v){v.classList.remove("on");});
@@ -1147,6 +1197,8 @@ var GROEP_PERSOON={420690000:"Intern",420690001:"CGI",420690002:"Extern"};
 var SOORT_SPOF={420690000:"Persoon",420690001:"Systeem",420690002:"Leverancier",420690003:"Overig"};
 var STATUS_SPOF={420690000:"Gesignaleerd",420690001:"Erkend",420690002:"In behandeling",420690003:"Gemitigeerd",420690004:"Opgelost",420690005:"Bewust genegeerd"};
 var RISK_LABEL={420690000:"Laag",420690001:"Midden",420690002:"Hoog"};
+/* spow_taak (Roadmap-lenzen, sectie 72) — labels rechtstreeks uit de Dataverse-optionsets overgenomen. */
+var STATUS_TAAK={420690000:"Concept",420690001:"Gepland",420690002:"Loopt",420690003:"Wacht",420690004:"Af",420690005:"Vervallen"};
 var CATEGORIE_TAAK={420690000:"Project",420690001:"Change",420690002:"Run",420690003:"RI"};
 var STATUS_TAAK={420690000:"Concept",420690001:"Gepland",420690002:"Loopt",420690003:"Wacht",420690004:"Af",420690005:"Vervallen"};
 var PRIO_RC={420690000:"Hoog",420690001:"Middel",420690002:"Laag"};
@@ -1192,7 +1244,7 @@ async function apiPatch(path,body){
   return res;
 }
 
-var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[]};
+var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[]};
 
 function setBanner(text,ok){
   var b=document.getElementById("statusBanner");
@@ -1472,6 +1524,76 @@ function wireSpofSheet(){
   if(submitBtn) submitBtn.addEventListener("click",submitNewSpof);
 }
 
+/* ============ Roadmap-lenzen (sectie 72) ============
+   Zes lenzen op dezelfde spow_taak-data, van grof naar fijn (zie docs/ontwerp/SPoW-Roadmap.html).
+   Meerjaar/Jaar/Kwartaal draaien om projecten (categorie=Project) — die bestaan nog niet (alle 68
+   taken zijn Change), dus die drie tonen een eerlijke lege staat. Maand is als eerste gebouwd,
+   Week en Dag volgen op basis van dezelfde data (spow_venster/spow_betrokkene bestaan al). */
+function wireRoadmapLenses(){
+  var btns=document.querySelectorAll(".rl-btn");
+  btns.forEach(function(b){
+    b.addEventListener("click",function(){
+      btns.forEach(function(x){x.setAttribute("aria-pressed", x===b?"true":"false");});
+      document.querySelectorAll(".rl-lens").forEach(function(l){ l.hidden = (l.id!=="rl-"+b.dataset.lens); });
+    });
+  });
+}
+async function loadRoadmapTakenData(force){
+  if(CACHE.roadmapTaken.length && !force) return CACHE.roadmapTaken;
+  var data=await api("spow_taaks?$select=spow_taakid,spow_titel,spow_status,spow_categorie,spow_prioriteit,spow_start,spow_eind,spow_urengepland,spow_urengerealiseerd,spow_voortgang&$expand=spow_Persoon($select=spow_naam),spow_Dienst($select=spow_servicename)&$top=1000");
+  CACHE.roadmapTaken=data.value;
+  return CACHE.roadmapTaken;
+}
+function pad2m(n){ return (n<10?"0":"")+n; }
+async function loadMaand(){
+  var picker=document.getElementById("maandPicker");
+  if(picker && !picker.value){ var n=new Date(); picker.value=n.getFullYear()+"-"+pad2m(n.getMonth()+1); }
+  var el=document.getElementById("list-maand"), cnt=document.getElementById("cnt-maand");
+  if(!el) return;
+  try{
+    var taken=await loadRoadmapTakenData();
+    var ym=(picker&&picker.value)||"";
+    var parts=ym.split("-");
+    var monthStart=new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, 1, 0,0,0);
+    var monthEnd=new Date(parseInt(parts[0],10), parseInt(parts[1],10), 0, 23,59,59);
+    var inMonth=taken.filter(function(t){
+      if(!t.spow_start && !t.spow_eind) return false;
+      var s=t.spow_start?new Date(t.spow_start):null, e=t.spow_eind?new Date(t.spow_eind):null;
+      if(!s) s=e; if(!e) e=s;
+      return s<=monthEnd && e>=monthStart;
+    });
+    if(cnt) cnt.textContent=inMonth.length+" changes in "+esc(ym);
+    if(!inMonth.length){ el.innerHTML='<div class="emptyhint">Geen changes gevonden in deze maand.</div>'; return; }
+    var byPersoon={};
+    inMonth.forEach(function(t){
+      var naam=t.spow_Persoon?t.spow_Persoon.spow_naam:"Niet toegewezen";
+      if(!byPersoon[naam]) byPersoon[naam]={gepland:0,gerealiseerd:0,taken:[]};
+      byPersoon[naam].gepland+=Number(t.spow_urengepland)||0;
+      byPersoon[naam].gerealiseerd+=Number(t.spow_urengerealiseerd)||0;
+      byPersoon[naam].taken.push(t);
+    });
+    var namen=Object.keys(byPersoon).sort(function(a,b){ return byPersoon[b].gepland-byPersoon[a].gepland; });
+    el.innerHTML=namen.map(function(naam){
+      var g=byPersoon[naam];
+      var lijst=g.taken.sort(function(a,b){ return new Date(a.spow_start||a.spow_eind)-new Date(b.spow_start||b.spow_eind); }).map(function(t){
+        var st=STATUS_TAAK[t.spow_status]||"—";
+        var when=t.spow_start?fmtDate(t.spow_start):"";
+        return '<div style="font-size:11.5px;color:var(--faint);">'+esc(when)+' — '+esc(t.spow_titel)+' <span style="color:var(--dim);">('+esc(st)+')</span></div>';
+      }).join("");
+      return '<div style="background:var(--panel2);padding:10px 12px;display:grid;gap:6px;">'+
+        '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><b>'+esc(naam)+'</b>'+
+        '<span class="days grey">'+g.gepland.toFixed(1)+' u gepland · '+g.gerealiseerd.toFixed(1)+' u gerealiseerd</span></div>'+
+        lijst+
+      '</div>';
+    }).join("");
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon maandoverzicht niet laden: '+esc(e.message)+'</div>'; }
+}
+function wireRoadmap(){
+  wireRoadmapLenses();
+  var picker=document.getElementById("maandPicker");
+  if(picker) picker.addEventListener("change",loadMaand);
+}
+
 async function loadWerk(){
   var el=document.getElementById("list-werk"), cnt=document.getElementById("cnt-werk");
   try{
@@ -1565,7 +1687,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMaand()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
@@ -1778,6 +1900,7 @@ async function onSignedIn(){
   if(agBtn) agBtn.addEventListener("click",testVrijBezet);
   wirePersonSheet();
   wireSpofSheet();
+  wireRoadmap();
   try{ await loadAll(); }
   catch(e){ setBanner("Fout bij laden: "+e.message,false); }
 }
