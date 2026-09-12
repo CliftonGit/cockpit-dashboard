@@ -554,6 +554,12 @@ main{min-width:0;display:flex;flex-direction:column;}
         </div>
 
         <div class="card">
+          <div class="card-h"><h2>Tower-leiderschap</h2><span class="count">wie leidt welke tower</span></div>
+          <div class="exp" id="list-towerlead"><div class="emptyhint">Laden…</div></div>
+          <p style="margin:10px 0 0;color:var(--faint);font-size:12px;">Komt uit <code>spow_towerlead</code> (sectie 65) — het organigram als levende data. Nog alleen-lezen; wijzigen kan voorlopig via Dataverse zelf.</p>
+        </div>
+
+        <div class="card">
           <div class="card-h"><h2>Signalen over inzetbaarheid</h2><span class="count">voedingslaag</span></div>
           <div class="feed"><div class="emptyhint">Nog geen signalen — de tabel spow_signaal bestaat, maar de voedingslaag die hem vult (§20-23 van het ontwerpdossier) is nog niet gebouwd.</div></div>
         </div>
@@ -1249,6 +1255,24 @@ async function loadTowers(){
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon towers niet laden.</div>'; }
 }
 
+async function loadTowerlead(){
+  var el=document.getElementById("list-towerlead");
+  try{
+    var data=await api("spow_towerleads?$select=spow_titel,spow_tower,spow_adinterim,spow_notitie&$expand=spow_Persoon($select=spow_naam),spow_ValtOnder($select=spow_naam)&$orderby=spow_tower");
+    var rows=data.value||[];
+    if(!rows.length){ el.innerHTML='<div class="emptyhint">Nog geen towerlead-records.</div>'; return; }
+    el.innerHTML=rows.map(function(r){
+      var tower=TOWER_PERSOON[r.spow_tower]||"—";
+      var persoon=r.spow_Persoon?r.spow_Persoon.spow_naam:"—";
+      var interim=r.spow_adinterim?" (ad-interim)":"";
+      var valt=r.spow_ValtOnder?(' <span style="color:var(--faint);font-size:11px;">— valt onder '+esc(r.spow_ValtOnder.spow_naam)+'</span>'):"";
+      return '<div class="exp-row"><span>'+esc(tower)+'</span>'+
+        '<span class="who">'+esc(persoon)+esc(interim)+'</span>'+
+        '<span class="days grey">'+valt+'</span></div>';
+    }).join("");
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon tower-leiderschap niet laden: '+esc(e.message)+'</div>'; }
+}
+
 async function loadWerk(){
   var el=document.getElementById("list-werk"), cnt=document.getElementById("cnt-werk");
   try{
@@ -1342,7 +1366,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
