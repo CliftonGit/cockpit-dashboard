@@ -185,6 +185,11 @@ main{min-width:0;display:flex;flex-direction:column;}
 .fitem b{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:400;}
 .fitem span{color:var(--dim);}
 .fitem span strong{color:var(--ink);font-weight:600;}
+/* Modifier voor lange labels (bijv. volledige e-mailadressen als scheduleId bij vrij/bezet) — het 58px-vaste-kolom-ontwerp
+   van .fitem is gemaakt voor korte woorden ("CI", "portaal") en overlapt/wrapt onleesbaar bij een lang label.
+   Gevonden tijdens de eerste echte live vrij/bezet-test met Cliftons reguliere account, 12 sept 2026. */
+.fitem.fitem-wide{grid-template-columns:minmax(150px,220px) minmax(0,1fr);align-items:start;}
+.fitem.fitem-wide b{word-break:break-all;white-space:normal;line-height:1.4;}
 
 .exp{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
 .exp-row{background:var(--panel2);padding:9px 12px;display:grid;grid-template-columns:minmax(0,1fr) 92px 54px;gap:10px;align-items:center;font-size:13px;}
@@ -1324,7 +1329,7 @@ async function testVrijBezet(){
         return (VRIJBEZET_LABEL[i.status]||i.status)+" "+st+"–"+en;
       }).join(", "):"geen items — vrij, of geen zichtbaarheid";
       var err=s.error?(' <span style="color:var(--faint);">('+esc(s.error.message||JSON.stringify(s.error))+')</span>'):"";
-      return '<div class="fitem"><b>'+esc(s.scheduleId)+'</b><span>'+esc(samen)+err+'</span></div>';
+      return '<div class="fitem fitem-wide"><b>'+esc(s.scheduleId)+'</b><span>'+esc(samen)+err+'</span></div>';
     }).join("");
     out.innerHTML='<div style="margin-bottom:6px;color:var(--faint);font-size:12px;">Opgevraagd voor '+iso+', 08:00–18:00</div>'+(rows||'<div class="emptyhint">Geen resultaten.</div>');
   }catch(e){
