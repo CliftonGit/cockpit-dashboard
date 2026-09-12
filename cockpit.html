@@ -462,6 +462,7 @@ main{min-width:0;display:flex;flex-direction:column;}
     <button class="mode" data-go="werk"><i class="dot"></i>Werk</button>
     <button class="mode" data-go="kennis"><i class="dot"></i>Kennis</button>
     <button class="mode" data-go="services"><i class="dot"></i>Services</button>
+    <button class="mode" data-go="spof"><i class="dot"></i>SPoF-register</button>
     <button class="mode" data-go="soon"><i class="dot"></i>Roadmap</button>
     <div class="rail-sep"></div>
     <div class="rail-lbl">Publiek</div>
@@ -599,6 +600,18 @@ main{min-width:0;display:flex;flex-direction:column;}
     <!-- SERVICES -->
     <section class="view" id="v-services">
       <div class="svc" id="list-services"><div class="emptyhint">Laden…</div></div>
+    </section>
+
+    <!-- SPOF-REGISTER (spow_spof: single points of failure) -->
+    <section class="view" id="v-spof">
+      <div class="grid">
+        <div class="card wide">
+          <div class="card-h"><h2>SPoF-register</h2><span class="count" id="cnt-spof">–</span></div>
+          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Nieuw (12 sept 2026, sectie 71): elke melding hier is een bekend single point of failure — een persoon, systeem of leverancier waar te veel van afhangt. Status kun je direct hier bijstellen; de overige velden wijzig je door een nieuwe melding aan te maken of voorlopig via Dataverse zelf. De SLA-klasse (P1-P4, sectie 67/70) is optioneel te koppelen zodra dat relevant is.</p>
+          <div style="margin-bottom:10px;"><button class="btn" id="sNewBtn" type="button">+ Nieuwe SPoF-melding</button></div>
+          <div class="exp" id="list-spof"><div class="emptyhint">Laden…</div></div>
+        </div>
+      </div>
     </section>
 
     <section class="view" id="v-soon">
@@ -868,6 +881,64 @@ main{min-width:0;display:flex;flex-direction:column;}
   </div>
 </div>
 
+<div class="detail" id="spofSheet">
+  <div class="sheet">
+    <div id="s-head"><h3>Nieuwe SPoF-melding</h3><p class="lead">Een bekend single point of failure vastleggen — titel is het enige verplichte veld.</p></div>
+
+    <dl class="kv" style="grid-template-columns:112px minmax(0,1fr);">
+      <dt>Titel</dt><dd><input class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;" id="sTitel" type="text" placeholder="Korte, herkenbare titel"></dd>
+      <dt>Omschrijving</dt><dd><textarea class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;min-height:64px;resize:vertical;" id="sOmschrijving" placeholder="Wat is het risico, en waarom is dit een single point of failure?"></textarea></dd>
+      <dt>Soort</dt><dd>
+        <select id="sSoort" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;">
+          <option value="">— geen —</option>
+          <option value="420690000">Persoon</option>
+          <option value="420690001">Systeem</option>
+          <option value="420690002">Leverancier</option>
+          <option value="420690003">Overig</option>
+        </select>
+      </dd>
+      <dt>Status</dt><dd>
+        <select id="sStatus" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;">
+          <option value="420690000">Gesignaleerd</option>
+          <option value="420690001">Erkend</option>
+          <option value="420690002">In behandeling</option>
+          <option value="420690003">Gemitigeerd</option>
+          <option value="420690004">Opgelost</option>
+          <option value="420690005">Bewust genegeerd</option>
+        </select>
+      </dd>
+      <dt>Urgentie</dt><dd>
+        <select id="sUrgentie" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;">
+          <option value="">— geen —</option>
+          <option value="420690000">Laag</option>
+          <option value="420690001">Midden</option>
+          <option value="420690002">Hoog</option>
+        </select>
+      </dd>
+      <dt>Impact</dt><dd>
+        <select id="sImpact" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;">
+          <option value="">— geen —</option>
+          <option value="420690000">Laag</option>
+          <option value="420690001">Midden</option>
+          <option value="420690002">Hoog</option>
+        </select>
+      </dd>
+      <dt>Bron</dt><dd><input class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;" id="sBron" type="text" placeholder="bijv. Owner-rechten-review (optioneel)"></dd>
+      <dt>Ontdekt op</dt><dd><input class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;" id="sOntdektop" type="date"></dd>
+      <dt>Gekoppelde persoon</dt><dd><select id="sPersoon" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;"><option value="">— geen —</option></select></dd>
+      <dt>Gekoppelde dienst</dt><dd><select id="sDienst" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;"><option value="">— geen —</option></select></dd>
+      <dt>SLA-klasse</dt><dd><select id="sSla" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:6px 8px;width:100%;"><option value="">— geen —</option></select></dd>
+      <dt>Kruisverwijzingen</dt><dd><textarea class="kn-search-real" style="border:1px solid var(--line);padding:6px 8px;width:100%;min-height:48px;resize:vertical;" id="sKruis" placeholder="bijv. verwijzing naar spow_onboarding of spow_taak (optioneel)"></textarea></dd>
+    </dl>
+
+    <p id="sFormStatus" style="margin:0;color:var(--faint);font-size:12.5px;"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" id="sSubmit" type="button">Toevoegen</button>
+      <button class="btn ghost" id="sCancel" type="button">Annuleren</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   var root=document.documentElement;
@@ -928,7 +999,7 @@ main{min-width:0;display:flex;flex-direction:column;}
   }
   clock(); setInterval(clock,20000);
 
-  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",werk:"Werk",soon:"..."};
+  var words={vandaag:"Work",team:"Team",planning:"Planning",services:"Services",kennis:"Kennis",werk:"Werk",spof:"Failure",soon:"..."};
   var modes=document.querySelectorAll(".mode");
   function show(go){
     document.querySelectorAll(".view").forEach(function(v){v.classList.remove("on");});
@@ -1071,6 +1142,11 @@ var msalInstance;
 var TOWER_SERVICE={1:"Server & Connectivity",2:"Cloud Services",3:"Endpoint Management"};
 var TOWER_PERSOON={420690000:"Server & Connectivity",420690001:"Cloud Services",420690002:"Endpoint Management",420690003:"Buiten IT Infra",420690004:"Security"};
 var GROEP_PERSOON={420690000:"Intern",420690001:"CGI",420690002:"Extern"};
+/* spow_spof (SPoF-register, sectie 71) — labels rechtstreeks overgenomen uit de Dataverse-optionsets zelf
+   (geverifieerd via de metadata-API, niet gegokt), zelfde hardcode-conventie als TOWER_PERSOON hierboven. */
+var SOORT_SPOF={420690000:"Persoon",420690001:"Systeem",420690002:"Leverancier",420690003:"Overig"};
+var STATUS_SPOF={420690000:"Gesignaleerd",420690001:"Erkend",420690002:"In behandeling",420690003:"Gemitigeerd",420690004:"Opgelost",420690005:"Bewust genegeerd"};
+var RISK_LABEL={420690000:"Laag",420690001:"Midden",420690002:"Hoog"};
 var CATEGORIE_TAAK={420690000:"Project",420690001:"Change",420690002:"Run",420690003:"RI"};
 var STATUS_TAAK={420690000:"Concept",420690001:"Gepland",420690002:"Loopt",420690003:"Wacht",420690004:"Af",420690005:"Vervallen"};
 var PRIO_RC={420690000:"Hoog",420690001:"Middel",420690002:"Laag"};
@@ -1116,7 +1192,7 @@ async function apiPatch(path,body){
   return res;
 }
 
-var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[]};
+var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[]};
 
 function setBanner(text,ok){
   var b=document.getElementById("statusBanner");
@@ -1273,6 +1349,129 @@ async function loadTowerlead(){
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon tower-leiderschap niet laden: '+esc(e.message)+'</div>'; }
 }
 
+/* ============ SPoF-register (spow_spof), sectie 71 ============
+   Lijst gebruikt apiPrefer (FormattedValue-annotaties) voor de weergave, zelfde conventie als loadWerk() —
+   geen labels gokken. De <select>-opties voor het formulier en de status-wijzigknop zijn wel hardgecodeerd
+   (SOORT_SPOF/STATUS_SPOF/RISK_LABEL hierboven), net als bij het Personen-formulier — dat kan niet anders
+   bij het schrijven van een keuzelijst-waarde. */
+function riskChip(val,prefix){
+  if(val===null||val===undefined) return "";
+  var lbl=RISK_LABEL[val]||"?";
+  var color=val===420690002?"var(--alert)":(val===420690001?"var(--warn)":"var(--faint)");
+  return '<span class="chip" style="border-color:'+color+';color:'+color+';margin-left:4px;">'+esc(prefix+": "+lbl)+'</span>';
+}
+function buildOptionsHtml(items,valKey,labelFn,placeholder){
+  return '<option value="">'+esc(placeholder)+'</option>'+items.map(function(it){
+    return '<option value="'+it[valKey]+'">'+esc(labelFn(it))+'</option>';
+  }).join("");
+}
+async function loadSlaklassenData(){
+  if(CACHE.slaklassen.length) return CACHE.slaklassen;
+  var data=await api("spow_slaklasses?$select=spow_slaklasseid,spow_klasse,spow_reactietijd,spow_oplostijd&$orderby=spow_klasse");
+  CACHE.slaklassen=data.value;
+  return CACHE.slaklassen;
+}
+async function loadSpofData(force){
+  if(CACHE.spofs.length && !force) return CACHE.spofs;
+  var data=await apiPrefer("spow_spofs?$select=spow_spofid,spow_titel,spow_omschrijving,spow_soort,spow_status,spow_urgentie,spow_impact,spow_bron,spow_ontdektop,spow_kruisverwijzingen&$expand=spow_Persoon($select=spow_naam),spow_Dienst($select=spow_servicename),spow_SLAklasse($select=spow_klasse,spow_reactietijd)&$orderby=spow_status asc");
+  CACHE.spofs=data.value;
+  return CACHE.spofs;
+}
+async function loadSpof(){
+  var el=document.getElementById("list-spof"), cnt=document.getElementById("cnt-spof");
+  try{
+    var rows=await loadSpofData();
+    if(cnt) cnt.textContent=rows.length+" geregistreerd";
+    if(!rows.length){ el.innerHTML='<div class="emptyhint">Nog geen SPoF-meldingen.</div>'; return; }
+    el.innerHTML=rows.map(function(r){
+      var soort=r["spow_soort@OData.Community.Display.V1.FormattedValue"]||"—";
+      var statusOpts=Object.keys(STATUS_SPOF).map(function(k){
+        return '<option value="'+k+'"'+(String(r.spow_status)===k?" selected":"")+'>'+esc(STATUS_SPOF[k])+'</option>';
+      }).join("");
+      var urg=riskChip(r.spow_urgentie,"U"), imp=riskChip(r.spow_impact,"I");
+      var wie=[r.spow_Persoon?r.spow_Persoon.spow_naam:null, r.spow_Dienst?r.spow_Dienst.spow_servicename:null].filter(Boolean).join(" · ");
+      var sla=r.spow_SLAklasse?
+        ('<span class="chip" style="border-color:var(--accent-soft);color:var(--accent);">'+esc(r.spow_SLAklasse.spow_klasse)+(r.spow_SLAklasse.spow_reactietijd?(' · reactie '+esc(r.spow_SLAklasse.spow_reactietijd)):'')+'</span>'):
+        '<span class="chip">geen SLA-klasse</span>';
+      var ontdekt=r.spow_ontdektop?fmtDate(r.spow_ontdektop):"";
+      var omschrFull=r.spow_omschrijving||"";
+      var omschr=omschrFull.slice(0,220);
+      return '<div style="background:var(--panel2);padding:11px 13px;display:grid;gap:6px;">'+
+        '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'+
+          '<div style="min-width:0;"><b>'+esc(r.spow_titel)+'</b> <span class="chip">'+esc(soort)+'</span>'+urg+imp+'</div>'+
+          '<select data-sid="'+r.spow_spofid+'" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:3px 6px;font-size:11.5px;">'+statusOpts+'</select>'+
+        '</div>'+
+        (omschr?('<div style="color:var(--dim);font-size:12.5px;">'+esc(omschr)+(omschrFull.length>220?"…":"")+'</div>'):'')+
+        '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--faint);">'+
+          '<span>'+(wie?esc(wie)+(ontdekt?" · ":""):"")+(ontdekt?("ontdekt "+esc(ontdekt)):"")+'</span>'+sla+
+        '</div>'+
+      '</div>';
+    }).join("");
+    el.querySelectorAll("select[data-sid]").forEach(function(sel){
+      sel.addEventListener("change",function(){ updateSpofStatus(sel.dataset.sid, sel.value, sel); });
+    });
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon SPoF-register niet laden: '+esc(e.message)+'</div>'; }
+}
+async function updateSpofStatus(id,val,sel){
+  sel.disabled=true;
+  try{
+    await apiPatch("spow_spofs("+id+")",{spow_status:parseInt(val,10)});
+    await loadSpofData(true);
+    await loadSpof();
+  }catch(e){ alert("Status bijwerken mislukt: "+e.message); sel.disabled=false; }
+}
+async function openSpofSheet(){
+  ["sTitel","sOmschrijving","sBron","sOntdektop","sKruis"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("sSoort").value="";
+  document.getElementById("sStatus").value="420690000";
+  document.getElementById("sUrgentie").value="";
+  document.getElementById("sImpact").value="";
+  document.getElementById("sFormStatus").textContent="";
+  var persoons=await loadPersoonsData();
+  document.getElementById("sPersoon").innerHTML=buildOptionsHtml(persoons,"spow_persoonid",function(p){return p.spow_naam;},"— geen —");
+  var services=await loadServicesData();
+  document.getElementById("sDienst").innerHTML=buildOptionsHtml(services,"spow_serviceid",function(s){return s.spow_servicename;},"— geen —");
+  var slaklassen=await loadSlaklassenData();
+  document.getElementById("sSla").innerHTML=buildOptionsHtml(slaklassen,"spow_slaklasseid",function(k){return k.spow_klasse+(k.spow_reactietijd?(" · reactie "+k.spow_reactietijd):"");},"— geen —");
+  document.getElementById("spofSheet").classList.add("on");
+}
+function closeSpofSheet(){ document.getElementById("spofSheet").classList.remove("on"); }
+async function submitNewSpof(){
+  var st=document.getElementById("sFormStatus");
+  var titel=document.getElementById("sTitel").value.trim();
+  if(!titel){ st.textContent="Titel is verplicht."; return; }
+  var body={ spow_titel: titel };
+  var omschr=document.getElementById("sOmschrijving").value.trim(); if(omschr) body.spow_omschrijving=omschr;
+  var soort=document.getElementById("sSoort").value; if(soort) body.spow_soort=parseInt(soort,10);
+  var status=document.getElementById("sStatus").value; if(status) body.spow_status=parseInt(status,10);
+  var urg=document.getElementById("sUrgentie").value; if(urg) body.spow_urgentie=parseInt(urg,10);
+  var imp=document.getElementById("sImpact").value; if(imp) body.spow_impact=parseInt(imp,10);
+  var bron=document.getElementById("sBron").value.trim(); if(bron) body.spow_bron=bron;
+  var ontdekt=document.getElementById("sOntdektop").value; if(ontdekt) body.spow_ontdektop=ontdekt+"T00:00:00Z";
+  var kruis=document.getElementById("sKruis").value.trim(); if(kruis) body.spow_kruisverwijzingen=kruis;
+  var persoon=document.getElementById("sPersoon").value; if(persoon) body["spow_Persoon@odata.bind"]="/spow_persoons("+persoon+")";
+  var dienst=document.getElementById("sDienst").value; if(dienst) body["spow_Dienst@odata.bind"]="/spow_services("+dienst+")";
+  var sla=document.getElementById("sSla").value; if(sla) body["spow_SLAklasse@odata.bind"]="/spow_slaklasses("+sla+")";
+  st.textContent="Bezig…";
+  try{
+    await apiPost("spow_spofs",body);
+    st.textContent="Toegevoegd.";
+    await loadSpofData(true);
+    await loadSpof();
+    setTimeout(closeSpofSheet,600);
+  }catch(e){ st.textContent="Mislukt: "+e.message; }
+}
+function wireSpofSheet(){
+  var newBtn=document.getElementById("sNewBtn");
+  if(newBtn) newBtn.addEventListener("click",openSpofSheet);
+  var cancelBtn=document.getElementById("sCancel");
+  if(cancelBtn) cancelBtn.addEventListener("click",closeSpofSheet);
+  var sheet=document.getElementById("spofSheet");
+  if(sheet) sheet.addEventListener("click",function(e){ if(e.target===sheet) closeSpofSheet(); });
+  var submitBtn=document.getElementById("sSubmit");
+  if(submitBtn) submitBtn.addEventListener("click",submitNewSpof);
+}
+
 async function loadWerk(){
   var el=document.getElementById("list-werk"), cnt=document.getElementById("cnt-werk");
   try{
@@ -1366,7 +1565,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
@@ -1578,6 +1777,7 @@ async function onSignedIn(){
   var agBtn=document.getElementById("agTestBtn");
   if(agBtn) agBtn.addEventListener("click",testVrijBezet);
   wirePersonSheet();
+  wireSpofSheet();
   try{ await loadAll(); }
   catch(e){ setBanner("Fout bij laden: "+e.message,false); }
 }
