@@ -589,8 +589,13 @@ main{min-width:0;display:flex;flex-direction:column;}
     <section class="view" id="v-planning">
       <div class="grid">
         <div class="card wide">
+          <div class="card-h"><h2>Mijn agenda — vandaag t/m 7 dagen vooruit</h2><span class="count" id="cnt-eigenagenda">–</span></div>
+          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Fase 2 (deel 1) uit de Planning-visie: jouw eigen Outlook-agenda, met de al eerder toegekende <code>Calendars.Read</code>-scope — geen nieuw besluit nodig. Dit toont alleen jouw eigen agenda: de agenda's van je teamleden vergen de grotere, nog openstaande beslissing over de "SPoW Voedingslaag"-appregistratie (application permissions, tenantbreed).</p>
+          <div class="exp" id="list-eigenagenda"><div class="emptyhint">Laden…</div></div>
+        </div>
+        <div class="card wide">
           <div class="card-h"><h2>Planning — wie heeft wat (heel het team)</h2><span class="count" id="cnt-planning">–</span></div>
-          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Fase 1 uit de Planning-visie: echte taaktoewijzing over het hele team, niet alleen jouw tower(s) — een taak toewijzen schrijft direct naar <code>spow_taak</code>. Outlook-agenda en verlof kunnen hier bewust nog niet bij: dat wacht op het besluit over de "SPoW Voedingslaag"-appregistratie (agenda) en op een verloftabel die nog niet bestaat. Zie <code>SPoW-Planning-Visie-Fasering.md</code> voor de volledige fasering.</p>
+          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Fase 1 uit de Planning-visie: echte taaktoewijzing over het hele team, niet alleen jouw tower(s) — een taak toewijzen schrijft direct naar <code>spow_taak</code>. Verlof kan hier bewust nog niet bij: er bestaat nog geen verloftabel, en dat is een modelleerkeuze die op jou wacht. Zie <code>SPoW-Planning-Visie-Fasering.md</code> voor de volledige fasering.</p>
           <div class="exp" id="list-planning"><div class="emptyhint">Laden…</div></div>
         </div>
       </div>
@@ -2136,7 +2141,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMeerjaar(),loadJaar(),loadKwartaal(),loadMaand(),loadWeek(),loadDag(),loadPlanning()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMeerjaar(),loadJaar(),loadKwartaal(),loadMaand(),loadWeek(),loadDag(),loadPlanning(),loadEigenAgenda()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
@@ -2156,6 +2161,66 @@ function volgendeWerkdagISO(){
 async function getGraphToken(){
   try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES}); return r.accessToken; }
   catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_SCOPES}); return r2.accessToken; }
+}
+/* ============ Mijn agenda (Fase 2, deel 1 van de Planning-visie, sectie 81) ============
+   Hergebruikt de al bestaande, tenant-breed geconsenteerde Calendars.Read-scope (sectie 25) —
+   geen nieuw besluit nodig. Bewust alleen stil (acquireTokenSilent): als dat faalt tonen we een
+   knop om zelf akkoord te geven, in plaats van bij het laden van de pagina ongevraagd een
+   login-popup te openen. Dit toont alleen de agenda van de ingelogde gebruiker (delegated scope) —
+   agenda's van teamleden vergen de grotere, nog openstaande "SPoW Voedingslaag"-appregistratie. */
+async function getGraphTokenSilentOnly(){
+  var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES});
+  return r.accessToken;
+}
+function fmtAgendaTijd(iso){
+  /* Graph geeft calendarView-tijden terug in de meegegeven timeZone, zonder offset in de string
+     zelf (bijv. "2026-09-14T09:00:00") — direct de uren:minuten uit de string lezen is dus
+     betrouwbaarder dan een Date-object te bouwen dat de browser opnieuw zou kunnen interpreteren. */
+  return iso.slice(11,16);
+}
+function dagLabelISO(iso){
+  var d=new Date(iso+"T00:00:00");
+  return DAGL[d.getDay()]+" "+d.getDate()+" "+MND[d.getMonth()];
+}
+async function loadEigenAgenda(){
+  var el=document.getElementById("list-eigenagenda"), cnt=document.getElementById("cnt-eigenagenda");
+  if(!el) return;
+  try{
+    var token;
+    try{ token=await getGraphTokenSilentOnly(); }
+    catch(e){
+      el.innerHTML='<div class="emptyhint">Geen stille toegang tot je agenda (mogelijk de eerste keer voor deze scope in deze browser). <button id="eigenAgendaLoginBtn" class="btn ghost" style="padding:4px 10px;font-size:11px;margin-left:6px;">Toegang geven</button></div>';
+      var b=document.getElementById("eigenAgendaLoginBtn");
+      if(b) b.addEventListener("click",async function(){ b.disabled=true; b.textContent="Bezig…"; try{ await getGraphToken(); await loadEigenAgenda(); }catch(e2){ el.innerHTML='<div class="emptyhint">Toegang geven mislukt: '+esc(e2.message)+'</div>'; } });
+      if(cnt) cnt.textContent="geen toegang";
+      return;
+    }
+    var start=new Date(); start.setHours(0,0,0,0);
+    var end=new Date(start.getTime()+7*86400000);
+    function fmtLocal(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"T"+pad2(d.getHours())+":"+pad2(d.getMinutes())+":00"; }
+    var url="https://graph.microsoft.com/v1.0/me/calendarview?startDateTime="+encodeURIComponent(fmtLocal(start))+"&endDateTime="+encodeURIComponent(fmtLocal(end))+"&$select=subject,start,end,showAs,isAllDay,isCancelled&$orderby=start/dateTime&$top=50";
+    var res=await fetch(url,{headers:{"Authorization":"Bearer "+token,"Prefer":'outlook.timezone="W. Europe Standard Time"'}});
+    var json=await res.json().catch(function(){return {};});
+    if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
+    var events=(json.value||[]).filter(function(e){ return !e.isCancelled; });
+    if(cnt) cnt.textContent=events.length+" afspraken";
+    if(!events.length){ el.innerHTML='<div class="emptyhint">Geen afspraken in je agenda voor de komende 7 dagen.</div>'; return; }
+    var byDay={};
+    events.forEach(function(e){
+      var iso=e.start&&e.start.dateTime?e.start.dateTime.slice(0,10):null; if(!iso) return;
+      (byDay[iso]=byDay[iso]||[]).push(e);
+    });
+    var html="";
+    Object.keys(byDay).sort().forEach(function(iso){
+      html+='<div class="rlgroup">'+esc(dagLabelISO(iso))+'</div>';
+      byDay[iso].forEach(function(e){
+        var tijd=e.isAllDay?"hele dag":(fmtAgendaTijd(e.start.dateTime)+"–"+fmtAgendaTijd(e.end.dateTime));
+        var status=VRIJBEZET_LABEL[e.showAs]||e.showAs||"";
+        html+='<div class="exp-row"><span>'+esc(e.subject||"(geen titel)")+'</span><span class="who">'+esc(status)+'</span><span class="days grey">'+esc(tijd)+'</span></div>';
+      });
+    });
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon je agenda niet laden: '+esc(e.message)+'</div>'; if(cnt) cnt.textContent="fout"; }
 }
 
 /* ============ Personen: GAL-zoeken + on/offboarden (User.ReadBasic.All), 12 sept 2026 ============
