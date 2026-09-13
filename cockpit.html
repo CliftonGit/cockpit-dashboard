@@ -587,10 +587,12 @@ main{min-width:0;display:flex;flex-direction:column;}
 
     <!-- PLANNING -->
     <section class="view" id="v-planning">
-      <div class="card" style="max-width:640px;">
-        <div class="card-h"><h2>Nog niet gekoppeld</h2></div>
-        <p style="margin:0 0 10px;color:var(--dim);">Dit bord toont per persoon de Outlook-agenda en het verlof naast jouw eigen planning. Dat kan pas zodra de Graph-koppeling er is — Calendars.Read, verlof en feestdagen.</p>
-        <p style="margin:0;color:var(--faint);font-size:13px;">Zie het hervatpunt "Wat te doen met de app-registratie SPoW Voedingslaag": de registratie staat klaar met de juiste scopes, de knoop over hoe hij gebruikt wordt moet nog worden doorgehakt.</p>
+      <div class="grid">
+        <div class="card wide">
+          <div class="card-h"><h2>Planning — wie heeft wat (heel het team)</h2><span class="count" id="cnt-planning">–</span></div>
+          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Fase 1 uit de Planning-visie: echte taaktoewijzing over het hele team, niet alleen jouw tower(s) — een taak toewijzen schrijft direct naar <code>spow_taak</code>. Outlook-agenda en verlof kunnen hier bewust nog niet bij: dat wacht op het besluit over de "SPoW Voedingslaag"-appregistratie (agenda) en op een verloftabel die nog niet bestaat. Zie <code>SPoW-Planning-Visie-Fasering.md</code> voor de volledige fasering.</p>
+          <div class="exp" id="list-planning"><div class="emptyhint">Laden…</div></div>
+        </div>
       </div>
     </section>
 
@@ -1390,11 +1392,24 @@ async function loadPersoonsData(force){
   CACHE.persoons=data.value;
   return CACHE.persoons;
 }
-async function loadTakenData(){
-  if(CACHE.taken.length) return CACHE.taken;
-  var data=await api("spow_taaks?$select=spow_taakid,spow_titel,spow_status,spow_categorie,_spow_persoon_value&$top=500");
+async function loadTakenData(force){
+  if(CACHE.taken.length && !force) return CACHE.taken;
+  var data=await api("spow_taaks?$select=spow_taakid,spow_titel,spow_status,spow_categorie,_spow_persoon_value,_spow_ouder_value,spow_start&$top=500");
   CACHE.taken=data.value;
   return CACHE.taken;
+}
+async function apiDelete(path){
+  var token=await getToken();
+  var res=await fetch(API+path,{method:"DELETE",headers:{"Authorization":"Bearer "+token,"OData-MaxVersion":"4.0","OData-Version":"4.0"}});
+  if(!res.ok && res.status!==404){ var t=await res.text().catch(function(){return "";}); throw new Error(path+" -> HTTP "+res.status+" "+t); }
+  return res;
+}
+async function assignTaak(taakId,persoonId){
+  if(persoonId) await apiPatch("spow_taaks("+taakId+")",{"spow_Persoon@odata.bind":"/spow_persoons("+persoonId+")"});
+  else await apiDelete("spow_taaks("+taakId+")/spow_Persoon/$ref");
+  await loadTakenData(true);
+  await loadPlanning();
+  await loadTeam();
 }
 
 async function loadTeam(){
@@ -1427,6 +1442,55 @@ async function loadTowers(){
       return '<div class="exp-row"><span>'+esc(t)+'</span><span class="who">'+byTower[t]+' actief</span><span class="days grey">—</span></div>';
     }).join("");
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon towers niet laden.</div>'; }
+}
+
+/* ============ Planning-tabblad, Fase 1 (sectie 79) ============
+   Fase 1 uit docs/SPoW-Planning-Visie-Fasering.md: een echt bord van wie wat doet, over het
+   hele team (niet enkel Cliftons eigen tower(s)), met echte taaktoewijzing die naar spow_taak
+   schrijft (het veld bestond al, er was alleen geen schrijf-UI voor). Geen agenda, geen verlof,
+   geen AI-advies — die blijven bewust wachten op Cliftons besluiten uit de faseringsnota. */
+function personOptionsHtml(persoons,selectedId){
+  var h='<option value="">— kies —</option>';
+  persoons.forEach(function(p){
+    h+='<option value="'+p.spow_persoonid+'"'+(p.spow_persoonid===selectedId?" selected":"")+'>'+esc(p.spow_naam)+'</option>';
+  });
+  return h;
+}
+function planningTaakRow(t,persoons,selectedId){
+  var statusLbl=STATUS_TAAK[t.spow_status]||"";
+  return '<div class="exp-row" data-taak="'+t.spow_taakid+'"><span>'+esc(t.spow_titel)+'</span>'+
+    '<span class="who">'+esc(statusLbl)+'</span>'+
+    '<span><select class="pl-assign" data-taak="'+t.spow_taakid+'" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:3px 5px;font-size:11.5px;">'+
+    personOptionsHtml(persoons,selectedId)+'</select></span></div>';
+}
+async function loadPlanning(){
+  var el=document.getElementById("list-planning"), cnt=document.getElementById("cnt-planning");
+  if(!el) return;
+  try{
+    var persoons=await loadPersoonsData(), taken=await loadTakenData();
+    var open=taken.filter(function(t){ return t.spow_status!==420690004 && t.spow_status!==420690005; });
+    var nietToegewezen=open.filter(function(t){ return !t._spow_persoon_value; });
+    if(cnt) cnt.textContent=open.length+" open, "+nietToegewezen.length+" niet toegewezen";
+    var html="";
+    html+='<div class="rlgroup">Niet toegewezen <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0;">('+nietToegewezen.length+')</span></div>';
+    if(!nietToegewezen.length) html+='<div class="emptyhint">Alle open taken hebben een toegewezen persoon.</div>';
+    else nietToegewezen.slice(0,200).forEach(function(t){ html+=planningTaakRow(t,persoons,""); });
+    persoons.forEach(function(p){
+      var mine=open.filter(function(t){ return t._spow_persoon_value===p.spow_persoonid; });
+      if(!mine.length) return;
+      html+='<div class="rlgroup">'+esc(p.spow_naam)+' <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0;">('+esc(TOWER_PERSOON[p.spow_tower]||"—")+' · '+mine.length+' open)</span></div>';
+      mine.forEach(function(t){ html+=planningTaakRow(t,persoons,p.spow_persoonid); });
+    });
+    el.innerHTML=html;
+    el.querySelectorAll(".pl-assign").forEach(function(sel){
+      sel.addEventListener("change",async function(){
+        var taakId=sel.dataset.taak, val=sel.value;
+        sel.disabled=true;
+        try{ await assignTaak(taakId,val); }
+        catch(e){ alert("Kon niet toewijzen: "+e.message); sel.disabled=false; }
+      });
+    });
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon planning niet laden: '+esc(e.message)+'</div>'; }
 }
 
 async function loadTowerlead(){
@@ -2072,7 +2136,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMeerjaar(),loadJaar(),loadKwartaal(),loadMaand(),loadWeek(),loadDag()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMeerjaar(),loadJaar(),loadKwartaal(),loadMaand(),loadWeek(),loadDag(),loadPlanning()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
