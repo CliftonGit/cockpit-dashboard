@@ -936,6 +936,29 @@ main{min-width:0;display:flex;flex-direction:column;}
   </div>
 </div>
 
+<!-- Werkvenster per agenda-item (Planning Fase 2, deel 1, uitbreiding "eerst bouwen" — 13 sept 2026 -->
+<div class="detail" id="agendaSheet">
+  <div class="sheet">
+    <div id="a-head"><h3 id="a-title">–</h3><p class="lead" id="a-sub"></p></div>
+    <dl class="kv" id="a-kv"></dl>
+    <div class="sheet-sec">
+      <h4>Notities uit de uitnodiging</h4>
+      <div class="feed" id="a-body"><div class="emptyhint">–</div></div>
+    </div>
+    <div class="sheet-sec">
+      <h4>Deelnemers</h4>
+      <div class="feed" id="a-attendees"><div class="emptyhint">–</div></div>
+    </div>
+    <div class="sheet-sec">
+      <h4>Gekoppelde SPoW-taak</h4>
+      <div class="feed" id="a-taak"><div class="emptyhint">–</div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn ghost" id="aClose">Sluiten</button>
+    </div>
+  </div>
+</div>
+
 <div class="detail" id="personSheet">
   <div class="sheet">
     <div id="p-head"><h3>Nieuwe persoon</h3><p class="lead">Zoek in de GAL, of typ handmatig voor een externe/CGI-collega die er niet in staat.</p></div>
@@ -1219,6 +1242,14 @@ main{min-width:0;display:flex;flex-direction:column;}
   detail.addEventListener("click",function(e){if(e.target===detail) closeDetail();});
   document.addEventListener("keydown",function(e){if(e.key==="Escape") closeDetail();});
   window.openDetail=openDetail; window.closeDetail=closeDetail;
+
+  var agendaSheet=document.getElementById("agendaSheet");
+  function openAgendaSheet(){agendaSheet.classList.add("on");}
+  function closeAgendaSheet(){agendaSheet.classList.remove("on");}
+  document.getElementById("aClose").addEventListener("click",closeAgendaSheet);
+  agendaSheet.addEventListener("click",function(e){if(e.target===agendaSheet) closeAgendaSheet();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape") closeAgendaSheet();});
+  window.openAgendaSheet=openAgendaSheet; window.closeAgendaSheet=closeAgendaSheet;
 })();
 </script>
 
@@ -1297,7 +1328,7 @@ async function apiPatch(path,body){
   return res;
 }
 
-var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[],vensters:[],betrokkenen:[]};
+var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[],vensters:[],betrokkenen:[],eigenAgenda:[]};
 
 function setBanner(text,ok){
   var b=document.getElementById("statusBanner");
@@ -2200,15 +2231,21 @@ async function loadEigenAgenda(){
     var start=new Date(); start.setHours(0,0,0,0);
     var end=new Date(start.getTime()+7*86400000);
     function fmtLocal(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"T"+pad2(d.getHours())+":"+pad2(d.getMinutes())+":00"; }
-    var url="https://graph.microsoft.com/v1.0/me/calendarview?startDateTime="+encodeURIComponent(fmtLocal(start))+"&endDateTime="+encodeURIComponent(fmtLocal(end))+"&$select=subject,start,end,showAs,isAllDay,isCancelled&$orderby=start/dateTime&$top=50";
+    /* Uitgebreid met organizer/location/bodyPreview/attendees/onlineMeeting t.b.v. het werkvenster
+       (Fase 4-achtig eerste stapje, op Cliftons verzoek van 13 sept: klikken op een agenda-item
+       moet doorklikken naar alles wat er met die afspraak te maken heeft). Vergt geen bredere scope
+       dan de al bestaande Calendars.Read. */
+    var url="https://graph.microsoft.com/v1.0/me/calendarview?startDateTime="+encodeURIComponent(fmtLocal(start))+"&endDateTime="+encodeURIComponent(fmtLocal(end))+"&$select=subject,start,end,showAs,isAllDay,isCancelled,organizer,location,bodyPreview,attendees,onlineMeeting,onlineMeetingUrl,webLink&$orderby=start/dateTime&$top=50";
     var res=await fetch(url,{headers:{"Authorization":"Bearer "+token,"Prefer":'outlook.timezone="W. Europe Standard Time"'}});
     var json=await res.json().catch(function(){return {};});
     if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
     var events=(json.value||[]).filter(function(e){ return !e.isCancelled; });
+    CACHE.eigenAgenda=events;
     if(cnt) cnt.textContent=events.length+" afspraken";
     if(!events.length){ el.innerHTML='<div class="emptyhint">Geen afspraken in je agenda voor de komende 7 dagen.</div>'; return; }
     var byDay={};
-    events.forEach(function(e){
+    events.forEach(function(e,idx){
+      e._idx=idx;
       var iso=e.start&&e.start.dateTime?e.start.dateTime.slice(0,10):null; if(!iso) return;
       (byDay[iso]=byDay[iso]||[]).push(e);
     });
@@ -2218,11 +2255,81 @@ async function loadEigenAgenda(){
       byDay[iso].forEach(function(e){
         var tijd=e.isAllDay?"hele dag":(fmtAgendaTijd(e.start.dateTime)+"–"+fmtAgendaTijd(e.end.dateTime));
         var status=VRIJBEZET_LABEL[e.showAs]||e.showAs||"";
-        html+='<div class="exp-row"><span>'+esc(e.subject||"(geen titel)")+'</span><span class="who">'+esc(status)+'</span><span class="days grey">'+esc(tijd)+'</span></div>';
+        html+='<button class="exp-row" data-agenda-idx="'+e._idx+'" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;">'+
+          '<span>'+esc(e.subject||"(geen titel)")+'</span><span class="who">'+esc(status)+'</span><span class="days grey">'+esc(tijd)+'</span></button>';
       });
     });
     el.innerHTML=html;
+    el.querySelectorAll("[data-agenda-idx]").forEach(function(b){
+      b.addEventListener("click",function(){ openAgendaDetail(parseInt(b.dataset.agendaIdx,10)); });
+    });
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon je agenda niet laden: '+esc(e.message)+'</div>'; if(cnt) cnt.textContent="fout"; }
+}
+/* ============ Werkvenster per agenda-item (uitbreiding op Fase 2, 13 sept 2026, avond) ============
+   Cliftons verzoek: klikken op een agenda-item moet doorklikken naar "alles wat ik daadwerkelijk
+   nodig ga hebben". Voor een kale Outlook-afspraak is dat concreet: wie erbij zijn, waar/online-link,
+   en de notities uit de uitnodiging (allemaal al onderdeel van hetzelfde Calendars.Read-antwoord,
+   geen nieuwe scope). Daarnaast een eerlijke, bewust behoudende poging om de afspraak te koppelen aan
+   een bestaande SPoW-taak (alleen bij exacte titel-match, geen fuzzy-raden dat per ongeluk de
+   verkeerde taak zou tonen) — vandaag matcht dat vrijwel nooit, want de 68 taken heten
+   "PRE 1.06 - ...", "UITVOER 2.04 - ..." etc., een heel andere naamgeving dan gewone
+   vergadertitels. Dat is geen bug maar de eerlijke staat van vandaag; een echte koppeling (handmatig,
+   of via een nieuw veld) is een vervolgstap die nog niet gebouwd is. */
+function matchTaakByTitel(subject,taken){
+  if(!subject) return null;
+  var s=String(subject).trim().toLowerCase();
+  var hit=(taken||[]).filter(function(t){ return t.spow_titel && String(t.spow_titel).trim().toLowerCase()===s; });
+  return hit.length?hit[0]:null;
+}
+async function openAgendaDetail(idx){
+  var e=CACHE.eigenAgenda[idx];
+  if(!e) return;
+  document.getElementById("a-title").textContent=e.subject||"(geen titel)";
+  var iso=e.start&&e.start.dateTime?e.start.dateTime.slice(0,10):"";
+  var tijd=e.isAllDay?"hele dag":(e.start&&e.end?fmtAgendaTijd(e.start.dateTime)+"–"+fmtAgendaTijd(e.end.dateTime):"");
+  document.getElementById("a-sub").textContent=(iso?dagLabelISO(iso)+" · ":"")+tijd+" · "+(VRIJBEZET_LABEL[e.showAs]||e.showAs||"");
+  var kv=document.getElementById("a-kv");
+  var rows=[
+    ["Organisator",e.organizer&&e.organizer.emailAddress?(e.organizer.emailAddress.name||e.organizer.emailAddress.address):null],
+    ["Locatie",e.location&&e.location.displayName],
+    ["Online meeting",e.onlineMeetingUrl?('<a href="'+esc(e.onlineMeetingUrl)+'" target="_blank" rel="noopener" style="color:var(--accent);">deelnemen</a>'):(e.onlineMeeting?"ja (link niet beschikbaar)":null)]
+  ];
+  kv.innerHTML=rows.map(function(r){
+    return '<dt>'+r[0]+'</dt><dd'+(r[1]?'':' class="miss"')+'>'+(r[1]||"—")+'</dd>';
+  }).join("");
+  var bodyEl=document.getElementById("a-body");
+  bodyEl.innerHTML=e.bodyPreview?('<div class="fitem" style="white-space:pre-wrap;">'+esc(e.bodyPreview)+'</div>'):'<div class="emptyhint">Geen notities in de uitnodiging.</div>';
+  var attEl=document.getElementById("a-attendees");
+  var atts=(e.attendees||[]).filter(function(a){ return a.emailAddress; });
+  attEl.innerHTML=atts.length?atts.map(function(a){
+    var st=(a.status&&a.status.response)||"";
+    return '<div class="fitem"><b>'+esc(a.emailAddress.name||a.emailAddress.address)+'</b>'+(st?'<span> · '+esc(st)+'</span>':'')+'</div>';
+  }).join(""):'<div class="emptyhint">Geen deelnemers vastgelegd op deze afspraak.</div>';
+  var taakEl=document.getElementById("a-taak");
+  taakEl.innerHTML='<div class="emptyhint">Zoeken naar een gekoppelde SPoW-taak…</div>';
+  window.openAgendaSheet();
+  try{
+    var taken=await loadRoadmapTakenData();
+    var betrokkenen=await loadBetrokkenenData();
+    var t=matchTaakByTitel(e.subject,taken);
+    if(!t){
+      taakEl.innerHTML='<div class="emptyhint">Nog niet gekoppeld aan een SPoW-taak. Dit is een gewone agenda-afspraak; matching gebeurt vandaag alleen op exact gelijke titel, en de meeste vergadertitels lijken niet op een taaknaam. Een echte koppeling (handmatig, of via een nieuw veld) is nog niet gebouwd.</div>';
+      return;
+    }
+    var st=STATUS_TAAK[t.spow_status]||"—";
+    var betrList=betrokkenen.filter(function(b){ return b._spow_taak_value===t.spow_taakid; })
+      .sort(function(a,b){ return (a.spow_volgorde||0)-(b.spow_volgorde||0); });
+    var betrHtml=betrList.length?betrList.map(function(b){
+      var rol=ROL_BETROKKENE[b.spow_rol]||"—";
+      return '<div style="font-size:11px;padding:3px 0;">'+esc(b.spow_betrokkenenaam)+' <span style="color:var(--faint);">('+esc(rol)+(b.spow_organisatie?", "+esc(b.spow_organisatie):"")+')</span>'+
+        (b.spow_bereikbaarheid?' — <span style="color:var(--dim);">'+esc(b.spow_bereikbaarheid)+'</span>':'')+'</div>';
+    }).join(""):'<div style="font-size:11px;color:var(--faint);">Geen escalatielijst vastgelegd voor deze taak.</div>';
+    var runbookHtml=dagVeld("Runbook",t.spow_runbook);
+    var extraHtml=dagVeld("Afspraken",t.spow_afspraken)+dagVeld("Testplan",t.spow_testplan)+dagVeld("Terugvalplan",t.spow_terugval)+dagVeld("Downtime",t.spow_downtime)+dagVeld("Les",t.spow_les);
+    taakEl.innerHTML='<div class="fitem"><b>'+esc(t.spow_titel)+'</b><span> · '+esc(st)+(t.spow_ticket?" · "+esc(t.spow_ticket):"")+'</span></div>'+
+      runbookHtml+extraHtml+
+      '<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px;"><b style="font-size:10.5px;color:var(--faint);text-transform:uppercase;">Escalatielijst</b>'+betrHtml+'</div>';
+  }catch(e2){ taakEl.innerHTML='<div class="emptyhint">Kon niet zoeken naar een gekoppelde taak: '+esc(e2.message)+'</div>'; }
 }
 
 /* ============ Personen: GAL-zoeken + on/offboarden (User.ReadBasic.All), 12 sept 2026 ============
