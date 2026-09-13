@@ -642,13 +642,13 @@ main{min-width:0;display:flex;flex-direction:column;}
         <button class="btn ghost rl-btn" data-lens="week" type="button">Week</button>
         <button class="btn ghost rl-btn" data-lens="dag" type="button">Dag</button>
       </div>
-      <p style="margin:0 0 14px;color:var(--faint);font-size:12px;max-width:80ch;">Zes "lenzen" op dezelfde onderliggende taken-data (<code>spow_taak</code>), van grof naar fijn — geen uitgerekte tijdas, elke lens is een andere blik. Meerjaar/Jaar/Kwartaal zijn herbouwd (sectie 76) als echte tijdlijnen met freeze-banden en een "NU"-lijn, zoals in het oorspronkelijke ontwerp — ze draaien om taken met categorie "Project", die nog niet bestaan (alle 68 huidige taken zijn "Change"), dus de balken zijn nu leeg terwijl de tijdlijn/tower-structuur zelf al echt draait. Maand, Week en Dag draaien al op je echte changes.</p>
+      <p style="margin:0 0 14px;color:var(--faint);font-size:12px;max-width:80ch;">Zes "lenzen" op dezelfde onderliggende taken-data (<code>spow_taak</code>), van grof naar fijn — geen uitgerekte tijdas, elke lens is een andere blik. Meerjaar/Jaar/Kwartaal zijn echte tijdlijnen met freeze-banden en een "NU"-lijn, zoals in het oorspronkelijke ontwerp, en draaien op elke taak zonder ouder — zowel toekomstige "Project"-taken als je bestaande "Change"-taken (nu 2, met samen 66 subtaken/runbookstappen) — met een chip erbij zodat het onderscheid zichtbaar blijft. Maand, Week en Dag draaien al op je echte changes.</p>
 
       <div class="rl-lens" id="rl-meerjaar" hidden>
         <div class="grid">
           <div class="card wide">
             <div class="card-h"><h2>Meerjaar — portfolio per tower</h2><span class="count" id="cnt-meerjaar">–</span></div>
-            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Het helikopterbeeld: geen losse taken, maar per tower (Server &amp; Connectivity, Cloud Services, Endpoint Management, Buiten IT Infra, Security) welke projecten er meerjarig lopen, op een echte tijdlijn met de changevensters/freezes uit <code>spow_venster</code> en een "NU"-lijn. Er bestaat nog geen enkele taak op categorie "Project" — de tijdlijn/tower-rijen zelf draaien al, de balken vullen zich zodra Clifton er een aanmaakt. Capaciteit tegen FTE/verlof (zoals in het oorspronkelijke ontwerp) kan pas zodra dat als data bestaat in Dataverse.</p>
+            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Het helikopterbeeld: geen losse taken, maar per tower (Server &amp; Connectivity, Cloud Services, Endpoint Management, Buiten IT Infra, Security) welke items er meerjarig lopen, op een echte tijdlijn met de changevensters/freezes uit <code>spow_venster</code> en een "NU"-lijn. Zowel toekomstige taken met categorie "Project" als bestaande "Change"-taken staan hier door elkaar (met een chip erbij), zodat er niet gewacht hoeft te worden tot de categorie "Project" gevuld is. Capaciteit tegen FTE/verlof (zoals in het oorspronkelijke ontwerp) kan pas zodra dat als data bestaat in Dataverse.</p>
             <div class="exp" id="list-meerjaar"><div class="emptyhint">Laden…</div></div>
           </div>
         </div>
@@ -658,7 +658,7 @@ main{min-width:0;display:flex;flex-direction:column;}
           <div class="card wide">
             <div class="card-h"><h2>Jaar — projecten op een tijdlijn</h2><span class="count" id="cnt-jaar">–</span></div>
             <div style="margin-bottom:10px;"><input type="number" id="jaarPicker" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:5px 8px;width:90px;" min="2020" max="2100"></div>
-            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Elk project als balk over de kwartalen/maanden van het gekozen jaar, met dezelfde changevensters/freezes en "NU"-lijn als Meerjaar. Het oorspronkelijke ontwerp toetst dit ook tegen beschikbare capaciteit (FTE, verlof) — dat kan pas zodra die gegevens in Dataverse bestaan; nu toont dit alleen de tijdlijn zelf. Wacht op de eerste taak met categorie "Project".</p>
+            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Elk item (project of change) actief in het gekozen jaar als balk over de kwartalen/maanden, met dezelfde changevensters/freezes en "NU"-lijn als Meerjaar. Het oorspronkelijke ontwerp toetst dit ook tegen beschikbare capaciteit (FTE, verlof) — dat kan pas zodra die gegevens in Dataverse bestaan; nu toont dit alleen de tijdlijn zelf.</p>
             <div class="exp" id="list-jaar"><div class="emptyhint">Laden…</div></div>
           </div>
         </div>
@@ -673,7 +673,7 @@ main{min-width:0;display:flex;flex-direction:column;}
                 <option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option>
               </select>
             </div>
-            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Per project actief in dit kwartaal: de subtaken elk als eigen balk op een maand/week-tijdlijn, met wie hem doet erbij, plus dezelfde changevensters/freezes en "NU"-lijn. Er is geen apart hard-deadlineveld op <code>spow_taak</code> naast start/eind, dus (anders dan het oorspronkelijke ontwerp) geen los deadline-teken — de balk zelf is de enige einddatum die er is. Wacht op de eerste taak met categorie "Project".</p>
+            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Per item (project of change) actief in dit kwartaal: de subtaken elk als eigen balk op een maand/week-tijdlijn, met wie hem doet erbij (bij changes zijn dat de runbook-stappen), plus dezelfde changevensters/freezes en "NU"-lijn. Heeft een item zelf geen subtaken in dit kwartaal, dan verschijnt het als eigen balk op zijn eigen start/eind. Er is geen apart hard-deadlineveld op <code>spow_taak</code> naast start/eind, dus (anders dan het oorspronkelijke ontwerp) geen los deadline-teken — de balk zelf is de enige einddatum die er is.</p>
             <div class="exp" id="list-kwartaal"><div class="emptyhint">Laden…</div></div>
           </div>
         </div>
@@ -1711,18 +1711,27 @@ async function loadWeek(){
       ('<div style="color:var(--faint);font-size:11.5px;">Terugkerende afspraak (geen vaste datum, geldt elke week): '+recurring.map(function(v){return esc(v.spow_venstername+" — "+v.spow_terugkerend);}).join("; ")+'</div>'):"";
   }catch(e){ grid.innerHTML='<div class="emptyhint">Kon weekagenda niet laden: '+esc(e.message)+'</div>'; }
 }
-/* ============ Meerjaar/Jaar/Kwartaal-lenzen (sectie 76 — herbouwd) ============
-   Sectie 75's eerste versie bleek niet te kloppen met het echte ontwerp (docs/ontwerp/SPoW-Roadmap.html):
-   dat is geen platte lijst met opgetelde uren, maar een echte tijdlijn (assen, balken, freeze-banden,
-   een "NU"-lijn), met Meerjaar gegroepeerd per tower (niet per project) en Jaar/Kwartaal die capaciteit
-   tegen FTE/verlof afzetten. Dit herbouwt de tijdlijn-structuur zelf (assen/balken/freeze-banden uit de
-   echte spow_venster-data/NU-lijn/tower-groepering) met bestaande Dataverse-data. De capaciteits-/budget-
-   /kalibratie-motor uit het ontwerp (FTE per persoon, verlofregister, tarieven, projectbudget, historische
-   kalibratie) draait op velden die in Dataverse niet bestaan — die verzin ik niet, dat is een eigen,
-   grotere beslissing. Draaien verder op taken met categorie "Project" (spow_categorie) en hun subtaken
-   via de zelfverwijzende spow_ouder-lookup; die categorie heeft nog geen enkele taak (alle 68 zijn
-   "Change"), dus de balken zijn nu leeg — de assen/freeze-banden/NU-lijn/tower-rijen draaien al wel echt. */
-var CATEGORIE_PROJECT=420690000;
+/* ============ Meerjaar/Jaar/Kwartaal-lenzen (sectie 77 — top-level i.p.v. enkel "Project") ============
+   Sectie 76 bouwde de echte tijdlijn (assen, balken, freeze-banden, NU-lijn, tower-groepering), maar
+   draaide de balken zelf nog enkel op taken met categorie "Project" (spow_categorie) — en die categorie
+   had nog geen enkele taak (alle 68 waren "Change"), dus de balken bleven leeg terwijl er wel degelijk
+   2 echte, gevulde taken met samen 66 subtaken (runbook-stappen, deels al vanaf juni 2026 gepland) klaar
+   stonden. Clifton wees hier eerder al op ("we kunnen heus niet nog een kwartaal of jaren gaan wachten"):
+   niet wachten tot categorie "Project" gevuld is, maar nu al werken met wat er is. Daarom draaien de drie
+   lenzen nu op alle taken zonder ouder (_spow_ouder_value is null) — dat zijn zowel toekomstige "Project"-
+   taken als de bestaande "Change"-taken — met een chip ("project"/"change") erbij zodat het onderscheid
+   zichtbaar blijft. De capaciteits-/budget-/kalibratie-motor uit het ontwerp (FTE, verlofregister, tarieven,
+   projectbudget, historische kalibratie) blijft achterwege: die velden bestaan niet in Dataverse en dat
+   verzin ik niet — dat blijft een eigen, grotere beslissing van Clifton. */
+var CATEGORIE_PROJECT=420690000, CATEGORIE_CHANGE=420690001;
+function topLevelItems(taken){
+  return taken.filter(function(t){ return !t._spow_ouder_value; });
+}
+function soortChip(t){
+  if(t.spow_categorie===CATEGORIE_CHANGE) return ' <span class="chip">change</span>';
+  if(t.spow_categorie===CATEGORIE_PROJECT) return ' <span class="chip" style="border-color:var(--accent-soft);color:var(--accent);">project</span>';
+  return "";
+}
 function projectChildren(taken,projectId){
   return taken.filter(function(t){ return t._spow_ouder_value===projectId; });
 }
@@ -1783,8 +1792,8 @@ function rlBar(a,b,ws,we,color,title){
   var l=Math.max(0,rlPct(a,ws,we)), r=Math.min(100,rlPct(b,ws,we));
   return '<div class="rlbar" style="left:'+l+'%;width:'+Math.max(r-l,.6)+'%;background:'+color+'" title="'+esc(title||"")+'"></div>';
 }
-function rlRow(label,barsHtml){
-  return '<div class="rlrow"><div class="rllabel" title="'+esc(label)+'">'+esc(label)+'</div><div class="rlbarcol">'+(barsHtml||"")+'</div></div>';
+function rlRow(label,barsHtml,badgeHtml){
+  return '<div class="rlrow"><div class="rllabel" title="'+esc(label)+'">'+esc(label)+(badgeHtml||"")+'</div><div class="rlbarcol">'+(barsHtml||"")+'</div></div>';
 }
 function rlStatusVar(status){
   if(status===420690002) return "var(--accent)";
@@ -1806,25 +1815,28 @@ async function loadMeerjaar(){
     var vensters=await loadVensterData();
     var y=new Date().getUTCFullYear();
     var ws=Date.UTC(y,0,1), we=Date.UTC(y+3,0,1);
-    var projecten=taken.filter(function(t){ return t.spow_categorie===CATEGORIE_PROJECT; });
-    if(cnt) cnt.textContent=projecten.length+" projecten";
+    var items=topLevelItems(taken);
+    var nProj=items.filter(function(t){return t.spow_categorie===CATEGORIE_PROJECT;}).length;
+    var nChg=items.filter(function(t){return t.spow_categorie===CATEGORIE_CHANGE;}).length;
+    if(cnt) cnt.textContent=items.length+" item"+(items.length===1?"":"s")+" — "+nProj+" project(en), "+nChg+" change(s)";
     var towers=["Server & Connectivity","Cloud Services","Endpoint Management","Buiten IT Infra","Security"];
     var byTower={}; towers.forEach(function(t){ byTower[t]=[]; });
     var geenTower=[];
-    projecten.forEach(function(p){ var t=projectTower(p); if(t && byTower[t]) byTower[t].push(p); else geenTower.push(p); });
+    items.forEach(function(p){ var t=projectTower(p); if(t && byTower[t]) byTower[t].push(p); else geenTower.push(p); });
     var groepen=towers.slice(); if(geenTower.length) groepen.push("Geen tower toegewezen");
     var html='<div style="position:relative;">'+rlAxisHTML(ws,we,"meerjaar")+rlOverlay(ws,we,vensters)+'<div class="rltrack">';
     groepen.forEach(function(tname){
       var list=(tname==="Geen tower toegewezen")?geenTower:byTower[tname];
-      html+='<div class="rlgroup">'+esc(tname)+' <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0;">('+list.length+(list.length===1?" project)":" projecten)")+'</span></div>';
+      html+='<div class="rlgroup">'+esc(tname)+' <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0;">('+list.length+(list.length===1?" item)":" items)")+'</span></div>';
       if(!list.length){ html+=rlRow("—",""); return; }
       list.forEach(function(p){
         var kids=projectChildren(taken,p.spow_taakid), range=projectRange(p,kids);
         var bar=range?rlBar(range.start.getTime(),range.eind.getTime(),ws,we,rlStatusVar(p.spow_status),p.spow_titel):"";
-        html+=rlRow(p.spow_titel,bar);
+        html+=rlRow(p.spow_titel,bar,soortChip(p));
       });
     });
     el.innerHTML=html+'</div></div>';
+    if(!items.length) el.innerHTML+='<div class="emptyhint" style="margin-top:8px;">Nog geen enkele taak zonder ouder. Zodra Clifton er een aanmaakt (project of change), verschijnt hij hier automatisch.</div>';
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon portfolio niet laden: '+esc(e.message)+'</div>'; }
 }
 async function loadJaar(){
@@ -1837,20 +1849,20 @@ async function loadJaar(){
     var vensters=await loadVensterData();
     var jaar=parseInt((picker&&picker.value)||new Date().getFullYear(),10);
     var ws=Date.UTC(jaar,0,1), we=Date.UTC(jaar+1,0,1);
-    var projecten=taken.filter(function(t){ return t.spow_categorie===CATEGORIE_PROJECT; });
-    var projectenInJaar=projecten.filter(function(p){
+    var items=topLevelItems(taken);
+    var itemsInJaar=items.filter(function(p){
       var range=projectRange(p,projectChildren(taken,p.spow_taakid));
       return range && range.start.getTime()<we && range.eind.getTime()>=ws;
     });
-    if(cnt) cnt.textContent=projectenInJaar.length+" van "+projecten.length+" projecten actief in "+jaar;
+    if(cnt) cnt.textContent=itemsInJaar.length+" van "+items.length+" items actief in "+jaar;
     var html='<div style="position:relative;">'+rlAxisHTML(ws,we,"jaar")+rlOverlay(ws,we,vensters)+'<div class="rltrack">';
-    if(!projectenInJaar.length) html+=rlRow("—","");
-    else projectenInJaar.forEach(function(p){
+    if(!itemsInJaar.length) html+=rlRow("—","");
+    else itemsInJaar.forEach(function(p){
       var kids=projectChildren(taken,p.spow_taakid), range=projectRange(p,kids);
-      html+=rlRow(p.spow_titel, rlBar(range.start.getTime(),range.eind.getTime(),ws,we,rlStatusVar(p.spow_status),p.spow_titel));
+      html+=rlRow(p.spow_titel, rlBar(range.start.getTime(),range.eind.getTime(),ws,we,rlStatusVar(p.spow_status),p.spow_titel), soortChip(p));
     });
     html+='</div></div>';
-    if(!projecten.length) html+='<div class="emptyhint" style="margin-top:8px;">Nog geen enkele taak met categorie "Project". Zodra Clifton er een aanmaakt, verschijnt hij hier automatisch.</div>';
+    if(!items.length) html+='<div class="emptyhint" style="margin-top:8px;">Nog geen enkele taak zonder ouder. Zodra Clifton er een aanmaakt (project of change), verschijnt hij hier automatisch.</div>';
     el.innerHTML=html;
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon jaaroverzicht niet laden: '+esc(e.message)+'</div>'; }
 }
@@ -1866,30 +1878,41 @@ async function loadKwartaal(){
     var jaar=parseInt((yp&&yp.value)||new Date().getFullYear(),10);
     var q=parseInt((qp&&qp.value)||"1",10);
     var ws=Date.UTC(jaar,(q-1)*3,1), we=Date.UTC(jaar,(q-1)*3+3,1);
-    var projecten=taken.filter(function(t){ return t.spow_categorie===CATEGORIE_PROJECT; });
+    var items=topLevelItems(taken);
     var html='<div style="position:relative;">'+rlAxisHTML(ws,we,"kwartaal")+rlOverlay(ws,we,vensters)+'<div class="rltrack">';
     var count=0;
-    projecten.forEach(function(p){
+    items.forEach(function(p){
       var kids=projectChildren(taken,p.spow_taakid).filter(function(c){
         var a=c.spow_start?new Date(c.spow_start).getTime():null; if(a==null) return false;
         var b=c.spow_eind?new Date(c.spow_eind).getTime():a;
         return b>=ws && a<we;
       });
-      if(!kids.length) return;
+      if(kids.length){
+        count++;
+        html+='<div class="rlgroup">'+esc(p.spow_titel)+soortChip(p)+'</div>';
+        kids.sort(function(a,b){ return new Date(a.spow_start)-new Date(b.spow_start); }).forEach(function(c){
+          var a=new Date(c.spow_start).getTime();
+          var b=c.spow_eind?new Date(c.spow_eind).getTime():null;
+          var wie=c.spow_Persoon?c.spow_Persoon.spow_naam:"—";
+          html+=rlRow(c.spow_titel+" ("+wie+")", rlBar(a,b,ws,we,rlStatusVar(c.spow_status),c.spow_titel+" — "+wie));
+        });
+        return;
+      }
+      /* geen subtaken (van dit item) in dit kwartaal — toon het item zelf als het zelf een eigen
+         start/eind heeft dat in dit kwartaal valt, i.p.v. het stilzwijgend over te slaan */
+      var oa=p.spow_start?new Date(p.spow_start).getTime():null;
+      if(oa==null) return;
+      var ob=p.spow_eind?new Date(p.spow_eind).getTime():oa;
+      if(ob<ws||oa>=we) return;
       count++;
-      html+='<div class="rlgroup">'+esc(p.spow_titel)+'</div>';
-      kids.sort(function(a,b){ return new Date(a.spow_start)-new Date(b.spow_start); }).forEach(function(c){
-        var a=new Date(c.spow_start).getTime();
-        var b=c.spow_eind?new Date(c.spow_eind).getTime():null;
-        var wie=c.spow_Persoon?c.spow_Persoon.spow_naam:"—";
-        html+=rlRow(c.spow_titel+" ("+wie+")", rlBar(a,b,ws,we,rlStatusVar(c.spow_status),c.spow_titel+" — "+wie));
-      });
+      html+='<div class="rlgroup">'+esc(p.spow_titel)+soortChip(p)+'</div>';
+      html+=rlRow(p.spow_titel, rlBar(oa,ob,ws,we,rlStatusVar(p.spow_status),p.spow_titel));
     });
     if(!count) html+=rlRow("—","");
     html+='</div></div>';
-    if(cnt) cnt.textContent=count+" projecten actief in Q"+q+" "+jaar;
-    if(!projecten.length) html+='<div class="emptyhint" style="margin-top:8px;">Nog geen enkele taak met categorie "Project". Zodra Clifton er een aanmaakt, verschijnt hij hier automatisch, met subtaken op een weekbalk en per subtaak wie hem doet.</div>';
-    else if(!count) html+='<div class="emptyhint" style="margin-top:8px;">Geen project heeft subtaken in Q'+q+' '+jaar+'.</div>';
+    if(cnt) cnt.textContent=count+" item"+(count===1?"":"s")+" actief in Q"+q+" "+jaar;
+    if(!items.length) html+='<div class="emptyhint" style="margin-top:8px;">Nog geen enkele taak zonder ouder. Zodra Clifton er een aanmaakt (project of change), verschijnt hij hier automatisch, met subtaken op een weekbalk en per subtaak wie hem doet.</div>';
+    else if(!count) html+='<div class="emptyhint" style="margin-top:8px;">Niets actief in Q'+q+' '+jaar+'.</div>';
     el.innerHTML=html;
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon kwartaaloverzicht niet laden: '+esc(e.message)+'</div>'; }
 }
