@@ -942,8 +942,12 @@ main{min-width:0;display:flex;flex-direction:column;}
     <div id="a-head"><h3 id="a-title">–</h3><p class="lead" id="a-sub"></p></div>
     <dl class="kv" id="a-kv"></dl>
     <div class="sheet-sec">
-      <h4>Notities uit de uitnodiging</h4>
+      <h4>Volledige notities uit de uitnodiging</h4>
       <div class="feed" id="a-body"><div class="emptyhint">–</div></div>
+    </div>
+    <div class="sheet-sec">
+      <h4>Bijlagen</h4>
+      <div class="feed" id="a-attachments"><div class="emptyhint">–</div></div>
     </div>
     <div class="sheet-sec">
       <h4>Deelnemers</h4>
@@ -952,6 +956,12 @@ main{min-width:0;display:flex;flex-direction:column;}
     <div class="sheet-sec">
       <h4>Gekoppelde SPoW-taak</h4>
       <div class="feed" id="a-taak"><div class="emptyhint">–</div></div>
+    </div>
+    <div class="sheet-sec">
+      <h4>Beter moment vinden</h4>
+      <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Alleen een voorstel — er wordt niets aangemaakt of gewijzigd in Outlook. Vergt geen nieuwe toegang: dit gebruikt Microsofts eigen "findMeetingTimes", die verplichte deelnemers zwaarder laat wegen dan optionele.</p>
+      <button class="btn ghost" id="aFindTime" style="padding:5px 10px;font-size:11px;">Zoek een beter moment</button>
+      <div class="feed" id="a-findtime" style="margin-top:8px;"></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn ghost" id="aClose">Sluiten</button>
@@ -2235,7 +2245,7 @@ async function loadEigenAgenda(){
        (Fase 4-achtig eerste stapje, op Cliftons verzoek van 13 sept: klikken op een agenda-item
        moet doorklikken naar alles wat er met die afspraak te maken heeft). Vergt geen bredere scope
        dan de al bestaande Calendars.Read. */
-    var url="https://graph.microsoft.com/v1.0/me/calendarview?startDateTime="+encodeURIComponent(fmtLocal(start))+"&endDateTime="+encodeURIComponent(fmtLocal(end))+"&$select=subject,start,end,showAs,isAllDay,isCancelled,organizer,location,bodyPreview,attendees,onlineMeeting,onlineMeetingUrl,webLink&$orderby=start/dateTime&$top=50";
+    var url="https://graph.microsoft.com/v1.0/me/calendarview?startDateTime="+encodeURIComponent(fmtLocal(start))+"&endDateTime="+encodeURIComponent(fmtLocal(end))+"&$select=id,subject,start,end,showAs,isAllDay,isCancelled,organizer,location,bodyPreview,attendees,onlineMeeting,onlineMeetingUrl,webLink,hasAttachments&$orderby=start/dateTime&$top=50";
     var res=await fetch(url,{headers:{"Authorization":"Bearer "+token,"Prefer":'outlook.timezone="W. Europe Standard Time"'}});
     var json=await res.json().catch(function(){return {};});
     if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
@@ -2299,15 +2309,53 @@ async function openAgendaDetail(idx){
   }).join("");
   var bodyEl=document.getElementById("a-body");
   bodyEl.innerHTML=e.bodyPreview?('<div class="fitem" style="white-space:pre-wrap;">'+esc(e.bodyPreview)+'</div>'):'<div class="emptyhint">Geen notities in de uitnodiging.</div>';
+  bodyEl.innerHTML+='<div class="emptyhint" style="margin-top:4px;">Volledige notities laden…</div>';
   var attEl=document.getElementById("a-attendees");
   var atts=(e.attendees||[]).filter(function(a){ return a.emailAddress; });
   attEl.innerHTML=atts.length?atts.map(function(a){
     var st=(a.status&&a.status.response)||"";
-    return '<div class="fitem"><b>'+esc(a.emailAddress.name||a.emailAddress.address)+'</b>'+(st?'<span> · '+esc(st)+'</span>':'')+'</div>';
+    var soort=a.type==="optional"?"optioneel":(a.type==="resource"?"resource":"verplicht");
+    return '<div class="fitem"><b>'+esc(a.emailAddress.name||a.emailAddress.address)+'</b><span> · '+esc(soort)+(st?' · '+esc(st):'')+'</span></div>';
   }).join(""):'<div class="emptyhint">Geen deelnemers vastgelegd op deze afspraak.</div>';
+  var attachEl=document.getElementById("a-attachments");
+  attachEl.innerHTML=e.hasAttachments?'<div class="emptyhint">Bijlagen laden…</div>':'<div class="emptyhint">Geen bijlagen op deze afspraak.</div>';
+  var findEl=document.getElementById("a-findtime");
+  findEl.innerHTML="";
+  var findBtn=document.getElementById("aFindTime");
+  findBtn.disabled=false; findBtn.textContent="Zoek een beter moment";
+  findBtn.onclick=function(){ findBeterMoment(e); };
   var taakEl=document.getElementById("a-taak");
   taakEl.innerHTML='<div class="emptyhint">Zoeken naar een gekoppelde SPoW-taak…</div>';
   window.openAgendaSheet();
+  /* Volledige notities + bijlagen: apart, licht opgehaald (pas ná openen van het venster, niet bij
+     het laden van de hele 7-dagenlijst) zodat het overzicht zelf snel blijft. Beide vergen geen
+     bredere scope dan de al bestaande Calendars.Read. */
+  (async function(){
+    if(!e.id) return;
+    try{
+      var token=await getGraphTokenSilentOnly();
+      var res=await fetch("https://graph.microsoft.com/v1.0/me/events/"+encodeURIComponent(e.id)+"?$select=body",{headers:{"Authorization":"Bearer "+token}});
+      var json=await res.json().catch(function(){return {};});
+      if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
+      var tekst=json.body&&json.body.content?stripHtmlNotitie(json.body.content):"";
+      bodyEl.innerHTML=tekst?('<div class="fitem" style="white-space:pre-wrap;">'+esc(tekst)+'</div>'):'<div class="emptyhint">Geen notities in de uitnodiging.</div>';
+    }catch(err){ bodyEl.innerHTML=(e.bodyPreview?('<div class="fitem" style="white-space:pre-wrap;">'+esc(e.bodyPreview)+'</div>'):'<div class="emptyhint">Geen notities in de uitnodiging.</div>')+'<div class="emptyhint" style="margin-top:4px;">Kon de volledige notities niet ophalen: '+esc(err.message)+' (toont de korte preview hierboven).</div>'; }
+  })();
+  if(e.hasAttachments){
+    (async function(){
+      try{
+        var token=await getGraphTokenSilentOnly();
+        var res=await fetch("https://graph.microsoft.com/v1.0/me/events/"+encodeURIComponent(e.id)+"/attachments?$select=name,size,contentType,isInline",{headers:{"Authorization":"Bearer "+token}});
+        var json=await res.json().catch(function(){return {};});
+        if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
+        var files=(json.value||[]).filter(function(a){ return !a.isInline; });
+        attachEl.innerHTML=files.length?files.map(function(a){
+          var kb=a.size?Math.round(a.size/1024)+" KB":"";
+          return '<div class="fitem"><b>'+esc(a.name||"(naamloos)")+'</b><span> · '+esc(kb)+'</span></div>';
+        }).join("")+'<div class="emptyhint" style="margin-top:4px;">Openen kan via de afspraak zelf in Outlook/Teams (zie de link hierboven, of het weblink-veld).</div>':'<div class="emptyhint">Geen bijlagen op deze afspraak.</div>';
+      }catch(err){ attachEl.innerHTML='<div class="emptyhint">Kon bijlagen niet ophalen: '+esc(err.message)+'</div>'; }
+    })();
+  }
   try{
     var taken=await loadRoadmapTakenData();
     var betrokkenen=await loadBetrokkenenData();
@@ -2330,6 +2378,74 @@ async function openAgendaDetail(idx){
       runbookHtml+extraHtml+
       '<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px;"><b style="font-size:10.5px;color:var(--faint);text-transform:uppercase;">Escalatielijst</b>'+betrHtml+'</div>';
   }catch(e2){ taakEl.innerHTML='<div class="emptyhint">Kon niet zoeken naar een gekoppelde taak: '+esc(e2.message)+'</div>'; }
+}
+/* Zet Outlooks HTML-notities om naar platte tekst i.p.v. de ruwe HTML in de pagina te zetten —
+   bewust nooit externe HTML direct in innerHTML plaatsen (veiligheid), dus tags eruit en de
+   meest voorkomende entities terugvertaald. */
+function stripHtmlNotitie(html){
+  var s=String(html||"");
+  s=s.replace(/<style[\s\S]*?<\/style>/gi,"").replace(/<script[\s\S]*?<\/script>/gi,"");
+  s=s.replace(/<(br|\/p|\/div|\/li|\/tr)\s*\/?>/gi,"\n");
+  s=s.replace(/<[^>]+>/g,"");
+  s=s.replace(/&nbsp;/g,"  ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  s=s.replace(/\n{3,}/g,"\n\n").replace(/[ \t]+\n/g,"\n").trim();
+  return s;
+}
+/* ============ "Beter moment vinden" — Cliftons verzoek van 13 sept 2026 (avond): een SPoW-agenda
+   die alleen een kopie van Outlook is heeft weinig waarde (dat kan hij al via Teams/Outlook/webmail).
+   findMeetingTimes is Microsofts eigen suggestie-API en weegt verplichte deelnemers al standaard
+   zwaarder dan optionele bij het kiezen van een moment — precies het idee dat Clifton beschreef, en
+   vergt geen bredere scope dan de al bestaande Calendars.Read. Dit doet alleen een voorstel: er wordt
+   niets aangemaakt of gewijzigd in Outlook. Een echte "1 druk op de knop"-aanmaakflow vergt
+   Calendars.ReadWrite (schrijftoegang) — een nieuw, zij het klein en persoonlijk, besluit dat nog
+   niet aan Clifton is voorgelegd; dat is met opzet niet gebouwd voordat hij dat goedkeurt. */
+function fmtSuggestieTijd(iso){
+  var d=new Date(iso);
+  return DAG_NAMEN[(d.getUTCDay()+6)%7]+" "+d.getUTCDate()+" "+MND_KORT[d.getUTCMonth()]+", "+pad2(d.getUTCHours())+":"+pad2(d.getUTCMinutes());
+}
+async function findBeterMoment(e){
+  var findEl=document.getElementById("a-findtime");
+  var btn=document.getElementById("aFindTime");
+  var deelnemers=(e.attendees||[]).filter(function(a){ return a.emailAddress && a.type!=="resource"; });
+  if(!deelnemers.length){
+    findEl.innerHTML='<div class="emptyhint">Geen deelnemers op deze afspraak om een moment voor te zoeken.</div>';
+    return;
+  }
+  btn.disabled=true; btn.textContent="Bezig…";
+  findEl.innerHTML='<div class="emptyhint">Zoeken naar geschikte momenten…</div>';
+  try{
+    var token=await getGraphTokenSilentOnly();
+    var duurMin=30;
+    if(e.start&&e.end&&!e.isAllDay){
+      var a=new Date(e.start.dateTime+"Z"), b=new Date(e.end.dateTime+"Z");
+      var d=Math.round((b-a)/60000);
+      if(d>0) duurMin=d;
+    }
+    var nu=new Date();
+    var later=new Date(nu.getTime()+7*86400000);
+    var body={
+      attendees:deelnemers.map(function(a){ return {emailAddress:{address:a.emailAddress.address,name:a.emailAddress.name},type:a.type==="optional"?"optional":"required"}; }),
+      timeConstraint:{timeslots:[{start:{dateTime:nu.toISOString(),timeZone:"UTC"},end:{dateTime:later.toISOString(),timeZone:"UTC"}}]},
+      meetingDuration:"PT"+duurMin+"M",
+      returnSuggestionReasons:true,
+      minimumAttendeePercentage:50
+    };
+    var res=await fetch("https://graph.microsoft.com/v1.0/me/findMeetingTimes",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    var json=await res.json().catch(function(){return {};});
+    if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
+    var sugg=(json.meetingTimeSuggestions||[]).slice(0,5);
+    if(!sugg.length){
+      findEl.innerHTML='<div class="emptyhint">Geen goed passend moment gevonden binnen 7 dagen (of niemands agenda kon geraadpleegd worden).</div>';
+    }else{
+      findEl.innerHTML=sugg.map(function(s){
+        var slot=s.meetingTimeSlot&&s.meetingTimeSlot.start?s.meetingTimeSlot.start.dateTime:null;
+        var conf=s.confidence!=null?Math.round(s.confidence)+"% kans dat iedereen kan":"";
+        if(!slot) return "";
+        return '<div class="fitem"><b>'+esc(fmtSuggestieTijd(slot))+'</b><span> · '+esc(conf)+'</span></div>';
+      }).join("");
+    }
+  }catch(err){ findEl.innerHTML='<div class="emptyhint">Kon geen moment zoeken: '+esc(err.message)+'</div>'; }
+  finally{ btn.disabled=false; btn.textContent="Zoek een beter moment"; }
 }
 
 /* ============ Personen: GAL-zoeken + on/offboarden (User.ReadBasic.All), 12 sept 2026 ============
