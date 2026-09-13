@@ -2180,7 +2180,9 @@ function fmtAgendaTijd(iso){
 }
 function dagLabelISO(iso){
   var d=new Date(iso+"T00:00:00");
-  return DAGL[d.getDay()]+" "+d.getDate()+" "+MND[d.getMonth()];
+  /* DAG_NAMEN/MND_KORT bestaan al (zie de Week-lens) en zijn maandag-eerst; d.getDay() is
+     zondag-eerst (0-6), dus (d.getDay()+6)%7 zet dat correct om. */
+  return DAG_NAMEN[(d.getDay()+6)%7]+" "+d.getDate()+" "+MND_KORT[d.getMonth()];
 }
 async function loadEigenAgenda(){
   var el=document.getElementById("list-eigenagenda"), cnt=document.getElementById("cnt-eigenagenda");
