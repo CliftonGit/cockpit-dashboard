@@ -165,6 +165,16 @@ main{min-width:0;display:flex;flex-direction:column;}
 @media(max-width:900px){.grid{grid-template-columns:1fr;}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 17px;min-width:0;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur));}
 .card.wide{grid-column:1 / -1;}
+/* Werkvenster-lay-out (13 sept 2026, na Cliftons klacht over te veel lege ruimte in de 2-koloms
+   dashboard-grid): een grid met vaste rijen dwingt de kortste kaart in een rij naar de hoogte van
+   de langste kaart in diezelfde rij — vandaar de lege plekken. Hier gebruiken we in plaats daarvan
+   twee onafhankelijke kolommen die ieder gewoon hun eigen inhoud stapelen (zoals Outlook een
+   afspraak toont: hoofdinhoud/notities links-breed, organisator/deelnemers/bijlagen rechts-smal),
+   zodat elke kaart precies zo hoog is als zijn eigen inhoud. */
+.wv-layout{display:flex;gap:14px;align-items:flex-start;}
+.wv-main{flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:14px;}
+.wv-side{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:14px;}
+@media(max-width:900px){.wv-layout{flex-direction:column;}.wv-main,.wv-side{flex:1 1 auto;width:100%;}}
 .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;}
 .card-h h2{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.07em;text-transform:uppercase;margin:0;color:var(--dim);}
 .count{font-family:var(--mono);font-size:11px;color:var(--faint);}
@@ -897,84 +907,93 @@ main{min-width:0;display:flex;flex-direction:column;}
         </div>
         <button class="btn ghost" id="wBack">&larr; Terug</button>
       </div>
-      <div class="grid">
-        <div class="card">
-          <div class="card-h"><h2>Hulpmiddelen</h2><span class="count">escalatielijst · toegang</span></div>
-          <div class="feed" id="w-hulpmiddelen"><div class="emptyhint">–</div></div>
-          <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
-            <button class="btn ghost" id="wMeldBtn" style="padding:5px 10px;font-size:11px;">Meld iets dat ontbreekt</button>
-            <div id="w-meldform" style="display:none;margin-top:8px;gap:6px;grid-template-columns:1fr;">
-              <input id="wMeldTitel" type="text" placeholder="Titel" style="padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
-              <textarea id="wMeldTekst" placeholder="Wat heb je nodig, en waarom? (komt achter de titel)" rows="3" style="padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;resize:vertical;margin-top:6px;"></textarea>
-              <div style="display:flex;gap:8px;margin-top:6px;">
-                <button class="btn ghost" id="wMeldVerstuur" style="padding:5px 10px;font-size:11px;">Aanmaken in Onboarding &amp; offboarding</button>
-                <button class="btn ghost" id="wMeldAnnuleer" style="padding:5px 10px;font-size:11px;">Annuleren</button>
-              </div>
-              <div id="w-meldstatus" style="font-size:11px;margin-top:4px;"></div>
+      <!-- Lay-out 13 sept 2026 (avond): omgebouwd van een symmetrische 2-koloms dashboard-grid naar
+           hoofdinhoud (breed, links) + compact zijpaneel (smal, rechts) — zoals Outlook een geopende
+           afspraak toont (onderwerp/notities dominant, organisator/deelnemers/bijlagen in een smalle
+           kolom ernaast). Elke kolom stapelt zijn eigen kaarten op eigen hoogte, dus geen lege ruimte
+           meer door rij-matching. Zie SPoW-Planning-Visie-Fasering.md sectie 13. -->
+      <div class="wv-layout">
+        <div class="wv-main">
+          <div class="card">
+            <div class="card-h"><h2>Volledige notities</h2><span class="count">uit de uitnodiging</span></div>
+            <div class="feed" id="w-body"><div class="emptyhint">–</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>Advies &amp; kennis</h2><span class="count">runbook · afspraken · testplan</span></div>
+            <input id="wZoek" type="text" placeholder="Zoek in de vastgelegde kennis van deze taak…" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+            <div class="feed" id="w-advies"><div class="emptyhint">–</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>Plannen</h2><span class="count">agenda</span></div>
+            <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Alleen een voorstel, tenzij je zelf op "Verplaats hierheen" klikt — dat stuurt een echte Outlook-update naar deelnemers. Budget/FTE/roadmap-conflicten meewegen is nog niet gebouwd (wacht op openstaande besluiten, zie de Visie/Fasering-doc, sectie 11.5).</p>
+            <button class="btn ghost" id="aFindTime" style="padding:5px 10px;font-size:11px;">Zoek een beter moment</button>
+            <div class="feed" id="a-findtime" style="margin-top:8px;"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>Checklist</h2><span class="count">lokaal op dit apparaat</span></div>
+            <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Nog niet gedeeld tussen apparaten of collega's — dat vergt een nieuwe Dataverse-tabel die nog niet is aangemaakt (zie checklist.md). Blijft wel bewaard op dit apparaat/deze browser.</p>
+            <div id="w-checklist"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="wChecklistNieuw" type="text" placeholder="Nieuwe stap toevoegen…" style="flex:1;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+              <button class="btn ghost" id="wChecklistAdd" style="padding:5px 10px;font-size:11px;">Toevoegen</button>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="card-h"><h2>Advies &amp; kennis</h2><span class="count">runbook · afspraken · testplan</span></div>
-          <input id="wZoek" type="text" placeholder="Zoek in de vastgelegde kennis van deze taak…" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
-          <div class="feed" id="w-advies"><div class="emptyhint">–</div></div>
-        </div>
+          <div class="card">
+            <div class="card-h"><h2>Logboek</h2><span class="count">lokaal op dit apparaat</span></div>
+            <div id="w-logboek"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="wLogNieuw" type="text" placeholder="Wat is er gebeurd of besproken?" style="flex:1;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+              <button class="btn ghost" id="wLogAdd" style="padding:5px 10px;font-size:11px;">Toevoegen</button>
+            </div>
+          </div>
 
-        <div class="card">
-          <div class="card-h"><h2>Organisator &amp; locatie</h2><span class="count">uit Outlook</span></div>
-          <dl class="kv" id="w-kv"></dl>
-        </div>
-
-        <div class="card">
-          <div class="card-h"><h2>Volledige notities</h2><span class="count">uit de uitnodiging</span></div>
-          <div class="feed" id="w-body"><div class="emptyhint">–</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-h"><h2>Bijlagen</h2></div>
-          <div class="feed" id="w-attachments"><div class="emptyhint">–</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-h"><h2>Deelnemers</h2></div>
-          <div class="feed" id="w-attendees"><div class="emptyhint">–</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-h"><h2>Plannen</h2><span class="count">agenda</span></div>
-          <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Alleen een voorstel, tenzij je zelf op "Verplaats hierheen" klikt — dat stuurt een echte Outlook-update naar deelnemers. Budget/FTE/roadmap-conflicten meewegen is nog niet gebouwd (wacht op openstaande besluiten, zie de Visie/Fasering-doc, sectie 11.5).</p>
-          <button class="btn ghost" id="aFindTime" style="padding:5px 10px;font-size:11px;">Zoek een beter moment</button>
-          <div class="feed" id="a-findtime" style="margin-top:8px;"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-h"><h2>Communicatie</h2><span class="count">nog niet gebouwd</span></div>
-          <div class="emptyhint">Mails/Teams-berichten over deze taak koppelen vergt een bredere Graph-toegang (Mail.Read/Chat.Read) dan wat nu is toegekend (Calendars.ReadWrite). Bewust niet gebouwd zonder een nieuw, expliciet akkoord — zie de Visie/Fasering-doc, sectie 11.2/11.5.</div>
-        </div>
-
-        <div class="card wide">
-          <div class="card-h"><h2>Checklist</h2><span class="count">lokaal op dit apparaat</span></div>
-          <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Nog niet gedeeld tussen apparaten of collega's — dat vergt een nieuwe Dataverse-tabel die nog niet is aangemaakt (zie checklist.md). Blijft wel bewaard op dit apparaat/deze browser.</p>
-          <div id="w-checklist"></div>
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <input id="wChecklistNieuw" type="text" placeholder="Nieuwe stap toevoegen…" style="flex:1;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
-            <button class="btn ghost" id="wChecklistAdd" style="padding:5px 10px;font-size:11px;">Toevoegen</button>
+          <div class="card">
+            <div class="card-h"><h2>Terugkoppeling</h2><span class="count">lokaal op dit apparaat</span></div>
+            <div id="w-survey"></div>
           </div>
         </div>
 
-        <div class="card wide">
-          <div class="card-h"><h2>Logboek</h2><span class="count">lokaal op dit apparaat</span></div>
-          <div id="w-logboek"></div>
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <input id="wLogNieuw" type="text" placeholder="Wat is er gebeurd of besproken?" style="flex:1;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
-            <button class="btn ghost" id="wLogAdd" style="padding:5px 10px;font-size:11px;">Toevoegen</button>
+        <div class="wv-side">
+          <div class="card">
+            <div class="card-h"><h2>Organisator &amp; locatie</h2><span class="count">uit Outlook</span></div>
+            <dl class="kv" id="w-kv"></dl>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="card-h"><h2>Terugkoppeling</h2><span class="count">lokaal op dit apparaat</span></div>
-          <div id="w-survey"></div>
+          <div class="card">
+            <div class="card-h"><h2>Deelnemers</h2></div>
+            <div class="feed" id="w-attendees"><div class="emptyhint">–</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>Bijlagen</h2></div>
+            <div class="feed" id="w-attachments"><div class="emptyhint">–</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>Hulpmiddelen</h2><span class="count">escalatielijst · toegang</span></div>
+            <div class="feed" id="w-hulpmiddelen"><div class="emptyhint">–</div></div>
+            <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
+              <button class="btn ghost" id="wMeldBtn" style="padding:5px 10px;font-size:11px;">Meld iets dat ontbreekt</button>
+              <div id="w-meldform" style="display:none;margin-top:8px;gap:6px;grid-template-columns:1fr;">
+                <input id="wMeldTitel" type="text" placeholder="Titel" style="padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+                <textarea id="wMeldTekst" placeholder="Wat heb je nodig, en waarom? (komt achter de titel)" rows="3" style="padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;resize:vertical;margin-top:6px;"></textarea>
+                <div style="display:flex;gap:8px;margin-top:6px;">
+                  <button class="btn ghost" id="wMeldVerstuur" style="padding:5px 10px;font-size:11px;">Aanmaken in Onboarding &amp; offboarding</button>
+                  <button class="btn ghost" id="wMeldAnnuleer" style="padding:5px 10px;font-size:11px;">Annuleren</button>
+                </div>
+                <div id="w-meldstatus" style="font-size:11px;margin-top:4px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>Communicatie</h2><span class="count">nog niet gebouwd</span></div>
+            <div class="emptyhint">Mails/Teams-berichten over deze taak koppelen vergt een bredere Graph-toegang (Mail.Read/Chat.Read) dan de huidige agenda-scopes (Calendars.Read, en incidenteel Calendars.ReadWrite voor "Verplaats hierheen"). Bewust niet gebouwd zonder een nieuw, expliciet akkoord — zie de Visie/Fasering-doc, sectie 11.2/11.5.</div>
+          </div>
         </div>
       </div>
     </section>
@@ -2269,11 +2288,26 @@ async function loadAll(){
    is nog niet met een echte, ingelogde sessie bevestigd. Deze knop bestaat om dat in het echt te testen —
    niet om te doen alsof het al werkt. Zie het projectlog, secties 20-26. */
 /* Uitgebreid naar Calendars.ReadWrite op Cliftons expliciete akkoord (13 sept 2026, avond) — nodig
-   om een afspraak daadwerkelijk te kunnen verplaatsen. ReadWrite omvat Read, dus dit vervangt de
-   oudere scope in plaats van 'm toe te voegen. De eerste keer dat dit in een browser draait zal
-   acquireTokenSilent falen (nog geen consent voor de bredere scope) — dat valt terug op de al
-   bestaande "Toegang geven"-knop, die dan een echte, verse consent-popup toont. */
-var GRAPH_SCOPES=["Calendars.ReadWrite"];
+   om een afspraak daadwerkelijk te kunnen verplaatsen.
+   CORRECTIE, 13 sept 2026 (avond, na Cliftons eigen test): dit stond hier eerst als vervanging van
+   Calendars.Read door Calendars.ReadWrite voor ALLE Graph-aanroepen — dat bleek een echte fout.
+   Clifton kreeg bij "Toegang geven" een Microsoft-scherm "Need admin approval": in Boels' tenant
+   vergt Calendars.ReadWrite kennelijk toestemming van een beheerder, iets wat ik vooraf niet kon
+   weten en niet goed had ingeschat toen ik zijn akkoord vroeg (ik noemde het toen "een kleine,
+   persoonlijke scope" — dat klopt dus niet). Erger: omdat alles op deze ene scope liep, deed dit ook
+   de al werkende, alleen-lezende "Mijn agenda"-kaart stuk (die eerder al met Calendars.Read
+   bevestigd werkte, sectie 81) — een echte regressie, mijn fout.
+   Fix: lezen (Mijn agenda, "Zoek een beter moment"/findMeetingTimes) gebruikt weer alleen
+   Calendars.Read, exact de scope die al eerder tenant-breed werkt. Alleen "Verplaats hierheen" (de
+   echte PATCH die de afspraak verzet) vraagt apart, pas op het moment dat je erop klikt, de bredere
+   Calendars.ReadWrite op (zie getGraphTokenWrite hieronder) — zodat een falend/geblokkeerd
+   toestemmingsverzoek voor die ene knop niet meer de rest van de agenda breekt. */
+var GRAPH_SCOPES=["Calendars.Read"];
+var GRAPH_SCOPES_WRITE=["Calendars.ReadWrite"];
+async function getGraphTokenWrite(){
+  try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES_WRITE}); return r.accessToken; }
+  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_SCOPES_WRITE}); return r2.accessToken; }
+}
 var AGENDA_TEST_SCHEDULES=["Ext_Harish.AC@boels.nl","harish.ac@cgi.com"]; /* bekend Boels- + cgi.com-adres, sectie 19 */
 var VRIJBEZET_LABEL={free:"vrij",tentative:"onder voorbehoud",busy:"bezet",oof:"afwezig (out of office)",workingElsewhere:"werkt elders"};
 function pad2(n){ return (n<10?"0":"")+n; }
@@ -2721,7 +2755,11 @@ async function verplaatsAfspraak(btn,e,duurMin){
   if(!slot||!e.id) return;
   btn.disabled=true; btn.textContent="Bezig…";
   try{
-    var token=await getGraphTokenSilentOnly();
+    /* Bewust de bredere schrijf-scope, en pas hier (niet bij het laden van de agenda) opgevraagd —
+       zie de uitleg bij GRAPH_SCOPES hierboven. Als dit in Boels' tenant admin-goedkeuring vergt en
+       die er nog niet is, faalt dit hier gecontroleerd met een duidelijke foutmelding (catch
+       hieronder) in plaats van de hele agenda-kaart te breken. */
+    var token=await getGraphTokenWrite();
     /* BELANGRIJK: findMeetingTimes geeft dateTime terug als kale wall-clock string (geen "Z", geen
        offset) in de tijdzone die we zelf opgaven (UTC, zie timeConstraint in findBeterMoment).
        new Date(string) zou dit door de browser als LOKALE tijd interpreteren (ECMA-262-regels voor
@@ -2755,7 +2793,7 @@ async function verplaatsAfspraak(btn,e,duurMin){
 /* ============ Personen: GAL-zoeken + on/offboarden (User.ReadBasic.All), 12 sept 2026 ============
    Status: scope toegekend en tenant-breed geconsenteerd (zie projectlog sectie 68), maar deze concrete
    zoekfunctie en de schrijfacties naar spow_persoon zijn nog niet met een echte, gewone login getest.
-   Los van GRAPH_SCOPES (Calendars.ReadWrite) gehouden, zodat een falende scope de ander niet meesleept. */
+   Los van GRAPH_SCOPES/GRAPH_SCOPES_WRITE gehouden, zodat een falende scope de ander niet meesleept. */
 var GRAPH_PEOPLE_SCOPES=["User.ReadBasic.All"];
 async function getGraphPeopleToken(){
   try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_PEOPLE_SCOPES}); return r.accessToken; }
