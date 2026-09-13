@@ -2302,11 +2302,35 @@ async function loadAll(){
    echte PATCH die de afspraak verzet) vraagt apart, pas op het moment dat je erop klikt, de bredere
    Calendars.ReadWrite op (zie getGraphTokenWrite hieronder) — zodat een falend/geblokkeerd
    toestemmingsverzoek voor die ene knop niet meer de rest van de agenda breekt. */
+/* ============ Gedeelde Graph-token-plumbing (14 sept 2026) ============
+   Herzien na Cliftons terechte kritiek: tot nu toe kreeg elke nieuwe Graph-functie zijn eigen,
+   los gekopieerde silent-dan-popup-functie (getGraphToken, getGraphTokenWrite, getGraphPeopleToken
+   deden alle drie hetzelfde, alleen met een andere scope-variabele). Dat is precies het "voor elke
+   nieuwe functionaliteit weer iets bouwen"-patroon dat hij niet wil. Eén generieke functie
+   (acquireGraphToken) doet nu de eigenlijke MSAL-aanroep; alle scope-specifieke functies hieronder
+   zijn nu alleen nog een naam die naar een scope-set wijst — nieuwe functionaliteit die een AL
+   TOEGEKENDE scope hergebruikt, hoeft geen nieuwe plumbing te krijgen, alleen een nieuwe regel als
+   deze. Zie ook de scope-inventaris en het voorstel voor één gebundelde consent-aanvraag in
+   SPoW-Planning-Visie-Fasering.md, sectie 15. */
+async function acquireGraphToken(scopes){
+  /* Stil, geen popup — gebruikt door elke "silentOnly"-variant hieronder. */
+  var r=await msalInstance.acquireTokenSilent({scopes:scopes});
+  return r.accessToken;
+}
+async function acquireGraphTokenWithPopupFallback(scopes){
+  /* Stil, met popup-terugval — gebruikt door elke gewone getGraphToken*-functie hieronder. */
+  try{ return await acquireGraphToken(scopes); }
+  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:scopes}); return r2.accessToken; }
+}
 var GRAPH_SCOPES=["Calendars.Read"];
 var GRAPH_SCOPES_WRITE=["Calendars.ReadWrite"];
+/* Nog NIET ergens aangeroepen — dit is bewust alvast klaargezet zodat de Communicatie-kaart, zodra
+   Clifton de daadwerkelijke consent-stap wil zetten, geen nieuwe plumbing nodig heeft, alleen een
+   token-aanvraag met deze al bestaande scope-set. Zie de open vraag in het projectlog/checklist over
+   de exacte scopes (Mail.Read + Chat.Read, en/of ChannelMessage.Read.All voor kanaalberichten). */
+var GRAPH_SCOPES_COMMUNICATIE=["Mail.Read","Chat.Read","ChannelMessage.Read.All"];
 async function getGraphTokenWrite(){
-  try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES_WRITE}); return r.accessToken; }
-  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_SCOPES_WRITE}); return r2.accessToken; }
+  return await acquireGraphTokenWithPopupFallback(GRAPH_SCOPES_WRITE);
 }
 var AGENDA_TEST_SCHEDULES=["Ext_Harish.AC@boels.nl","harish.ac@cgi.com"]; /* bekend Boels- + cgi.com-adres, sectie 19 */
 var VRIJBEZET_LABEL={free:"vrij",tentative:"onder voorbehoud",busy:"bezet",oof:"afwezig (out of office)",workingElsewhere:"werkt elders"};
@@ -2318,8 +2342,7 @@ function volgendeWerkdagISO(){
   return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
 }
 async function getGraphToken(){
-  try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES}); return r.accessToken; }
-  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_SCOPES}); return r2.accessToken; }
+  return await acquireGraphTokenWithPopupFallback(GRAPH_SCOPES);
 }
 /* ============ Mijn agenda (Fase 2, deel 1 van de Planning-visie, sectie 81) ============
    Hergebruikt de al bestaande, tenant-breed geconsenteerde Calendars.Read-scope (sectie 25) —
@@ -2328,8 +2351,7 @@ async function getGraphToken(){
    login-popup te openen. Dit toont alleen de agenda van de ingelogde gebruiker (delegated scope) —
    agenda's van teamleden vergen de grotere, nog openstaande "SPoW Voedingslaag"-appregistratie. */
 async function getGraphTokenSilentOnly(){
-  var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_SCOPES});
-  return r.accessToken;
+  return await acquireGraphToken(GRAPH_SCOPES);
 }
 function fmtAgendaTijd(iso){
   /* Graph geeft calendarView-tijden terug in de meegegeven timeZone, zonder offset in de string
@@ -2796,8 +2818,7 @@ async function verplaatsAfspraak(btn,e,duurMin){
    Los van GRAPH_SCOPES/GRAPH_SCOPES_WRITE gehouden, zodat een falende scope de ander niet meesleept. */
 var GRAPH_PEOPLE_SCOPES=["User.ReadBasic.All"];
 async function getGraphPeopleToken(){
-  try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_PEOPLE_SCOPES}); return r.accessToken; }
-  catch(e){ var r2=await msalInstance.acquireTokenPopup({scopes:GRAPH_PEOPLE_SCOPES}); return r2.accessToken; }
+  return await acquireGraphTokenWithPopupFallback(GRAPH_PEOPLE_SCOPES);
 }
 async function searchGAL(term){
   var token=await getGraphPeopleToken();
