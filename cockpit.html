@@ -590,7 +590,7 @@ main{min-width:0;display:flex;flex-direction:column;}
       <div class="grid">
         <div class="card wide">
           <div class="card-h"><h2>Mijn agenda — vandaag t/m 7 dagen vooruit</h2><span class="count" id="cnt-eigenagenda">–</span></div>
-          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Fase 2 (deel 1) uit de Planning-visie: jouw eigen Outlook-agenda, met de al eerder toegekende <code>Calendars.Read</code>-scope — geen nieuw besluit nodig. Dit toont alleen jouw eigen agenda: de agenda's van je teamleden vergen de grotere, nog openstaande beslissing over de "SPoW Voedingslaag"-appregistratie (application permissions, tenantbreed).</p>
+          <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Fase 2 (deel 1) uit de Planning-visie: jouw eigen Outlook-agenda. Klik een item open voor volledige notities, bijlagen, en "zoek een beter moment" (met, na jouw akkoord van 13 sept, ook echt kunnen verplaatsen — dat gebruikt <code>Calendars.ReadWrite</code>). Dit toont alleen jouw eigen agenda: de agenda's van je teamleden vergen de grotere, nog openstaande beslissing over de "SPoW Voedingslaag"-appregistratie (application permissions, tenantbreed).</p>
           <div class="exp" id="list-eigenagenda"><div class="emptyhint">Laden…</div></div>
         </div>
         <div class="card wide">
@@ -883,6 +883,101 @@ main{min-width:0;display:flex;flex-direction:column;}
 
       </div>
     </section>
+
+    <!-- WERKVENSTER — volledige pagina i.p.v. het smalle rechter doorklikpaneel, op Cliftons verzoek
+         (13 sept 2026, avond; zie SPoW-Planning-Visie-Fasering.md sectie 11). Vervangt de oude
+         #agendaSheet-flyout. Niet bereikbaar via de linkernav (geen data-go-knop) — alleen via
+         openWerkvenster(), aangeroepen vanuit openAgendaDetail(). Hergebruikt hetzelfde .view/.card-
+         systeem als de andere tabbladen, dus geen nieuwe CSS nodig. -->
+    <section class="view" id="v-werkvenster">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin:0 0 4px;" id="w-title">–</h2>
+          <p class="lead" style="margin:0;" id="w-sub"></p>
+        </div>
+        <button class="btn ghost" id="wBack">&larr; Terug</button>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-h"><h2>Hulpmiddelen</h2><span class="count">escalatielijst · toegang</span></div>
+          <div class="feed" id="w-hulpmiddelen"><div class="emptyhint">–</div></div>
+          <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
+            <button class="btn ghost" id="wMeldBtn" style="padding:5px 10px;font-size:11px;">Meld iets dat ontbreekt</button>
+            <div id="w-meldform" style="display:none;margin-top:8px;gap:6px;grid-template-columns:1fr;">
+              <input id="wMeldTitel" type="text" placeholder="Titel" style="padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+              <textarea id="wMeldTekst" placeholder="Wat heb je nodig, en waarom? (komt achter de titel)" rows="3" style="padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;resize:vertical;margin-top:6px;"></textarea>
+              <div style="display:flex;gap:8px;margin-top:6px;">
+                <button class="btn ghost" id="wMeldVerstuur" style="padding:5px 10px;font-size:11px;">Aanmaken in Onboarding &amp; offboarding</button>
+                <button class="btn ghost" id="wMeldAnnuleer" style="padding:5px 10px;font-size:11px;">Annuleren</button>
+              </div>
+              <div id="w-meldstatus" style="font-size:11px;margin-top:4px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Advies &amp; kennis</h2><span class="count">runbook · afspraken · testplan</span></div>
+          <input id="wZoek" type="text" placeholder="Zoek in de vastgelegde kennis van deze taak…" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+          <div class="feed" id="w-advies"><div class="emptyhint">–</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Organisator &amp; locatie</h2><span class="count">uit Outlook</span></div>
+          <dl class="kv" id="w-kv"></dl>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Volledige notities</h2><span class="count">uit de uitnodiging</span></div>
+          <div class="feed" id="w-body"><div class="emptyhint">–</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Bijlagen</h2></div>
+          <div class="feed" id="w-attachments"><div class="emptyhint">–</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Deelnemers</h2></div>
+          <div class="feed" id="w-attendees"><div class="emptyhint">–</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Plannen</h2><span class="count">agenda</span></div>
+          <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Alleen een voorstel, tenzij je zelf op "Verplaats hierheen" klikt — dat stuurt een echte Outlook-update naar deelnemers. Budget/FTE/roadmap-conflicten meewegen is nog niet gebouwd (wacht op openstaande besluiten, zie de Visie/Fasering-doc, sectie 11.5).</p>
+          <button class="btn ghost" id="aFindTime" style="padding:5px 10px;font-size:11px;">Zoek een beter moment</button>
+          <div class="feed" id="a-findtime" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Communicatie</h2><span class="count">nog niet gebouwd</span></div>
+          <div class="emptyhint">Mails/Teams-berichten over deze taak koppelen vergt een bredere Graph-toegang (Mail.Read/Chat.Read) dan wat nu is toegekend (Calendars.ReadWrite). Bewust niet gebouwd zonder een nieuw, expliciet akkoord — zie de Visie/Fasering-doc, sectie 11.2/11.5.</div>
+        </div>
+
+        <div class="card wide">
+          <div class="card-h"><h2>Checklist</h2><span class="count">lokaal op dit apparaat</span></div>
+          <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Nog niet gedeeld tussen apparaten of collega's — dat vergt een nieuwe Dataverse-tabel die nog niet is aangemaakt (zie checklist.md). Blijft wel bewaard op dit apparaat/deze browser.</p>
+          <div id="w-checklist"></div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <input id="wChecklistNieuw" type="text" placeholder="Nieuwe stap toevoegen…" style="flex:1;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+            <button class="btn ghost" id="wChecklistAdd" style="padding:5px 10px;font-size:11px;">Toevoegen</button>
+          </div>
+        </div>
+
+        <div class="card wide">
+          <div class="card-h"><h2>Logboek</h2><span class="count">lokaal op dit apparaat</span></div>
+          <div id="w-logboek"></div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <input id="wLogNieuw" type="text" placeholder="Wat is er gebeurd of besproken?" style="flex:1;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;">
+            <button class="btn ghost" id="wLogAdd" style="padding:5px 10px;font-size:11px;">Toevoegen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>Terugkoppeling</h2><span class="count">lokaal op dit apparaat</span></div>
+          <div id="w-survey"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <aside class="rail-right">
@@ -932,39 +1027,6 @@ main{min-width:0;display:flex;flex-direction:column;}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn ghost" id="dClose">Sluiten</button>
-    </div>
-  </div>
-</div>
-
-<!-- Werkvenster per agenda-item (Planning Fase 2, deel 1, uitbreiding "eerst bouwen" — 13 sept 2026 -->
-<div class="detail" id="agendaSheet">
-  <div class="sheet">
-    <div id="a-head"><h3 id="a-title">–</h3><p class="lead" id="a-sub"></p></div>
-    <dl class="kv" id="a-kv"></dl>
-    <div class="sheet-sec">
-      <h4>Volledige notities uit de uitnodiging</h4>
-      <div class="feed" id="a-body"><div class="emptyhint">–</div></div>
-    </div>
-    <div class="sheet-sec">
-      <h4>Bijlagen</h4>
-      <div class="feed" id="a-attachments"><div class="emptyhint">–</div></div>
-    </div>
-    <div class="sheet-sec">
-      <h4>Deelnemers</h4>
-      <div class="feed" id="a-attendees"><div class="emptyhint">–</div></div>
-    </div>
-    <div class="sheet-sec">
-      <h4>Gekoppelde SPoW-taak</h4>
-      <div class="feed" id="a-taak"><div class="emptyhint">–</div></div>
-    </div>
-    <div class="sheet-sec">
-      <h4>Beter moment vinden</h4>
-      <p style="margin:0 0 8px;color:var(--faint);font-size:11px;">Alleen een voorstel — er wordt niets aangemaakt of gewijzigd in Outlook. Vergt geen nieuwe toegang: dit gebruikt Microsofts eigen "findMeetingTimes", die verplichte deelnemers zwaarder laat wegen dan optionele.</p>
-      <button class="btn ghost" id="aFindTime" style="padding:5px 10px;font-size:11px;">Zoek een beter moment</button>
-      <div class="feed" id="a-findtime" style="margin-top:8px;"></div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn ghost" id="aClose">Sluiten</button>
     </div>
   </div>
 </div>
@@ -1253,13 +1315,30 @@ main{min-width:0;display:flex;flex-direction:column;}
   document.addEventListener("keydown",function(e){if(e.key==="Escape") closeDetail();});
   window.openDetail=openDetail; window.closeDetail=closeDetail;
 
-  var agendaSheet=document.getElementById("agendaSheet");
-  function openAgendaSheet(){agendaSheet.classList.add("on");}
-  function closeAgendaSheet(){agendaSheet.classList.remove("on");}
-  document.getElementById("aClose").addEventListener("click",closeAgendaSheet);
-  agendaSheet.addEventListener("click",function(e){if(e.target===agendaSheet) closeAgendaSheet();});
-  document.addEventListener("keydown",function(e){if(e.key==="Escape") closeAgendaSheet();});
-  window.openAgendaSheet=openAgendaSheet; window.closeAgendaSheet=closeAgendaSheet;
+  /* Werkvenster: volledige pagina i.p.v. de oude smalle #agendaSheet-flyout (13 sept 2026, avond,
+     op Cliftons verzoek). Hergebruikt hetzelfde .view-mechanisme als de gewone tabbladen (show()),
+     maar is zelf niet aan een linkernav-knop gekoppeld — alleen bereikbaar via openWerkvenster(). */
+  var werkvenster=document.getElementById("v-werkvenster");
+  var wvVorigeModus="planning";
+  function openWerkvenster(){
+    var actief=document.querySelector('.mode[aria-current="true"]');
+    wvVorigeModus=actief?actief.dataset.go:"planning";
+    document.querySelectorAll(".view").forEach(function(v){v.classList.remove("on");});
+    werkvenster.classList.add("on");
+  }
+  function closeWerkvenster(){
+    document.querySelectorAll(".view").forEach(function(v){v.classList.remove("on");});
+    var el=document.getElementById("v-"+wvVorigeModus);
+    if(el) el.classList.add("on"); else werkvenster.classList.add("on");
+  }
+  document.getElementById("wBack").addEventListener("click",closeWerkvenster);
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&werkvenster.classList.contains("on")) closeWerkvenster();});
+  window.openWerkvenster=openWerkvenster; window.closeWerkvenster=closeWerkvenster;
+
+  var wMeldBtn=document.getElementById("wMeldBtn"), wMeldForm=document.getElementById("w-meldform");
+  wMeldBtn.addEventListener("click",function(){ wMeldForm.style.display=(wMeldForm.style.display==="none"||!wMeldForm.style.display)?"grid":"none"; });
+  document.getElementById("wMeldAnnuleer").addEventListener("click",function(){ wMeldForm.style.display="none"; document.getElementById("w-meldstatus").textContent=""; });
+  document.getElementById("wMeldVerstuur").addEventListener("click",function(){ wMeldVerstuurClick(); });
 })();
 </script>
 
@@ -2189,7 +2268,12 @@ async function loadAll(){
    Status 5 sept 2026: scope is toegekend (tenant-brede admin-consent op deze app), maar de opvraging zelf
    is nog niet met een echte, ingelogde sessie bevestigd. Deze knop bestaat om dat in het echt te testen —
    niet om te doen alsof het al werkt. Zie het projectlog, secties 20-26. */
-var GRAPH_SCOPES=["Calendars.Read"];
+/* Uitgebreid naar Calendars.ReadWrite op Cliftons expliciete akkoord (13 sept 2026, avond) — nodig
+   om een afspraak daadwerkelijk te kunnen verplaatsen. ReadWrite omvat Read, dus dit vervangt de
+   oudere scope in plaats van 'm toe te voegen. De eerste keer dat dit in een browser draait zal
+   acquireTokenSilent falen (nog geen consent voor de bredere scope) — dat valt terug op de al
+   bestaande "Toegang geven"-knop, die dan een echte, verse consent-popup toont. */
+var GRAPH_SCOPES=["Calendars.ReadWrite"];
 var AGENDA_TEST_SCHEDULES=["Ext_Harish.AC@boels.nl","harish.ac@cgi.com"]; /* bekend Boels- + cgi.com-adres, sectie 19 */
 var VRIJBEZET_LABEL={free:"vrij",tentative:"onder voorbehoud",busy:"bezet",oof:"afwezig (out of office)",workingElsewhere:"werkt elders"};
 function pad2(n){ return (n<10?"0":"")+n; }
@@ -2294,11 +2378,11 @@ function matchTaakByTitel(subject,taken){
 async function openAgendaDetail(idx){
   var e=CACHE.eigenAgenda[idx];
   if(!e) return;
-  document.getElementById("a-title").textContent=e.subject||"(geen titel)";
+  document.getElementById("w-title").textContent=e.subject||"(geen titel)";
   var iso=e.start&&e.start.dateTime?e.start.dateTime.slice(0,10):"";
   var tijd=e.isAllDay?"hele dag":(e.start&&e.end?fmtAgendaTijd(e.start.dateTime)+"–"+fmtAgendaTijd(e.end.dateTime):"");
-  document.getElementById("a-sub").textContent=(iso?dagLabelISO(iso)+" · ":"")+tijd+" · "+(VRIJBEZET_LABEL[e.showAs]||e.showAs||"");
-  var kv=document.getElementById("a-kv");
+  document.getElementById("w-sub").textContent=(iso?dagLabelISO(iso)+" · ":"")+tijd+" · "+(VRIJBEZET_LABEL[e.showAs]||e.showAs||"");
+  var kv=document.getElementById("w-kv");
   var rows=[
     ["Organisator",e.organizer&&e.organizer.emailAddress?(e.organizer.emailAddress.name||e.organizer.emailAddress.address):null],
     ["Locatie",e.location&&e.location.displayName],
@@ -2307,26 +2391,31 @@ async function openAgendaDetail(idx){
   kv.innerHTML=rows.map(function(r){
     return '<dt>'+r[0]+'</dt><dd'+(r[1]?'':' class="miss"')+'>'+(r[1]||"—")+'</dd>';
   }).join("");
-  var bodyEl=document.getElementById("a-body");
+  var bodyEl=document.getElementById("w-body");
   bodyEl.innerHTML=e.bodyPreview?('<div class="fitem" style="white-space:pre-wrap;">'+esc(e.bodyPreview)+'</div>'):'<div class="emptyhint">Geen notities in de uitnodiging.</div>';
   bodyEl.innerHTML+='<div class="emptyhint" style="margin-top:4px;">Volledige notities laden…</div>';
-  var attEl=document.getElementById("a-attendees");
+  var attEl=document.getElementById("w-attendees");
   var atts=(e.attendees||[]).filter(function(a){ return a.emailAddress; });
   attEl.innerHTML=atts.length?atts.map(function(a){
     var st=(a.status&&a.status.response)||"";
     var soort=a.type==="optional"?"optioneel":(a.type==="resource"?"resource":"verplicht");
     return '<div class="fitem"><b>'+esc(a.emailAddress.name||a.emailAddress.address)+'</b><span> · '+esc(soort)+(st?' · '+esc(st):'')+'</span></div>';
   }).join(""):'<div class="emptyhint">Geen deelnemers vastgelegd op deze afspraak.</div>';
-  var attachEl=document.getElementById("a-attachments");
+  var attachEl=document.getElementById("w-attachments");
   attachEl.innerHTML=e.hasAttachments?'<div class="emptyhint">Bijlagen laden…</div>':'<div class="emptyhint">Geen bijlagen op deze afspraak.</div>';
   var findEl=document.getElementById("a-findtime");
   findEl.innerHTML="";
   var findBtn=document.getElementById("aFindTime");
   findBtn.disabled=false; findBtn.textContent="Zoek een beter moment";
   findBtn.onclick=function(){ findBeterMoment(e); };
-  var taakEl=document.getElementById("a-taak");
-  taakEl.innerHTML='<div class="emptyhint">Zoeken naar een gekoppelde SPoW-taak…</div>';
-  window.openAgendaSheet();
+  document.getElementById("w-hulpmiddelen").innerHTML='<div class="emptyhint">Zoeken naar een gekoppelde SPoW-taak…</div>';
+  document.getElementById("w-advies").innerHTML='<div class="emptyhint">–</div>';
+  var wMeldForm=document.getElementById("w-meldform");
+  if(wMeldForm){ wMeldForm.style.display="none"; document.getElementById("w-meldstatus").textContent=""; document.getElementById("wMeldTitel").value=e.subject||""; document.getElementById("wMeldTekst").value=""; }
+  renderChecklist(e,null);
+  renderLogboek(e);
+  renderSurvey(e);
+  window.openWerkvenster();
   /* Volledige notities + bijlagen: apart, licht opgehaald (pas ná openen van het venster, niet bij
      het laden van de hele 7-dagenlijst) zodat het overzicht zelf snel blijft. Beide vergen geen
      bredere scope dan de al bestaande Calendars.Read. */
@@ -2360,24 +2449,176 @@ async function openAgendaDetail(idx){
     var taken=await loadRoadmapTakenData();
     var betrokkenen=await loadBetrokkenenData();
     var t=matchTaakByTitel(e.subject,taken);
-    if(!t){
-      taakEl.innerHTML='<div class="emptyhint">Nog niet gekoppeld aan een SPoW-taak. Dit is een gewone agenda-afspraak; matching gebeurt vandaag alleen op exact gelijke titel, en de meeste vergadertitels lijken niet op een taaknaam. Een echte koppeling (handmatig, of via een nieuw veld) is nog niet gebouwd.</div>';
-      return;
+    renderHulpmiddelen(t,betrokkenen);
+    renderAdvies(t);
+    renderChecklist(e,t);
+    if(t){
+      var st=STATUS_TAAK[t.spow_status]||"—";
+      var hEl=document.getElementById("w-hulpmiddelen");
+      hEl.innerHTML='<div class="fitem"><b>'+esc(t.spow_titel)+'</b><span> · '+esc(st)+(t.spow_ticket?" · "+esc(t.spow_ticket):"")+'</span></div>'+hEl.innerHTML;
     }
-    var st=STATUS_TAAK[t.spow_status]||"—";
-    var betrList=betrokkenen.filter(function(b){ return b._spow_taak_value===t.spow_taakid; })
-      .sort(function(a,b){ return (a.spow_volgorde||0)-(b.spow_volgorde||0); });
-    var betrHtml=betrList.length?betrList.map(function(b){
-      var rol=ROL_BETROKKENE[b.spow_rol]||"—";
-      return '<div style="font-size:11px;padding:3px 0;">'+esc(b.spow_betrokkenenaam)+' <span style="color:var(--faint);">('+esc(rol)+(b.spow_organisatie?", "+esc(b.spow_organisatie):"")+')</span>'+
-        (b.spow_bereikbaarheid?' — <span style="color:var(--dim);">'+esc(b.spow_bereikbaarheid)+'</span>':'')+'</div>';
-    }).join(""):'<div style="font-size:11px;color:var(--faint);">Geen escalatielijst vastgelegd voor deze taak.</div>';
-    var runbookHtml=dagVeld("Runbook",t.spow_runbook);
-    var extraHtml=dagVeld("Afspraken",t.spow_afspraken)+dagVeld("Testplan",t.spow_testplan)+dagVeld("Terugvalplan",t.spow_terugval)+dagVeld("Downtime",t.spow_downtime)+dagVeld("Les",t.spow_les);
-    taakEl.innerHTML='<div class="fitem"><b>'+esc(t.spow_titel)+'</b><span> · '+esc(st)+(t.spow_ticket?" · "+esc(t.spow_ticket):"")+'</span></div>'+
-      runbookHtml+extraHtml+
-      '<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px;"><b style="font-size:10.5px;color:var(--faint);text-transform:uppercase;">Escalatielijst</b>'+betrHtml+'</div>';
-  }catch(e2){ taakEl.innerHTML='<div class="emptyhint">Kon niet zoeken naar een gekoppelde taak: '+esc(e2.message)+'</div>'; }
+  }catch(e2){
+    document.getElementById("w-hulpmiddelen").innerHTML='<div class="emptyhint">Kon niet zoeken naar een gekoppelde taak: '+esc(e2.message)+'</div>';
+    document.getElementById("w-advies").innerHTML='<div class="emptyhint">Kon niet zoeken naar een gekoppelde taak: '+esc(e2.message)+'</div>';
+  }
+}
+/* ============ Hulpmiddelen / Advies&kennis / Checklist / Logboek / Terugkoppeling — het volledige
+   werkvenster, op Cliftons verzoek van 13 sept 2026 (avond, zie Visie/Fasering-doc sectie 11).
+   Checklist/logboek/terugkoppeling zijn bewust lokaal (localStorage) i.p.v. een nieuwe Dataverse-
+   tabel: die tabellen bestaan nog niet (blijven wachten op de bekende "Modify Shared Resources"-
+   blokkade), en lokaal opslaan is beter dan niets kunnen vastleggen. Duidelijk zo gelabeld in de UI,
+   nergens doen alsof dit al gedeeld/blijvend is. */
+function renderHulpmiddelen(taak,betrokkenen){
+  var el=document.getElementById("w-hulpmiddelen");
+  if(!taak){ el.innerHTML='<div class="emptyhint">Geen gekoppelde SPoW-taak gevonden (matching gebeurt alleen op exact gelijke titel), dus geen escalatielijst bekend. Gebruik hieronder "Meld iets dat ontbreekt" als je iets specifieks nodig hebt.</div>'; return; }
+  var betrList=(betrokkenen||[]).filter(function(b){ return b._spow_taak_value===taak.spow_taakid; }).sort(function(a,b){ return (a.spow_volgorde||0)-(b.spow_volgorde||0); });
+  el.innerHTML=betrList.length?betrList.map(function(b){
+    var rol=ROL_BETROKKENE[b.spow_rol]||"—";
+    return '<div class="fitem"><b>'+esc(b.spow_betrokkenenaam)+'</b><span> · '+esc(rol)+(b.spow_organisatie?", "+esc(b.spow_organisatie):"")+'</span></div>';
+  }).join(""):'<div class="emptyhint">Geen escalatielijst vastgelegd voor deze taak.</div>';
+}
+function renderAdvies(taak){
+  var el=document.getElementById("w-advies");
+  var zoek=document.getElementById("wZoek");
+  if(!taak){
+    el.innerHTML='<div class="emptyhint">Geen gekoppelde SPoW-taak gevonden, dus geen runbook/afspraken/testplan om te doorzoeken.</div>';
+    zoek.oninput=null; zoek.value="";
+    return;
+  }
+  var secties=[["Runbook",taak.spow_runbook],["Afspraken",taak.spow_afspraken],["Testplan",taak.spow_testplan],["Terugvalplan",taak.spow_terugval],["Downtime",taak.spow_downtime],["Les",taak.spow_les]];
+  function render(filter){
+    var f=(filter||"").trim().toLowerCase();
+    var html=secties.filter(function(s){ return s[1]; }).map(function(s){
+      if(f&&String(s[1]).toLowerCase().indexOf(f)===-1) return "";
+      return dagVeld(s[0],s[1]);
+    }).join("");
+    el.innerHTML=html||'<div class="emptyhint">'+(f?'Geen match voor "'+esc(filter)+'".':"Geen van deze velden is gevuld voor deze taak.")+'</div>';
+  }
+  zoek.value="";
+  render("");
+  zoek.oninput=function(){ render(zoek.value); };
+}
+function wvKey(e){ return "spow_wv_"+(e&&e.id?e.id:(e&&e.subject?encodeURIComponent(e.subject):"onbekend")); }
+function wvLoad(key,fallback){ try{ var raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; }catch(err){ return fallback; } }
+function wvSave(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(err){ /* privévenster/vol quotum: bewust genegeerd, mag de pagina niet laten crashen */ } }
+function renderChecklist(e,taak){
+  var key=wvKey(e)+"_checklist";
+  var items=wvLoad(key,null);
+  if(!items){
+    items=taak?[
+      {tekst:"Notities/afspraken doorgenomen",af:false},
+      {tekst:"Runbook gevolgd",af:false},
+      {tekst:"Getest volgens testplan",af:false},
+      {tekst:"Afgerond en gedocumenteerd (les toegevoegd)",af:false}
+    ]:[
+      {tekst:"Voorbereiden",af:false},
+      {tekst:"Uitvoeren",af:false},
+      {tekst:"Controleren",af:false},
+      {tekst:"Afronden",af:false}
+    ];
+    wvSave(key,items);
+  }
+  var el=document.getElementById("w-checklist");
+  el.innerHTML=items.length?items.map(function(it,i){
+    return '<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12px;'+(it.af?'color:var(--faint);text-decoration:line-through;':'')+'"><input type="checkbox" data-cl-idx="'+i+'" '+(it.af?"checked":"")+' style="margin-top:3px;">'+esc(it.tekst)+'</label>';
+  }).join(""):'<div class="emptyhint">Nog geen stappen.</div>';
+  el.querySelectorAll("[data-cl-idx]").forEach(function(cb){
+    cb.addEventListener("change",function(){
+      items[parseInt(cb.dataset.clIdx,10)].af=cb.checked;
+      wvSave(key,items);
+      renderChecklist(e,taak);
+    });
+  });
+  document.getElementById("wChecklistAdd").onclick=function(){
+    var inp=document.getElementById("wChecklistNieuw");
+    var t=inp.value.trim();
+    if(!t) return;
+    items.push({tekst:t,af:false});
+    wvSave(key,items);
+    inp.value="";
+    renderChecklist(e,taak);
+  };
+}
+function renderLogboek(e){
+  var key=wvKey(e)+"_logboek";
+  var items=wvLoad(key,[]);
+  var el=document.getElementById("w-logboek");
+  el.innerHTML=items.length?items.slice().reverse().map(function(it){
+    return '<div class="fitem"><b>'+esc(it.tijd)+'</b><span> — '+esc(it.tekst)+'</span></div>';
+  }).join(""):'<div class="emptyhint">Nog niets vastgelegd.</div>';
+  document.getElementById("wLogAdd").onclick=function(){
+    var inp=document.getElementById("wLogNieuw");
+    var t=inp.value.trim();
+    if(!t) return;
+    var nu=new Date();
+    items.push({tijd:pad2(nu.getDate())+"-"+pad2(nu.getMonth()+1)+" "+pad2(nu.getHours())+":"+pad2(nu.getMinutes()),tekst:t});
+    wvSave(key,items);
+    inp.value="";
+    renderLogboek(e);
+  };
+}
+function renderSurvey(e){
+  var key=wvKey(e)+"_survey";
+  var items=wvLoad(key,[]);
+  var el=document.getElementById("w-survey");
+  var scoreHtml='<div style="display:flex;gap:4px;margin-bottom:6px;">'+[1,2,3,4,5].map(function(n){ return '<button class="btn ghost" data-score="'+n+'" style="padding:4px 9px;font-size:11px;">'+n+'</button>'; }).join("")+'</div>';
+  el.innerHTML=scoreHtml+
+    '<textarea id="wSurveyTekst" placeholder="Kritiek, opmerking, of kudos…" rows="2" style="width:100%;box-sizing:border-box;padding:6px 8px;background:var(--panel2);border:1px solid var(--line);color:inherit;border-radius:4px;resize:vertical;"></textarea>'+
+    '<div style="margin-top:6px;">'+(items.length?items.slice().reverse().map(function(it){ return '<div class="fitem"><b>'+esc(String(it.score))+'/5</b><span> — '+esc(it.tekst||"(geen toelichting)")+'</span></div>'; }).join(""):'<div class="emptyhint">Nog geen terugkoppeling gegeven.</div>')+'</div>';
+  el.querySelectorAll("[data-score]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var tekst=document.getElementById("wSurveyTekst").value.trim();
+      items.push({score:parseInt(b.dataset.score,10),tekst:tekst,tijd:new Date().toISOString()});
+      wvSave(key,items);
+      renderSurvey(e);
+    });
+  });
+}
+/* ============ "Meld iets dat ontbreekt" -> nieuw spow_onboarding-record, op Cliftons verzoek
+   (sectie 11.5): geen nieuw platform, dit hergebruikt de al bestaande, al live tabel achter het
+   "Werk"-tabblad. De keuzelijst-nummers (richting/soort/status) worden NIET hardgecodeerd geraden —
+   die verschillen per omgeving en worden hier live opgezocht via de Dataverse-metadata (zelfde
+   voorzichtigheid als bij het uitlezen van FormattedValue voor het Werk-scherm). Aanvrager (lookup
+   naar spow_persoon) wordt bewust NIET automatisch gezet: de exacte naam van die navigatie-eigenschap
+   is niet met zekerheid bekend vanuit deze omgeving, en fout gokken daarvan zou de hele aanmaak laten
+   mislukken - beter een correct, iets onvolledig record dan een gegokt schrijfpad. */
+var CHOICE_CACHE={};
+async function resolveChoiceValue(entity,attr,label){
+  var key=entity+"."+attr;
+  if(!CHOICE_CACHE[key]){
+    var meta=await api("EntityDefinitions(LogicalName='"+entity+"')/Attributes(LogicalName='"+attr+"')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet");
+    var opts=(meta.OptionSet&&meta.OptionSet.Options)||[];
+    var map={};
+    opts.forEach(function(o){
+      var lbl=o.Label&&o.Label.UserLocalizedLabel&&o.Label.UserLocalizedLabel.Label;
+      if(lbl) map[lbl.trim().toLowerCase()]=o.Value;
+    });
+    CHOICE_CACHE[key]=map;
+  }
+  var v=CHOICE_CACHE[key][String(label).trim().toLowerCase()];
+  if(v===undefined) throw new Error('Keuzewaarde "'+label+'" niet gevonden op '+attr+" — bestaat deze optie (nog) niet in Dataverse?");
+  return v;
+}
+async function wMeldVerstuurClick(){
+  var titelEl=document.getElementById("wMeldTitel"), tekstEl=document.getElementById("wMeldTekst"), statusEl=document.getElementById("w-meldstatus");
+  var titel=titelEl.value.trim(), tekst=tekstEl.value.trim();
+  if(!titel){ statusEl.textContent="Vul een titel in."; return; }
+  var btn=document.getElementById("wMeldVerstuur");
+  btn.disabled=true; statusEl.textContent="Bezig…";
+  try{
+    var richtingVal=await resolveChoiceValue("spow_onboarding","spow_richting","Onboarden");
+    var soortVal=await resolveChoiceValue("spow_onboarding","spow_soort","Tool");
+    var statusVal=await resolveChoiceValue("spow_onboarding","spow_status","Ingediend");
+    var volledigeTitel=tekst?(titel+" — "+tekst):titel;
+    if(volledigeTitel.length>200) volledigeTitel=volledigeTitel.slice(0,197)+"...";
+    await apiPost("spow_onboardings",{spow_titel:volledigeTitel,spow_richting:richtingVal,spow_soort:soortVal,spow_status:statusVal});
+    statusEl.textContent="Aangemaakt in Onboarding & offboarding (zie het Werk-tabblad). Aanvrager is niet automatisch ingevuld — vul dat evt. zelf aan.";
+    titelEl.value=""; tekstEl.value="";
+  }catch(err){
+    statusEl.textContent="Aanmaken mislukt: "+err.message;
+  }finally{
+    btn.disabled=false;
+  }
 }
 /* Zet Outlooks HTML-notities om naar platte tekst i.p.v. de ruwe HTML in de pagina te zetten —
    bewust nooit externe HTML direct in innerHTML plaatsen (veiligheid), dus tags eruit en de
@@ -2391,18 +2632,23 @@ function stripHtmlNotitie(html){
   s=s.replace(/\n{3,}/g,"\n\n").replace(/[ \t]+\n/g,"\n").trim();
   return s;
 }
-/* ============ "Beter moment vinden" — Cliftons verzoek van 13 sept 2026 (avond): een SPoW-agenda
-   die alleen een kopie van Outlook is heeft weinig waarde (dat kan hij al via Teams/Outlook/webmail).
-   findMeetingTimes is Microsofts eigen suggestie-API en weegt verplichte deelnemers al standaard
-   zwaarder dan optionele bij het kiezen van een moment — precies het idee dat Clifton beschreef, en
-   vergt geen bredere scope dan de al bestaande Calendars.Read. Dit doet alleen een voorstel: er wordt
-   niets aangemaakt of gewijzigd in Outlook. Een echte "1 druk op de knop"-aanmaakflow vergt
-   Calendars.ReadWrite (schrijftoegang) — een nieuw, zij het klein en persoonlijk, besluit dat nog
-   niet aan Clifton is voorgelegd; dat is met opzet niet gebouwd voordat hij dat goedkeurt. */
+/* ============ "Beter moment vinden" + daadwerkelijk verplaatsen — Cliftons verzoek van 13 sept
+   2026 (avond): een SPoW-agenda die alleen een kopie van Outlook is heeft weinig waarde (dat kan hij
+   al via Teams/Outlook/webmail). findMeetingTimes is Microsofts eigen suggestie-API en weegt
+   verplichte deelnemers al standaard zwaarder dan optionele bij het kiezen van een moment — precies
+   het idee dat Clifton beschreef.
+   Clifton vroeg vervolgens of dit "met 1 druk op de knop" kon, zoals Outlooks eigen "Schedule with
+   Copilot". Die specifieke Outlook/Copilot-knop is een gesloten functie zonder publieke API — daar
+   kan SPoW niet zelf in meeliften. Wel gebouwd: hetzelfde eindresultaat, rechtstreeks via Graph.
+   Clifton gaf op 13 sept expliciet akkoord voor de daarvoor benodigde nieuwe scope
+   (Calendars.ReadWrite i.p.v. alleen Calendars.Read) — dus dit verplaatst nu, na een keuze,
+   de afspraak ook echt (met een tussenstap ter bevestiging, want dit stuurt Outlook-
+   updatemeldingen naar de echte deelnemers). */
 function fmtSuggestieTijd(iso){
   var d=new Date(iso);
   return DAG_NAMEN[(d.getUTCDay()+6)%7]+" "+d.getUTCDate()+" "+MND_KORT[d.getUTCMonth()]+", "+pad2(d.getUTCHours())+":"+pad2(d.getUTCMinutes());
 }
+var LAATSTE_SUGGESTIES=[];
 async function findBeterMoment(e){
   var findEl=document.getElementById("a-findtime");
   var btn=document.getElementById("aFindTime");
@@ -2413,14 +2659,14 @@ async function findBeterMoment(e){
   }
   btn.disabled=true; btn.textContent="Bezig…";
   findEl.innerHTML='<div class="emptyhint">Zoeken naar geschikte momenten…</div>';
+  var duurMin=30;
+  if(e.start&&e.end&&!e.isAllDay){
+    var a=new Date(e.start.dateTime+"Z"), b=new Date(e.end.dateTime+"Z");
+    var dm=Math.round((b-a)/60000);
+    if(dm>0) duurMin=dm;
+  }
   try{
     var token=await getGraphTokenSilentOnly();
-    var duurMin=30;
-    if(e.start&&e.end&&!e.isAllDay){
-      var a=new Date(e.start.dateTime+"Z"), b=new Date(e.end.dateTime+"Z");
-      var d=Math.round((b-a)/60000);
-      if(d>0) duurMin=d;
-    }
     var nu=new Date();
     var later=new Date(nu.getTime()+7*86400000);
     var body={
@@ -2434,24 +2680,82 @@ async function findBeterMoment(e){
     var json=await res.json().catch(function(){return {};});
     if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
     var sugg=(json.meetingTimeSuggestions||[]).slice(0,5);
+    LAATSTE_SUGGESTIES=sugg;
     if(!sugg.length){
       findEl.innerHTML='<div class="emptyhint">Geen goed passend moment gevonden binnen 7 dagen (of niemands agenda kon geraadpleegd worden).</div>';
     }else{
-      findEl.innerHTML=sugg.map(function(s){
+      findEl.innerHTML=sugg.map(function(s,i){
         var slot=s.meetingTimeSlot&&s.meetingTimeSlot.start?s.meetingTimeSlot.start.dateTime:null;
         var conf=s.confidence!=null?Math.round(s.confidence)+"% kans dat iedereen kan":"";
         if(!slot) return "";
-        return '<div class="fitem"><b>'+esc(fmtSuggestieTijd(slot))+'</b><span> · '+esc(conf)+'</span></div>';
+        return '<div class="fitem" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">'+
+          '<span><b>'+esc(fmtSuggestieTijd(slot))+'</b><span> · '+esc(conf)+'</span></span>'+
+          '<button class="btn ghost" data-verplaats-idx="'+i+'" style="padding:3px 8px;font-size:10.5px;">Verplaats hierheen</button></div>';
       }).join("");
+      findEl.querySelectorAll("[data-verplaats-idx]").forEach(function(b){
+        b.addEventListener("click",function(){ vraagVerplaatsBevestiging(b,e,duurMin); });
+      });
     }
   }catch(err){ findEl.innerHTML='<div class="emptyhint">Kon geen moment zoeken: '+esc(err.message)+'</div>'; }
   finally{ btn.disabled=false; btn.textContent="Zoek een beter moment"; }
+}
+/* Bewust twee klikken i.p.v. één: het eerste klik toont alleen een bevestiging in dezelfde knop
+   (geen native confirm()-popup, past bij de rest van de app), pas het tweede klik voert de
+   PATCH echt uit. Dit stuurt Outlook-updatemeldingen naar de echte deelnemers, dus geen stille
+   1-klik-actie zoals bij interne Dataverse-schrijfacties. */
+function vraagVerplaatsBevestiging(btn,e,duurMin){
+  if(btn.dataset.confirmed==="1"){
+    verplaatsAfspraak(btn,e,duurMin);
+    return;
+  }
+  btn.dataset.confirmed="1";
+  var origineel=btn.textContent;
+  btn.textContent="Zeker weten? (stuurt update naar deelnemers)";
+  btn.style.color="var(--warn)";
+  setTimeout(function(){ if(btn.dataset.confirmed==="1"&&btn.textContent.indexOf("Zeker")===0){ btn.dataset.confirmed=""; btn.textContent=origineel; btn.style.color=""; } },5000);
+}
+async function verplaatsAfspraak(btn,e,duurMin){
+  var i=parseInt(btn.dataset.verplaatsIdx,10);
+  var s=LAATSTE_SUGGESTIES[i];
+  var slot=s&&s.meetingTimeSlot&&s.meetingTimeSlot.start?s.meetingTimeSlot.start.dateTime:null;
+  if(!slot||!e.id) return;
+  btn.disabled=true; btn.textContent="Bezig…";
+  try{
+    var token=await getGraphTokenSilentOnly();
+    /* BELANGRIJK: findMeetingTimes geeft dateTime terug als kale wall-clock string (geen "Z", geen
+       offset) in de tijdzone die we zelf opgaven (UTC, zie timeConstraint in findBeterMoment).
+       new Date(string) zou dit door de browser als LOKALE tijd interpreteren (ECMA-262-regels voor
+       een offset-loze ISO-string), niet als UTC - op een niet-UTC systeem (bv. Amsterdam, UTC+2 in
+       september) gaf dat tot 2 uur afwijking: een afspraak zou naar het VERKEERDE tijdstip worden
+       verplaatst en Outlook zou deelnemers een update sturen met een onjuiste tijd. Daarom hier de
+       cijfers rechtstreeks met een regex uit de string halen en met Date.UTC() omzetten naar een
+       epoch-tijdstip, en bij het terugschrijven uitsluitend UTC-getters gebruiken - dit werkt
+       identiek ongeacht in welke tijdzone de browser van de gebruiker zelf draait. */
+    var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/.exec(slot);
+    if(!m) throw new Error("Onverwacht tijdformaat ontvangen: "+slot);
+    var startMs=Date.UTC(parseInt(m[1],10),parseInt(m[2],10)-1,parseInt(m[3],10),parseInt(m[4],10),parseInt(m[5],10),parseInt(m[6],10));
+    var eindMs=startMs+duurMin*60000;
+    function fmtUTC(ms){
+      var d=new Date(ms);
+      return d.getUTCFullYear()+"-"+pad2(d.getUTCMonth()+1)+"-"+pad2(d.getUTCDate())+"T"+pad2(d.getUTCHours())+":"+pad2(d.getUTCMinutes())+":00";
+    }
+    var body={
+      start:{dateTime:fmtUTC(startMs),timeZone:"UTC"},
+      end:{dateTime:fmtUTC(eindMs),timeZone:"UTC"}
+    };
+    var res=await fetch("https://graph.microsoft.com/v1.0/me/events/"+encodeURIComponent(e.id),{method:"PATCH",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    var json=await res.json().catch(function(){return {};});
+    if(!res.ok) throw new Error((json.error&&json.error.message)||("HTTP "+res.status));
+    document.getElementById("a-findtime").innerHTML='<div class="emptyhint">Verplaatst. Outlook stuurt de update naar de deelnemers.</div>';
+    window.closeWerkvenster();
+    await loadEigenAgenda();
+  }catch(err){ document.getElementById("a-findtime").innerHTML='<div class="emptyhint">Verplaatsen mislukt: '+esc(err.message)+'</div>'; btn.disabled=false; btn.textContent="Verplaats hierheen"; }
 }
 
 /* ============ Personen: GAL-zoeken + on/offboarden (User.ReadBasic.All), 12 sept 2026 ============
    Status: scope toegekend en tenant-breed geconsenteerd (zie projectlog sectie 68), maar deze concrete
    zoekfunctie en de schrijfacties naar spow_persoon zijn nog niet met een echte, gewone login getest.
-   Los van GRAPH_SCOPES (Calendars.Read) gehouden, zodat een falende scope de ander niet meesleept. */
+   Los van GRAPH_SCOPES (Calendars.ReadWrite) gehouden, zodat een falende scope de ander niet meesleept. */
 var GRAPH_PEOPLE_SCOPES=["User.ReadBasic.All"];
 async function getGraphPeopleToken(){
   try{ var r=await msalInstance.acquireTokenSilent({scopes:GRAPH_PEOPLE_SCOPES}); return r.accessToken; }
