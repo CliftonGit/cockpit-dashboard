@@ -669,9 +669,13 @@ main{min-width:0;display:flex;flex-direction:column;}
         </div>
       </div>
       <div class="rl-lens" id="rl-dag" hidden>
-        <div class="card" style="max-width:640px;">
-          <div class="card-h"><h2>Dag</h2><span class="count">runbook van de dag</span></div>
-          <p style="margin:0;color:var(--dim);">Volgende stap na Week — nog niet gebouwd. Komt op basis van de runbook-velden op <code>spow_taak</code> (afspraken/testplan/terugval/downtime) en <code>spow_betrokkene</code> (escalatielijst, 23 records bestaan al).</p>
+        <div class="grid">
+          <div class="card wide">
+            <div class="card-h"><h2>Dag — runbook van de dag</h2><span class="count" id="cnt-dag">–</span></div>
+            <div style="margin-bottom:10px;"><input type="date" id="dagPicker" style="background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:5px 8px;"></div>
+            <p style="margin:0 0 10px;color:var(--faint);font-size:12px;">Per change die deze dag actief is: status, ticket, en (indien ingevuld) runbook/afspraken/testplan/terugvalplan/downtime/les uit <code>spow_taak</code>, plus de escalatielijst uit <code>spow_betrokkene</code>. Eerlijk: <code>spow_runbook</code> en <code>spow_ticket</code> staan op alle 68 taken, maar afspraken/les staan nog nergens ingevuld en testplan/terugval/downtime/escalatielijst bestaan tot nu toe alleen op 2 taken (de PRE/UITVOER-reeks) — voor de meeste changes zie je hier dus alleen status, ticket en runbook.</p>
+            <div class="exp" id="list-dag"><div class="emptyhint">Laden…</div></div>
+          </div>
         </div>
       </div>
     </section>
@@ -1211,6 +1215,8 @@ var SOORT_CI={420690000:"Firewall",420690001:"Switch",420690002:"Router",4206900
 var VENSTER_SOORT={420690000:"Changevenster",420690001:"Freeze",420690002:"Onderhoud",420690003:"Piekperiode",420690004:"Afwezigheid"};
 var MND_KORT=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
 var DAG_NAMEN=["ma","di","wo","do","vr","za","zo"];
+/* spow_betrokkene (Dag-lens, sectie 74) — labels rechtstreeks uit de Dataverse-optionset overgenomen. */
+var ROL_BETROKKENE={420690000:"Coordinatie",420690001:"Realisatie",420690002:"Informatief",420690003:"Test",420690004:"Escalatie",420690005:"Standby",420690006:"Goedkeuring"};
 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function fmtDate(s){ if(!s) return null; var d=new Date(s); return d.toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"}); }
@@ -1251,7 +1257,7 @@ async function apiPatch(path,body){
   return res;
 }
 
-var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[],vensters:[]};
+var CACHE={services:[],persoons:[],cis:[],portalen:[],resume:[],taken:[],spofs:[],slaklassen:[],roadmapTaken:[],vensters:[],betrokkenen:[]};
 
 function setBanner(text,ok){
   var b=document.getElementById("statusBanner");
@@ -1547,7 +1553,7 @@ function wireRoadmapLenses(){
 }
 async function loadRoadmapTakenData(force){
   if(CACHE.roadmapTaken.length && !force) return CACHE.roadmapTaken;
-  var data=await api("spow_taaks?$select=spow_taakid,spow_titel,spow_status,spow_categorie,spow_prioriteit,spow_start,spow_eind,spow_urengepland,spow_urengerealiseerd,spow_voortgang&$expand=spow_Persoon($select=spow_naam),spow_Dienst($select=spow_servicename)&$top=1000");
+  var data=await api("spow_taaks?$select=spow_taakid,spow_titel,spow_status,spow_categorie,spow_prioriteit,spow_start,spow_eind,spow_urengepland,spow_urengerealiseerd,spow_voortgang,spow_afspraken,spow_testplan,spow_terugval,spow_downtime,spow_impactbevestigd,spow_les,spow_runbook,spow_bronlink,spow_ticket&$expand=spow_Persoon($select=spow_naam),spow_Dienst($select=spow_servicename)&$top=1000");
   CACHE.roadmapTaken=data.value;
   return CACHE.roadmapTaken;
 }
@@ -1672,12 +1678,62 @@ async function loadWeek(){
       ('<div style="color:var(--faint);font-size:11.5px;">Terugkerende afspraak (geen vaste datum, geldt elke week): '+recurring.map(function(v){return esc(v.spow_venstername+" — "+v.spow_terugkerend);}).join("; ")+'</div>'):"";
   }catch(e){ grid.innerHTML='<div class="emptyhint">Kon weekagenda niet laden: '+esc(e.message)+'</div>'; }
 }
+async function loadBetrokkenenData(force){
+  if(CACHE.betrokkenen.length && !force) return CACHE.betrokkenen;
+  var data=await api("spow_betrokkenes?$select=spow_betrokkeneid,spow_betrokkenenaam,spow_organisatie,spow_bereikbaarheid,spow_rol,spow_volgorde,_spow_taak_value&$orderby=spow_volgorde asc");
+  CACHE.betrokkenen=data.value;
+  return CACHE.betrokkenen;
+}
+function pad2(n){ return (n<10?"0":"")+n; }
+function dagVeld(label,val){
+  if(!val) return "";
+  return '<details style="margin-top:4px;"><summary style="cursor:pointer;font-size:11px;color:var(--accent);">'+esc(label)+'</summary><div style="white-space:pre-wrap;font-size:11px;color:var(--dim);padding:4px 0 0;">'+esc(val)+'</div></details>';
+}
+async function loadDag(){
+  var picker=document.getElementById("dagPicker");
+  if(picker && !picker.value){ var n=new Date(); picker.value=n.getFullYear()+"-"+pad2(n.getMonth()+1)+"-"+pad2(n.getDate()); }
+  var el=document.getElementById("list-dag"), cnt=document.getElementById("cnt-dag");
+  if(!el) return;
+  try{
+    var taken=await loadRoadmapTakenData();
+    var betrokkenen=await loadBetrokkenenData();
+    var ds=(picker&&picker.value)||"";
+    var dayTasks=taken.filter(function(t){
+      var s=t.spow_start?String(t.spow_start).slice(0,10):null;
+      var e=t.spow_eind?String(t.spow_eind).slice(0,10):s;
+      if(!s) s=e;
+      return s && e && s<=ds && e>=ds;
+    });
+    if(cnt) cnt.textContent=dayTasks.length+" changes actief op "+esc(ds);
+    if(!dayTasks.length){ el.innerHTML='<div class="emptyhint">Geen changes actief op deze dag.</div>'; return; }
+    el.innerHTML=dayTasks.map(function(t){
+      var st=STATUS_TAAK[t.spow_status]||"—";
+      var betrList=betrokkenen.filter(function(b){ return b._spow_taak_value===t.spow_taakid; })
+        .sort(function(a,b){ return (a.spow_volgorde||0)-(b.spow_volgorde||0); });
+      var betrHtml=betrList.length?betrList.map(function(b){
+        var rol=ROL_BETROKKENE[b.spow_rol]||"—";
+        return '<div style="font-size:11px;padding:3px 0;">'+esc(b.spow_betrokkenenaam)+' <span style="color:var(--faint);">('+esc(rol)+(b.spow_organisatie?", "+esc(b.spow_organisatie):"")+')</span>'+
+          (b.spow_bereikbaarheid?' — <span style="color:var(--dim);">'+esc(b.spow_bereikbaarheid)+'</span>':'')+'</div>';
+      }).join(""):'<div style="font-size:11px;color:var(--faint);">Geen escalatielijst vastgelegd voor deze change.</div>';
+      var runbookHtml=dagVeld("Runbook",t.spow_runbook);
+      var extraHtml=dagVeld("Afspraken",t.spow_afspraken)+dagVeld("Testplan",t.spow_testplan)+dagVeld("Terugvalplan",t.spow_terugval)+dagVeld("Downtime",t.spow_downtime)+dagVeld("Les",t.spow_les);
+      return '<div style="background:var(--panel2);padding:10px 12px;display:grid;gap:6px;">'+
+        '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><b>'+esc(t.spow_titel)+'</b><span class="days grey">'+esc(st)+(t.spow_ticket?" · "+esc(t.spow_ticket):"")+'</span></div>'+
+        (t.spow_impactbevestigd?'<div style="font-size:11px;color:var(--good);">Impact bevestigd</div>':'')+
+        runbookHtml+extraHtml+
+        '<div style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px;"><b style="font-size:10.5px;color:var(--faint);text-transform:uppercase;">Escalatielijst</b>'+betrHtml+'</div>'+
+      '</div>';
+    }).join("");
+  }catch(e){ el.innerHTML='<div class="emptyhint">Kon dagoverzicht niet laden: '+esc(e.message)+'</div>'; }
+}
 function wireRoadmap(){
   wireRoadmapLenses();
   var mp=document.getElementById("maandPicker");
   if(mp) mp.addEventListener("change",loadMaand);
   var wp=document.getElementById("weekPicker");
   if(wp) wp.addEventListener("change",loadWeek);
+  var dp=document.getElementById("dagPicker");
+  if(dp) dp.addEventListener("change",loadDag);
 }
 
 async function loadWerk(){
@@ -1773,7 +1829,7 @@ async function openServiceDetail(id){
 async function loadAll(){
   setBanner("Live · verbonden met Dataverse",true);
   await loadResume();
-  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMaand(),loadWeek()]);
+  await Promise.all([loadNextActies(),loadVerval(),loadLeegDiensten(),loadPortalenQuick(),loadTeam(),loadTowers(),renderKennis(""),loadServices(),loadWerk(),renderPersonenBeheer(),loadTowerlead(),loadSpof(),loadMaand(),loadWeek(),loadDag()]);
 }
 
 /* ============ Vrij/bezet-test (Calendars.Read) — losstaand, handmatig, geen onderdeel van loadAll ============
