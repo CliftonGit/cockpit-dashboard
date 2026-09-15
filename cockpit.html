@@ -182,6 +182,11 @@ main{min-width:0;display:flex;flex-direction:column;}
 .res{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
 .res-row{background:var(--panel2);padding:11px 13px;display:grid;grid-template-columns:3px minmax(0,1fr) auto;gap:12px;align-items:start;text-align:left;width:100%;transition:background .16s;}
 .res-row:hover{background:var(--panel);}
+.resizable-panel{resize:vertical;overflow-y:auto;min-height:110px;max-height:75vh;}
+#list-resume.resizable-panel{height:300px;}
+#list-nextacties.resizable-panel{height:230px;}
+#list-verval.resizable-panel{height:230px;}
+.resize-hint{margin:6px 0 0;font-size:10.5px;color:var(--faint);}
 .pip{width:3px;align-self:stretch;background:var(--faint);}
 .pip.hot{background:var(--alert);box-shadow:0 0 12px var(--alert);}
 .pip.mid{background:var(--warn);} .pip.ok{background:var(--good);}
@@ -202,8 +207,10 @@ main{min-width:0;display:flex;flex-direction:column;}
 .fitem.fitem-wide b{word-break:break-all;white-space:normal;line-height:1.4;}
 
 .exp{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);}
-.exp-row{background:var(--panel2);padding:9px 12px;display:grid;grid-template-columns:minmax(0,1fr) 92px 54px;gap:10px;align-items:center;font-size:13px;}
+.exp-row{background:var(--panel2);padding:9px 12px;display:grid;grid-template-columns:minmax(0,1fr) 92px 54px;gap:10px;align-items:center;font-size:13px;text-align:left;width:100%;}
 .exp-row .who{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-align:right;}
+button.exp-row{transition:background .16s;}
+button.exp-row:hover{background:var(--panel);}
 .days{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;}
 .days.red{color:var(--alert);} .days.amber{color:var(--warn);} .days.grey{color:var(--faint);}
 
@@ -248,7 +255,9 @@ main{min-width:0;display:flex;flex-direction:column;}
 .load.hi{color:var(--alert);} .load.ok{color:var(--good);}
 
 .prom{display:flex;flex-direction:column;gap:8px;}
-.prom div{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;font-size:13px;align-items:baseline;}
+.prom div,.prom button.prom-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;font-size:13px;align-items:baseline;}
+.prom button.prom-row{width:100%;text-align:left;padding:3px 4px;margin:-3px -4px;border-radius:3px;transition:background .16s;}
+.prom button.prom-row:hover{background:var(--panel2);}
 .prom i{width:6px;height:6px;background:var(--accent);display:block;margin-top:6px;}
 .prom span{color:var(--dim);}
 .prom em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint);white-space:nowrap;}
@@ -520,12 +529,13 @@ main{min-width:0;display:flex;flex-direction:column;}
       <div class="grid">
         <div class="card">
           <div class="card-h"><h2>Waar je gebleven was</h2><span class="count" id="cnt-resume">–</span></div>
-          <div class="res" id="list-resume"><div class="emptyhint">Laden…</div></div>
+          <div class="res resizable-panel" id="list-resume" data-resize-key="resume"><div class="emptyhint">Laden…</div></div>
+          <p class="resize-hint">Sleep de rechterhoek onderin om dit vak groter of kleiner te maken — dat blijft daarna zo staan.</p>
         </div>
 
         <div class="card">
           <div class="card-h"><h2>Wat je nog te doen staat</h2><span class="count">volgacties uit hervatpunten</span></div>
-          <div class="prom" id="list-nextacties"><div class="emptyhint">Laden…</div></div>
+          <div class="prom resizable-panel" id="list-nextacties" data-resize-key="nextacties"><div class="emptyhint">Laden…</div></div>
         </div>
 
         <div class="card">
@@ -539,7 +549,7 @@ main{min-width:0;display:flex;flex-direction:column;}
 
         <div class="card">
           <div class="card-h"><h2>Verloopt binnenkort</h2><span class="count" id="cnt-verval">–</span></div>
-          <div class="exp" id="list-verval"><div class="emptyhint">Laden…</div></div>
+          <div class="exp resizable-panel" id="list-verval" data-resize-key="verval"><div class="emptyhint">Laden…</div></div>
         </div>
 
         <div class="card">
@@ -1036,11 +1046,11 @@ main{min-width:0;display:flex;flex-direction:column;}
   <div class="sheet">
     <div id="d-head"><h3 id="d-title">–</h3><p class="lead" id="d-sub"></p></div>
     <dl class="kv" id="d-kv"></dl>
-    <div class="sheet-sec">
+    <div class="sheet-sec" id="d-cis-sec">
       <h4>Configuratie-items</h4>
       <div class="feed" id="d-cis"><div class="emptyhint">–</div></div>
     </div>
-    <div class="sheet-sec">
+    <div class="sheet-sec" id="d-portalen-sec">
       <h4>Portalen</h4>
       <div class="feed" id="d-portalen"><div class="emptyhint">–</div></div>
     </div>
@@ -1446,7 +1456,7 @@ function setBanner(text,ok){
 async function loadResume(){
   var el=document.getElementById("list-resume"), cnt=document.getElementById("cnt-resume");
   try{
-    var data=await api("spow_resumecontexts?$select=spow_resumecontextid,spow_title,spow_whereileftoff,spow_priority,spow_status,spow_followupon&$orderby=modifiedon desc");
+    var data=await api("spow_resumecontexts?$select=spow_resumecontextid,spow_title,spow_whereileftoff,spow_whatchanged,spow_nextaction,spow_waitingon,spow_priority,spow_status,spow_followupon&$orderby=modifiedon desc");
     CACHE.resume=data.value;
     var open=data.value.filter(function(r){return r.spow_status!==420690003;});
     cnt.textContent=open.length+" actief";
@@ -1454,24 +1464,89 @@ async function loadResume(){
     el.innerHTML=open.map(function(r){
       var pip=r.spow_priority===420690000?"hot":(r.spow_priority===420690001?"mid":"ok");
       var ago=r.spow_followupon?("opvolgen "+fmtDate(r.spow_followupon)):(STATUS_RC[r.spow_status]||"");
-      return '<div class="res-row"><i class="pip '+pip+'"></i><span><span class="res-t">'+esc(r.spow_title)+'</span>'+
-        '<span class="res-s">'+esc((r.spow_whereileftoff||"").slice(0,160))+'</span></span><span class="ago">'+esc(ago)+'</span></div>';
+      return '<button type="button" class="res-row" data-resume-id="'+esc(r.spow_resumecontextid)+'"><i class="pip '+pip+'"></i><span><span class="res-t">'+esc(r.spow_title)+'</span>'+
+        '<span class="res-s">'+esc((r.spow_whereileftoff||"").slice(0,160))+'</span></span><span class="ago">'+esc(ago)+'</span></button>';
     }).join("");
+    el.querySelectorAll("[data-resume-id]").forEach(function(b){
+      b.addEventListener("click",function(){ openResumeDetail(b.dataset.resumeId); });
+    });
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon hervatpunten niet laden: '+esc(e.message)+'</div>'; }
 }
 
 async function loadNextActies(){
   var el=document.getElementById("list-nextacties");
   try{
-    var rows=CACHE.resume.length?CACHE.resume:(await api("spow_resumecontexts?$select=spow_title,spow_nextaction,spow_followupon,spow_waitingon")).value;
+    var rows=CACHE.resume.length?CACHE.resume:(await api("spow_resumecontexts?$select=spow_resumecontextid,spow_title,spow_nextaction,spow_followupon,spow_waitingon")).value;
     var withAction=rows.filter(function(r){return r.spow_nextaction||r.spow_waitingon;});
     if(!withAction.length){ el.innerHTML='<div class="emptyhint">Geen openstaande volgacties.</div>'; return; }
     el.innerHTML=withAction.map(function(r){
       var when=r.spow_followupon?fmtDate(r.spow_followupon):"";
-      return '<div><i></i><span>'+esc(r.spow_nextaction||r.spow_waitingon)+' <em style="color:var(--faint);font-style:normal;">('+esc(r.spow_title)+')</em></span><em>'+esc(when)+'</em></div>';
+      return '<button type="button" class="prom-row" data-resume-id="'+esc(r.spow_resumecontextid)+'"><i></i><span>'+esc(r.spow_nextaction||r.spow_waitingon)+' <em style="color:var(--faint);font-style:normal;">('+esc(r.spow_title)+')</em></span><em>'+esc(when)+'</em></button>';
     }).join("");
+    el.querySelectorAll("[data-resume-id]").forEach(function(b){
+      b.addEventListener("click",function(){ openResumeDetail(b.dataset.resumeId); });
+    });
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon volgacties niet laden.</div>'; }
 }
+
+/* Klik-op-kaart voor "Waar je gebleven was" en "Wat je nog te doen staat" (Cliftons melding, 15 sept):
+   hergebruikt hetzelfde generieke detailvenster (#detail / window.openDetail) als bijvoorbeeld
+   openServiceDetail() al doet. Toont voorlopig de hervatpunt-velden zelf; als dit hervatpunt aan een
+   echte SPoW-taak gekoppeld is (het veld "Taak" bestaat al op spow_resumecontext, zie projectlog
+   sectie 57) is de knop hieronder er nog niet — het live openen van díe taak in het werkvenster is
+   een logische volgende stap, maar vergt een schema-aanname (de exacte veldnaam van de koppeling)
+   die ik niet zonder Cliftons live sessie kan verifiëren. Voor nu dus bewust alleen het al bewezen
+   veldenpad. */
+function openResumeDetail(id){
+  var r=(CACHE.resume||[]).filter(function(x){return x.spow_resumecontextid===id;})[0];
+  if(!r) return;
+  document.getElementById("d-title").textContent=r.spow_title||"(geen titel)";
+  document.getElementById("d-sub").textContent="Hervatpunt · "+(STATUS_RC[r.spow_status]||"");
+  var rows=[
+    ["Waar ben je gebleven",r.spow_whereileftoff],
+    ["Wat is er veranderd",r.spow_whatchanged],
+    ["Volgende actie",r.spow_nextaction],
+    ["Wachtend op",r.spow_waitingon],
+    ["Opvolgen op",r.spow_followupon?fmtDate(r.spow_followupon):null]
+  ];
+  document.getElementById("d-kv").innerHTML=rows.map(function(x){
+    return '<dt>'+x[0]+'</dt><dd'+(x[1]?'':' class="miss"')+'>'+(x[1]?esc(x[1]):"nog niet vastgesteld")+'</dd>';
+  }).join("");
+  /* d-cis/d-portalen horen bij een dienst (zie openServiceDetail) en zijn hier niet van toepassing —
+     verbergen i.p.v. leeg tonen, en weer zichtbaar maken zodra een dienst wél geopend wordt. */
+  var cisSec=document.getElementById("d-cis-sec"), portSec=document.getElementById("d-portalen-sec");
+  if(cisSec) cisSec.style.display="none";
+  if(portSec) portSec.style.display="none";
+  window.openDetail();
+}
+window.openResumeDetail=openResumeDetail;
+
+/* Sectiegrootte door Clifton zelf te tunen (melding 15 sept): de browser-eigen "resize"-grip
+   (rechteronderhoek) plus onthouden per sectie in localStorage — zelfde patroon als de checklist in
+   het werkvenster al lokaal opslaat (projectlog sectie 86). Bewust géén Dataverse-tabel hiervoor:
+   dit is een schermvoorkeur, geen SPoW-data, en zou anders een nieuwe schemawijziging vergen voor iets
+   dat vandaag al met browseropslag prima werkt. Als Clifton dit ooit over meerdere apparaten wil laten
+   meereizen, is dat een aparte, kleine vervolgstap (net als bij de checklist toen). */
+function initResizablePanels(){
+  document.querySelectorAll("[data-resize-key]").forEach(function(el){
+    var key="spow_panelsize_"+el.dataset.resizeKey;
+    try{
+      var saved=localStorage.getItem(key);
+      if(saved) el.style.height=saved+"px";
+    }catch(e){}
+    if(typeof ResizeObserver==="undefined") return;
+    var pending=null;
+    var ro=new ResizeObserver(function(){
+      if(pending) return;
+      pending=requestAnimationFrame(function(){
+        pending=null;
+        try{ localStorage.setItem(key,Math.round(el.getBoundingClientRect().height)); }catch(e){}
+      });
+    });
+    ro.observe(el);
+  });
+}
+window.initResizablePanels=initResizablePanels;
 
 async function loadServicesData(){
   if(CACHE.services.length) return CACHE.services;
@@ -1501,8 +1576,9 @@ async function loadVerval(){
     if(!met.length){ el.innerHTML='<div class="emptyhint">Geen vervaldatums vastgelegd — de dienstkaarten zijn hierop nog niet compleet.</div>'; return; }
     el.innerHTML=met.map(function(s){
       var d=daysUntil(s.spow_vervaldatum), cls=d<30?"red":(d<90?"amber":"grey");
-      return '<div class="exp-row"><span>'+esc(s.spow_servicename)+'</span><span class="who">'+esc(TOWER_SERVICE[s.spow_tower]||"")+'</span><span class="days '+cls+'">'+d+' d</span></div>';
+      return '<button type="button" class="exp-row" data-svc="'+esc(s.spow_serviceid)+'"><span>'+esc(s.spow_servicename)+'</span><span class="who">'+esc(TOWER_SERVICE[s.spow_tower]||"")+'</span><span class="days '+cls+'">'+d+' d</span></button>';
     }).join("");
+    el.querySelectorAll("[data-svc]").forEach(function(b){ b.addEventListener("click",function(){ openServiceDetail(b.dataset.svc); }); });
   }catch(e){ el.innerHTML='<div class="emptyhint">Kon vervaldatums niet laden: '+esc(e.message)+'</div>'; }
 }
 
@@ -2254,6 +2330,9 @@ async function loadServices(){
 async function openServiceDetail(id){
   var s=CACHE.services.filter(function(x){return x.spow_serviceid===id;})[0];
   if(!s) return;
+  var cisSec=document.getElementById("d-cis-sec"), portSec=document.getElementById("d-portalen-sec");
+  if(cisSec) cisSec.style.display="";
+  if(portSec) portSec.style.display="";
   document.getElementById("d-title").textContent=s.spow_servicename;
   document.getElementById("d-sub").textContent=(TOWER_SERVICE[s.spow_tower]||"")+" · eigenaar is de tower, niet een persoon";
   var kv=document.getElementById("d-kv");
@@ -3101,6 +3180,7 @@ async function onSignedIn(){
   wirePersonSheet();
   wireSpofSheet();
   wireRoadmap();
+  if(window.initResizablePanels) window.initResizablePanels();
   try{ await loadAll(); }
   catch(e){ setBanner("Fout bij laden: "+e.message,false); }
 }
